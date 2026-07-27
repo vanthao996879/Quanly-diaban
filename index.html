@@ -3,662 +3,462 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Địa Bàn - Cloud v3.6 Pro</title>
-    <!-- Firebase SDK (Compat v8) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <!-- SheetJS (XLSX) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Chart.js cho Biểu đồ thống kê -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Leaflet CSS & JS cho Bản đồ -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+    <title>Hệ Thống Quản Lý Địa Bàn Chuyên Sâu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (xlsx) for Excel import/export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #2563eb; --primary-dark: #1d4ed8; --success: #10b981; --danger: #ef4444; --bg: #f8fafc; --card: #ffffff; --text: #0f172a; --border: #e2e8f0; --admin: #8b5cf6; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .card { background: var(--card); padding: 18px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border); }
-        .admin-card { border: 2px solid var(--admin); background: #fbfbfe; }
-        
-        .user-bar { display: flex; justify-content: space-between; align-items: center; background: #1e3a8a; color: white; padding: 12px 18px; border-radius: 12px; margin-bottom: 20px; }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .user-avatar { width: 36px; height: 36px; border-radius: 50%; }
-        .role-badge { background: #f59e0b; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--card); padding: 12px; border-radius: 10px; text-align: center; border: 1px solid var(--border); }
-        .stat-num { font-size: 22px; font-weight: bold; color: var(--primary); }
-        
-        .search-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
-        
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; }
-        input, textarea, select { width: 100%; padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        
-        button { background: var(--primary); color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s;}
-        button:hover { opacity: 0.9; }
-        .btn-danger { background: var(--danger); }
-        .btn-success { background: var(--success); }
-        .btn-admin { background: var(--admin); }
-        .btn-excel { background: #059669; }
-        .btn-print { background: #475569; }
-        .btn-login { background: #4285f4; font-size: 16px; padding: 12px 24px; border-radius: 8px; color: white; border: none; display: inline-flex; align-items: center; gap: 10px; margin-top: 20px; }
-
-        .house-item { border-left: 4px solid var(--primary); margin-bottom: 15px; }
-        .house-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: 8px; margin-top: 10px; }
-        .people-list { background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
-        
-        .list-group { list-style: none; padding: 0; margin: 0; }
-        .list-group li { padding: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        
-        #map { width: 100%; height: 250px; border-radius: 8px; margin-top: 5px; border: 1px solid #cbd5e1; }
-
-        #loginScreen { text-align: center; padding: 50px 20px; }
-        #appScreen { display: none; }
-        #adminPanel { display: none; }
-
-        @media print {
-            body { background: white; color: black; padding: 0; }
-            .container > *:not(#printAreaReport), #appScreen > *:not(#houseList), .user-bar, .stats-grid, .card:not(#printAreaReport), form, button, .search-input, .people-list button { display: none !important; }
-            .house-item { border: none; box-shadow: none; page-break-inside: avoid; }
-            .print-hidden { display: none !important; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-<div class="container">
-
-    <!-- MÀN HÌNH ĐĂNG NHẬP -->
-    <div id="loginScreen" class="card">
-        <h1>📌 Hệ Thống Quản Lý Địa Bàn</h1>
-        <p>Vui lòng đăng nhập bằng Gmail để kết nối dữ liệu Đám Mây</p>
-        <button class="btn-login" onclick="loginGoogle()">Đăng nhập bằng Gmail</button>
-    </div>
-
-    <!-- MÀN HÌNH ỨNG DỤNG -->
-    <div id="appScreen">
-        
-        <!-- USER BAR -->
-        <div class="user-bar">
-            <div class="user-info">
-                <img id="userAvatar" class="user-avatar" src="https://via.placeholder.com/36" alt="Avatar">
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-xl">
+                    <i class="fa-solid fa-map-location-dot text-2xl"></i>
+                </div>
                 <div>
-                    <strong id="userName">...</strong> <span id="userRole" class="role-badge">USER</span><br>
-                    <small id="userEmail" style="opacity:0.8;"></small>
+                    <h1 class="text-xl font-bold tracking-tight">Hệ Thống Quản Lý Địa Bàn</h1>
+                    <p class="text-xs text-indigo-200">Quản lý Hộ dân, Phường xã & Khu vực thông minh</p>
                 </div>
             </div>
-            <button onclick="logout()" style="background:rgba(255,255,255,0.2); border:1px solid white;">Đăng xuất</button>
-        </div>
-
-        <!-- ADMIN PANEL -->
-        <div id="adminPanel" class="card admin-card">
-            <h3 style="color: var(--admin); margin-top: 0;">👑 Quản Lý Danh Mục Phường/Xã (Admin)</h3>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <input type="text" id="newLocation" placeholder="VD: Phường An Khánh, Ninh Kiều" style="flex: 1;">
-                <button class="btn-admin" onclick="addLocation()">➕ Thêm Phường</button>
-            </div>
-            <div style="max-height: 150px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 6px;">
-                <ul id="adminLocationList" class="list-group"></ul>
+            <div class="flex items-center gap-3">
+                <label class="cursor-pointer bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 border border-white/20">
+                    <i class="fa-solid fa-file-excel text-emerald-400"></i> Nhập Excel Mới
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
+                </label>
+                <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-download"></i> Xuất Excel
+                </button>
             </div>
         </div>
+    </header>
 
-        <!-- STATS -->
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-num" id="statHouses">0</div><div style="font-size:12px;">Tổng số nhà</div></div>
-            <div class="stat-card"><div class="stat-num" id="statResidents">0</div><div style="font-size:12px;">Tổng nhân khẩu</div></div>
-            <div class="stat-card"><div class="stat-num" id="statPhotos">0</div><div style="font-size:12px;">Đã chụp ảnh</div></div>
-        </div>
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
 
-        <!-- BIỂU ĐỒ THỐNG KÊ -->
-        <div class="card">
-            <h3 style="margin-top:0; font-size: 15px; color: var(--primary);">📊 Biểu Đồ Thống Kê Số Hộ Theo Phường</h3>
-            <div style="position: relative; height: 200px; width: 100%;">
-                <canvas id="statsChart"></canvas>
-            </div>
-        </div>
-
-        <!-- TOOLBAR SEARCH & TOOLS -->
-        <div class="card" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-            <input type="text" id="searchInput" class="search-input" style="flex: 1; min-width: 220px;" placeholder="🔍 Tìm kiếm HSCT, Tên đường, Chủ hộ, Nhân khẩu, CCCD..." oninput="filterData()">
-            <button class="btn-print" onclick="printSummaryReport()">🖨️ In Báo Cáo</button>
-            <button class="btn-excel" onclick="exportToExcel()">📤 Xuất Excel</button>
-            <label class="btn-excel" style="margin: 0; cursor: pointer; padding: 10px 14px; border-radius: 6px; font-weight: 600; color: white;">
-                📥 Nhập Excel <input type="file" id="importFile" accept=".xlsx, .xls" style="display: none;" onchange="importFromExcel(event)">
-            </label>
-        </div>
-
-        <!-- FORM THÊM CĂN NHÀ -->
-        <div class="card">
-            <h3>🏠 Thêm Căn Nhà Mới & Định Vị Bản Đồ</h3>
-            <form id="houseForm">
-                <div class="form-group">
-                    <label>Số HSCT (Hồ sơ cư trú):</label>
-                    <input type="text" id="hsct" list="hsct-list-options" placeholder="Ví dụ: HSCT-9921" autocomplete="off" required>
-                    <datalist id="hsct-list-options"></datalist>
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tổng Số Hộ Dân</p>
+                    <h3 id="statTotalHouseholds" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
                 </div>
-                
-                <div style="display: flex; gap: 10px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Phường/Xã:</label>
-                        <input type="text" id="houseWard" list="ward-list-options" placeholder="Chọn Phường/Xã..." autocomplete="off" required>
-                        <datalist id="ward-list-options"></datalist>
+                <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl">
+                    <i class="fa-solid fa-house text-xl"></i>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tổng Nhân Khẩu</p>
+                    <h3 id="statTotalMembers" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                </div>
+                <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl">
+                    <i class="fa-solid fa-users text-xl"></i>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Phường / Xã Quản Lý</p>
+                    <h3 id="statTotalWards" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                </div>
+                <div class="bg-amber-50 text-amber-600 p-3 rounded-xl">
+                    <i class="fa-solid fa-city text-xl"></i>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Khu Vực (KV1 - KV12)</p>
+                    <h3 id="statTotalKV" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                </div>
+                <div class="bg-rose-50 text-rose-600 p-3 rounded-xl">
+                    <i class="fa-solid fa-map-pin text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Search Section -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-indigo-600"></i> Bộ Lọc Phân Cấp & Tìm Kiếm
+                </h2>
+                <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Thêm Hộ Dân Mới
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- Filter Ward -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Phường / Xã</label>
+                    <select id="filterWard" onchange="filterData()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="">-- Tất cả Phường xã --</option>
+                    </select>
+                </div>
+                <!-- Filter Khu Vực -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Khu Vực (KV1 - KV12)</label>
+                    <select id="filterKV" onchange="filterData()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="">-- Tất cả Khu vực --</option>
+                        <option value="KV1">Khu vực 1</option>
+                        <option value="KV2">Khu vực 2</option>
+                        <option value="KV3">Khu vực 3</option>
+                        <option value="KV4">Khu vực 4</option>
+                        <option value="KV5">Khu vực 5</option>
+                        <option value="KV6">Khu vực 6</option>
+                        <option value="KV7">Khu vực 7</option>
+                        <option value="KV8">Khu vực 8</option>
+                        <option value="KV9">Khu vực 9</option>
+                        <option value="KV10">Khu vực 10</option>
+                        <option value="KV11">Khu vực 11</option>
+                        <option value="KV12">Khu vực 12</option>
+                    </select>
+                </div>
+                <!-- Filter Street -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tuyến Đường / Tổ</label>
+                    <select id="filterStreet" onchange="filterData()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="">-- Tất cả Tuyến đường --</option>
+                    </select>
+                </div>
+                <!-- Search Keyword -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tìm kiếm nhanh</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-search"></i>
+                        </span>
+                        <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Nhập tên chủ hộ, số HSCT..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                     </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Số nhà, Tên đường:</label>
-                        <input type="text" id="houseStreet" list="street-list-options" placeholder="VD: 123 Nguyễn Văn Cừ" autocomplete="off" required>
-                        <datalist id="street-list-options"></datalist>
-                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label>📍 Chọn vị trí trên bản đồ (Không bắt buộc):</label>
-                    <button type="button" class="btn-primary" style="margin-bottom: 5px; padding: 6px 10px; font-size: 12px;" onclick="getCurrentLocation()">📍 Lấy vị trí hiện tại của tôi</button>
-                    <div id="map"></div>
-                    <input type="hidden" id="lat" value="">
-                    <input type="hidden" id="lng" value="">
-                </div>
-
-                <div class="form-group">
-                    <label>Tên chủ hộ:</label>
-                    <input type="text" id="owner" list="owner-list-options" placeholder="Ví dụ: Nguyễn Văn A" autocomplete="off">
-                    <datalist id="owner-list-options"></datalist>
-                </div>
-                <div class="form-group">
-                    <label>Chụp ảnh nhà:</label>
-                    <input type="file" id="photo" accept="image/*" capture="environment">
-                </div>
-                <div class="form-group">
-                    <label>Ghi chú:</label>
-                    <textarea id="note" rows="2"></textarea>
-                </div>
-                <button type="submit" class="btn-success">💾 Lưu Đám Mây</button>
-            </form>
+            </div>
         </div>
 
-        <!-- DANH SÁCH -->
-        <h2>📋 Danh Sách Căn Hộ (<span id="count">0</span>)</h2>
-        <div id="houseList"></div>
+        <!-- Data Table Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-bold text-slate-800 text-base">Danh Sách Hộ Dân (<span id="tableCount">0</span>)</h3>
+                <span class="text-xs text-slate-500">Hiển thị thông tin chi tiết từng hộ</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-4">STT</th>
+                            <th class="py-3 px-4">Số HSCT</th>
+                            <th class="py-3 px-4">Chủ Hộ</th>
+                            <th class="py-3 px-4">Địa Chỉ / Tuyến Đường</th>
+                            <th class="py-3 px-4">Phường Xã</th>
+                            <th class="py-3 px-4">Nhân Khẩu & Quan Hệ</th>
+                            <th class="py-3 px-4 text-center">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-200 text-sm">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination or status -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
+                <span id="paginationInfo">Đang hiển thị toàn bộ dữ liệu</span>
+            </div>
+        </div>
 
+    </main>
+
+    <!-- Modal Add/Edit Household -->
+    <div id="householdModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
+            <div class="bg-indigo-700 text-white px-6 py-4 flex justify-between items-center">
+                <h3 id="modalTitle" class="font-bold text-lg">Thêm Hộ Dân Mới</h3>
+                <button onclick="closeModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <input type="hidden" id="editIndex" value="-1">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Số HSCT</label>
+                    <input type="text" id="inputHsct" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 31147-001599">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Chủ Hộ</label>
+                    <input type="text" id="inputChuHo" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: NGUYỄN VĂN A">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Đường / Tổ / Khu Vực</label>
+                    <input type="text" id="inputDuong" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 365A/3 KV7">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Phường Xã</label>
+                    <input type="text" id="inputPhuong" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" value="phường Tân An, thành phố Cần Thơ">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nhân Khẩu Trong Hộ (Tên & Quan hệ)</label>
+                    <textarea id="inputNhanKhau" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: NGUYỄN THỊ B - Vợ, NGUYỄN VĂN C - Con"></textarea>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end gap-3">
+                <button onclick="closeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition">Hủy</button>
+                <button onclick="saveHousehold()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-sm">Lưu Dữ Liệu</button>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyCeOorBLTWQMoRYZhp0GARBYc1GX8jdRRU",
-        authDomain: "quanlydiaban-app.firebaseapp.com",
-        projectId: "quanlydiaban-app",
-        storageBucket: "quanlydiaban-app.firebasestorage.app",
-        messagingSenderId: "96779190691",
-        appId: "1:96779190691:web:a2f79c7f7c22b1783e9a16",
-        measurementId: "G-ZWCJ235ZZV"
-    };
+    <!-- JavaScript Application Logic -->
+    <script>
+        let globalData = [];
 
-    // Cho phép cả 2 tài khoản đều là Admin (hoặc thêm email khác nếu cần)
-    const ADMIN_EMAILS = ["vanthao996879@gmail.com", "vanthao3011@gmail.com"]; 
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let currentUser = null;
-    let houses = [];
-    let locations = [];
-    let isAdmin = false;
-    let map, marker;
-    let myChart = null;
-
-    function loginGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider).catch(err => alert("Lỗi: " + err.message));
-    }
-    function logout() { auth.signOut(); }
-
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            currentUser = user;
-            isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
-
-            document.getElementById('userName').innerText = user.displayName || "Người dùng";
-            document.getElementById('userEmail').innerText = user.email;
-            document.getElementById('userRole').innerText = isAdmin ? "ADMIN" : "USER";
-            document.getElementById('userRole').style.background = isAdmin ? "#f59e0b" : "#10b981";
-
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('appScreen').style.display = 'block';
-            
-            if (isAdmin) document.getElementById('adminPanel').style.display = 'block';
-
-            loadLocations();
-            loadHouses();
-            
-            setTimeout(initMap, 300);
-        } else {
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('appScreen').style.display = 'none';
-        }
-    });
-
-    function initMap() {
-        if (map) { map.invalidateSize(); return; }
-        map = L.map('map').setView([10.0452, 105.7469], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        marker = L.marker([10.0452, 105.7469], {draggable: true}).addTo(map);
-        
-        marker.on('dragend', function(e) {
-            const pos = marker.getLatLng();
-            document.getElementById('lat').value = pos.lat;
-            document.getElementById('lng').value = pos.lng;
-        });
-
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            document.getElementById('lat').value = e.latlng.lat;
-            document.getElementById('lng').value = e.latlng.lng;
-        });
-    }
-
-    function getCurrentLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(position => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                map.setView([lat, lng], 16);
-                marker.setLatLng([lat, lng]);
-                document.getElementById('lat').value = lat;
-                document.getElementById('lng').value = lng;
-            }, () => alert("Không thể lấy vị trí của bạn!"));
-        } else {
-            alert("Trình duyệt không hỗ trợ định vị GPS.");
-        }
-    }
-
-    function loadLocations() {
-        db.collection('master_locations').orderBy('name').onSnapshot(snap => {
-            locations = [];
-            snap.forEach(doc => locations.push({ id: doc.id, ...doc.data() }));
-
-            const datalist = document.getElementById('ward-list-options');
-            if (datalist) {
-                datalist.innerHTML = '';
-                locations.forEach(loc => { datalist.innerHTML += `<option value="${loc.name}">`; });
-            }
-
-            if (isAdmin) {
-                const adminList = document.getElementById('adminLocationList');
-                adminList.innerHTML = '';
-                locations.forEach(loc => {
-                    adminList.innerHTML += `
-                        <li>
-                            <span>📍 ${loc.name}</span>
-                            <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteLocation('${loc.id}')">Xóa</button>
-                        </li>`;
-                });
-            }
-        });
-    }
-
-    function addLocation() {
-        const name = document.getElementById('newLocation').value.trim();
-        if (!name) return;
-        db.collection('master_locations').add({ name: name }).then(() => {
-            document.getElementById('newLocation').value = '';
-        });
-    }
-
-    function deleteLocation(id) {
-        if(confirm("Xóa phường này khỏi danh mục?")) db.collection('master_locations').doc(id).delete();
-    }
-
-    function loadHouses() {
-        db.collection('houses').orderBy('createdAt', 'desc').onSnapshot(snap => {
-            houses = [];
-            snap.forEach(doc => houses.push({ id: doc.id, ...doc.data() }));
-            
-            const hsctList = document.getElementById('hsct-list-options');
-            const streetList = document.getElementById('street-list-options');
-            const ownerList = document.getElementById('owner-list-options');
-            
-            if (hsctList) hsctList.innerHTML = '';
-            if (streetList) streetList.innerHTML = '';
-            if (ownerList) ownerList.innerHTML = '';
-
-            const uniqueHsct = [...new Set(houses.map(h => h.hsct).filter(Boolean))];
-            const uniqueStreets = [...new Set(houses.map(h => h.street).filter(Boolean))];
-            const uniqueOwners = [...new Set(houses.map(h => h.owner).filter(Boolean))];
-
-            uniqueHsct.forEach(val => { if (hsctList) hsctList.innerHTML += `<option value="${val}">`; });
-            uniqueStreets.forEach(val => { if (streetList) streetList.innerHTML += `<option value="${val}">`; });
-            uniqueOwners.forEach(val => { if (ownerList) ownerList.innerHTML += `<option value="${val}">`; });
-
-            updateStats();
-            renderChart();
-            filterData();
-        });
-    }
-
-    function compressImage(file, callback) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                let width = img.width, height = img.height;
-                if (width > 800) { height = Math.round(height * 800 / width); width = 800; }
-                canvas.width = width; canvas.height = height;
-                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                callback(canvas.toDataURL('image/jpeg', 0.7));
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    document.getElementById('houseForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const file = document.getElementById('photo').files[0];
-        if (file) compressImage(file, base64 => saveHouse(base64));
-        else saveHouse('');
-    });
-
-    function saveHouse(photoData) {
-        const wardVal = document.getElementById('houseWard').value;
-        const streetVal = document.getElementById('houseStreet').value;
-        const fullAddress = streetVal + ", " + wardVal;
-
-        const rawLat = document.getElementById('lat').value;
-        const rawLng = document.getElementById('lng').value;
-
-        db.collection('houses').add({
-            hsct: document.getElementById('hsct').value,
-            address: fullAddress,
-            ward: wardVal,
-            street: streetVal,
-            owner: document.getElementById('owner').value || 'Chưa xác định',
-            note: document.getElementById('note').value,
-            photo: photoData,
-            lat: rawLat ? parseFloat(rawLat) : null,
-            lng: rawLng ? parseFloat(rawLng) : null,
-            createdBy: currentUser.email,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            residents: []
-        }).then(() => {
-            document.getElementById('houseForm').reset();
-            document.getElementById('lat').value = '';
-            document.getElementById('lng').value = '';
-            alert("Đã lưu thành công lên đám mây!");
-        });
-    }
-
-    function addResident(houseId) {
-        const name = prompt("Họ tên nhân khẩu:"); if (!name) return;
-        const dob = prompt("Ngày sinh (VD: 15/05/1990 hoặc 1990):") || "";
-        const relation = prompt("Mối quan hệ với chủ hộ (VD: Vợ, Con, Bố mẹ...):") || "Thành viên";
-        const cccd = prompt("CCCD (nếu có):") || "";
-        const phone = prompt("Số điện thoại (nếu có):") || "";
-
-        const house = houses.find(h => h.id === houseId);
-        if (house) {
-            const res = house.residents || [];
-            res.push({ name, dob, relation, cccd, phone });
-            db.collection('houses').doc(houseId).update({ residents: res });
-        }
-    }
-
-    function deleteResident(houseId, index) {
-        if (!confirm("Xóa nhân khẩu này khỏi hộ?")) return;
-        const house = houses.find(h => h.id === houseId);
-        if (house && house.residents) {
-            house.residents.splice(index, 1);
-            db.collection('houses').doc(houseId).update({ residents: house.residents });
-        }
-    }
-
-    function deleteHouse(houseId) {
-        if (!isAdmin) return alert("Bạn không có quyền xóa!");
-        if (confirm("Xóa căn nhà này vĩnh viễn?")) db.collection('houses').doc(houseId).delete();
-    }
-
-    function updateStats() {
-        document.getElementById('statHouses').innerText = houses.length;
-        document.getElementById('statResidents').innerText = houses.reduce((acc, h) => acc + (h.residents ? h.residents.length : 0), 0);
-        document.getElementById('statPhotos').innerText = houses.filter(h => h.photo).length;
-    }
-
-    function renderChart() {
-        const wardCounts = {};
-        houses.forEach(h => {
-            const w = h.ward || "Khác";
-            wardCounts[w] = (wardCounts[w] || 0) + 1;
-        });
-
-        const labels = Object.keys(wardCounts);
-        const data = Object.values(wardCounts);
-
-        const ctx = document.getElementById('statsChart').getContext('2d');
-        if (myChart) myChart.destroy();
-
-        myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Số lượng hộ dân',
-                    data: data,
-                    backgroundColor: '#2563eb',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-            }
-        });
-    }
-
-    // TÍNH NĂNG TÌM KIẾM THÔNG MINH (HSCT, TÊN ĐƯỜNG, CHỦ HỘ, NHÂN KHẨU)
-    function filterData() {
-        const q = document.getElementById('searchInput').value.toLowerCase().trim();
-        const filtered = houses.filter(h => 
-            (h.hsct||'').toLowerCase().includes(q) || 
-            (h.address||'').toLowerCase().includes(q) || 
-            (h.owner||'').toLowerCase().includes(q) ||
-            (h.residents||[]).some(r => 
-                (r.name||'').toLowerCase().includes(q) || 
-                (r.cccd||'').toLowerCase().includes(q) || 
-                (r.relation||'').toLowerCase().includes(q) ||
-                (r.dob||'').toLowerCase().includes(q)
-            )
-        );
-        
-        const div = document.getElementById('houseList');
-        document.getElementById('count').innerText = filtered.length;
-        div.innerHTML = '';
-
-        filtered.forEach(h => {
-            const resHTML = (h.residents || []).map((r, idx) => `
-                <div style="background:white; padding:8px; margin-bottom:5px; border-radius:4px; border:1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>${r.name}</strong> - Quan hệ: <b>${r.relation}</b> | Ngày sinh: ${r.dob || 'Chưa có'} 
-                        ${r.cccd ? `| CCCD: ${r.cccd}` : ''} ${r.phone ? `| SĐT: ${r.phone}` : ''}
-                    </div>
-                    <button class="print-hidden btn-danger" style="padding:2px 6px; font-size:11px;" onclick="deleteResident('${h.id}', ${idx})">Xóa</button>
-                </div>`).join('');
-            
-            const gpsText = (h.lat && h.lng) ? `${h.lat}, ${h.lng}` : 'Chưa có tọa độ GPS';
-
-            div.innerHTML += `
-                <div class="card house-item">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <h3 style="margin-top:0;">📍 ${h.address}</h3>
-                        <button class="print-hidden btn-print" style="padding: 6px 10px; font-size: 12px;" onclick="printSingleHouse('${h.id}')">🖨️ In Phiếu</button>
-                    </div>
-                    <p><strong>HSCT:</strong> <span style="background:#dbeafe; padding:2px 8px; border-radius:10px;">${h.hsct}</span> | <strong>Chủ hộ:</strong> ${h.owner}</p>
-                    <p style="font-size: 12px; color: #475569;">🌍 Tọa độ GPS: ${gpsText}</p>
-                    <small style="color:#64748b;">Người tạo: ${h.createdBy}</small>
-                    ${h.photo ? `<img src="${h.photo}" class="house-img">` : ''}
-                    <div class="people-list">
-                        <h4>👥 Nhân khẩu trong hộ (${(h.residents || []).length})</h4>
-                        ${resHTML}
-                        <button class="print-hidden btn-success" style="margin-top: 5px;" onclick="addResident('${h.id}')">+ Thêm nhân khẩu</button>
-                    </div>
-                    ${isAdmin ? `<button class="print-hidden btn-danger" style="margin-top:10px;" onclick="deleteHouse('${h.id}')">🗑 Xóa nhà</button>` : ''}
-                </div>`;
-        });
-    }
-
-    function printSingleHouse(houseId) {
-        const h = houses.find(x => x.id === houseId);
-        if (!h) return;
-        const resRows = (h.residents || []).map((r, i) => `
-            <tr>
-                <td style="border:1px solid #000; padding:6px; text-align:center;">${i+1}</td>
-                <td style="border:1px solid #000; padding:6px;">${r.name}</td>
-                <td style="border:1px solid #000; padding:6px; text-align:center;">${r.dob || ''}</td>
-                <td style="border:1px solid #000; padding:6px; text-align:center;">${r.relation}</td>
-                <td style="border:1px solid #000; padding:6px; text-align:center;">${r.cccd || ''}</td>
-                <td style="border:1px solid #000; padding:6px; text-align:center;">${r.phone || ''}</td>
-            </tr>
-        `).join('') || `<tr><td colspan="6" style="border:1px solid #000; padding:6px; text-align:center;">Chưa có nhân khẩu</td></tr>`;
-
-        const gpsStr = (h.lat && h.lng) ? `${h.lat}, ${h.lng}` : 'Không có';
-
-        const printWin = window.open('', '_blank');
-        printWin.document.write(`
-            <html><head><title>Phiếu Hộ - ${h.hsct}</title><style>body{font-family:"Times New Roman",serif;font-size:14pt;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:15px;}th{background:#f2f2f2;border:1px solid #000;padding:8px;}</style></head>
-            <body>
-                <div style="text-align:center;"><h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3><p><b>Độc lập - Tự do - Hạnh phúc</b></p><h2>PHIẾU THÔNG TIN HỘ GIA ĐÌNH</h2></div>
-                <p><b>Số HSCT:</b> ${h.hsct}</p><p><b>Địa chỉ:</b> ${h.address}</p><p><b>Chủ hộ:</b> ${h.owner}</p><p><b>Tọa độ GPS:</b> ${gpsStr}</p>
-                <h3>Danh sách nhân khẩu:</h3>
-                <table><tr><th>STT</th><th>Họ tên nhân khẩu</th><th>Ngày sinh</th><th>Quan hệ với chủ hộ</th><th>CCCD</th><th>SĐT</th></tr>${resRows}</table>
-            </body></html>
-        `);
-        printWin.document.close();
-        printWin.focus();
-        setTimeout(() => printWin.print(), 500);
-    }
-
-    function printSummaryReport() {
-        if (houses.length === 0) return alert("Không có dữ liệu!");
-        const rows = houses.map((h, i) => `<tr><td style="border:1px solid #000;padding:6px;text-align:center;">${i+1}</td><td style="border:1px solid #000;padding:6px;text-align:center;">${h.hsct||''}</td><td style="border:1px solid #000;padding:6px;">${h.address}</td><td style="border:1px solid #000;padding:6px;">${h.owner}</td><td style="border:1px solid #000;padding:6px;text-align:center;">${(h.residents||[]).length}</td></tr>`).join('');
-        const printWin = window.open('', '_blank');
-        printWin.document.write(`
-            <html><head><title>Báo Cáo</title><style>body{font-family:"Times New Roman",serif;font-size:13pt;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:15px;}th{background:#f2f2f2;border:1px solid #000;padding:8px;}</style></head>
-            <body><div style="text-align:center;"><h3>BÁO CÁO TỔNG HỢP ĐỊA BÀN</h3></div>
-            <table><tr><th>STT</th><th>HSCT</th><th>Địa chỉ</th><th>Chủ hộ</th><th>Nhân khẩu</th></tr>${rows}</table></body></html>
-        `);
-        printWin.document.close();
-        printWin.focus();
-        setTimeout(() => printWin.print(), 500);
-    }
-
-    function exportToExcel() {
-        if (houses.length === 0) return alert("Không có dữ liệu!");
-        const dataFormatted = houses.map((h, i) => ({
-            "STT": i + 1, 
-            "Số HSCT": h.hsct || "", 
-            "Phường/Xã": h.ward || "", 
-            "Số nhà, Tên đường": h.street || "",
-            "Chủ hộ": h.owner || "", 
-            "Vĩ độ (Lat)": h.lat || "", 
-            "Kinh độ (Lng)": h.lng || "", 
-            "Số lượng nhân khẩu": (h.residents || []).length
-        }));
-        const worksheet = XLSX.utils.json_to_sheet(dataFormatted);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachNha");
-        XLSX.writeFile(workbook, "QuanLyDiaBan_Pro.xlsx");
-    }
-
-    // TÍNH NĂNG NHẬP EXCEL TỰ ĐỘNG GOM NHÓM THEO SỐ HSCT
-    function importFromExcel(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-                if (jsonData.length === 0) {
-                    alert("File Excel trống hoặc không đúng định dạng!");
+        window.addEventListener('DOMContentLoaded', async () => {
+            const saved = localStorage.getItem('quanly_diaban_data');
+            if (saved) {
+                try {
+                    globalData = JSON.parse(saved);
+                    initApp();
                     return;
-                }
-
-                if (confirm(`Tìm thấy ${jsonData.length} dòng nhân khẩu. Hệ thống sẽ tự động gom nhóm theo Số HSCT thành từng hộ gia đình. Bạn có muốn tiếp tục?`)) {
-                    const houseMap = {};
-
-                    jsonData.forEach(row => {
-                        const hsct = String(row["Số HSCT"] || row["HSCT"] || "").trim();
-                        if (!hsct) return;
-
-                        if (!houseMap[hsct]) {
-                            const ward = row["Phường xã"] || row["Phường/Xã"] || "";
-                            const street = row["Tên đường"] || row["Số nhà, Tên đường"] || "";
-                            const address = street ? (street + (ward ? ", " + ward : "")) : (row["Địa chỉ"] || "Chưa xác định");
-
-                            houseMap[hsct] = {
-                                hsct: hsct,
-                                address: address,
-                                ward: ward,
-                                street: street,
-                                owner: row["Chủ hộ"] || "Chưa xác định",
-                                lat: null,
-                                lng: null,
-                                photo: "",
-                                createdBy: currentUser.email,
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                residents: []
-                            };
-                        }
-
-                        const residentName = row["Nhân khẩu trong hộ"] || row["Họ tên nhân khẩu"] || "";
-                        if (residentName) {
-                            let dobStr = row["Ngày sinh"] || "";
-                            if (dobStr && typeof dobStr === 'object') {
-                                dobStr = dobStr.toLocaleDateString('vi-VN');
-                            }
-
-                            houseMap[hsct].residents.push({
-                                name: String(residentName).trim(),
-                                dob: String(dobStr).trim(),
-                                relation: String(row["Quan hệ\n chủ hộ"] || row["Quan hệ chủ hộ"] || "Thành viên").trim(),
-                                cccd: String(row["CCCD"] || "").trim(),
-                                phone: String(row["Số điện thoại"] || row["SĐT"] || "").trim()
-                            });
-                        }
-                    });
-
-                    const batchPromises = Object.values(houseMap).map(houseData => {
-                        return db.collection('houses').add(houseData);
-                    });
-
-                    Promise.all(batchPromises).then(() => {
-                        alert(`Đã gom nhóm và nhập thành công ${Object.keys(houseMap).length} hộ gia đình lên đám mây!`);
-                        event.target.value = "";
-                    }).catch(err => {
-                        alert("Lỗi khi lưu lên Firebase: " + err.message);
-                    });
-                }
-            } catch (err) {
-                alert("Lỗi đọc file Excel: " + err.message);
+                } catch(e) {}
             }
-        };
-        reader.readAsArrayBuffer(file);
-    }
-</script>
+            
+            try {
+                const response = await fetch('Nhập liệu Phần mềm_đã_cập_nật.xlsx');
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                globalData = XLSX.utils.sheet_to_json(firstSheet);
+                saveToLocalStorage();
+                initApp();
+            } catch(e) {
+                console.log("Using default sample data");
+                globalData = [
+                    {"Số HSCT": "31147-001599", "Phường xã": "phường Tân An, thành phố Cần Thơ", "Chủ hộ": "LƯƠNG HIỀN THÀNH", "Tên đường": "365A/3 KV7", "Nhân khẩu trong hộ": "LƯƠNG NGỌC GIA NGHI", "Quan hệ chủ hộ": "Cháu"},
+                    {"Số HSCT": "31147-000746", "Phường xã": "phường Tân An, thành phố Cần Thơ", "Chủ hộ": "HOÀNG MINH CHÂU", "Tên đường": "57 A3 KDC 91B KV 7", "Nhân khẩu trong hộ": "DƯƠNG HOÀNG MINH TRIẾT", "Quan hệ chủ hộ": "Con"}
+                ];
+                initApp();
+            }
+        });
 
+        function saveToLocalStorage() {
+            localStorage.setItem('quanly_diaban_data', JSON.stringify(globalData));
+        }
+
+        function initApp() {
+            populateDropdowns();
+            filterData();
+        }
+
+        function populateDropdowns() {
+            const wards = [...new Set(globalData.map(item => item['Phường xã']).filter(Boolean))];
+            const streets = [...new Set(globalData.map(item => item['Tên đường']).filter(Boolean))].sort();
+
+            const wardSelect = document.getElementById('filterWard');
+            wardSelect.innerHTML = '<option value="">-- Tất cả Phường xã --</option>' + wards.map(w => `<option value="${w}">${w}</option>`).join('');
+
+            const streetSelect = document.getElementById('filterStreet');
+            streetSelect.innerHTML = '<option value="">-- Tất cả Tuyến đường --</option>' + streets.map(s => `<option value="${s}">${s}</option>`).join('');
+        }
+
+        function filterData() {
+            const wardVal = document.getElementById('filterWard').value;
+            const kvVal = document.getElementById('filterKV').value;
+            const streetVal = document.getElementById('filterStreet').value;
+            const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+
+            const filtered = globalData.filter(item => {
+                const ward = (item['Phường xã'] || '').toLowerCase();
+                const street = (item['Tên đường'] || '').toUpperCase();
+                const chuHo = (item['Chủ hộ'] || '').toLowerCase();
+                const hsct = (item['Số HSCT'] || '').toLowerCase();
+                const nhanKhau = (item['Nhân khẩu trong hộ'] || '').toLowerCase();
+
+                if (wardVal && item['Phường xã'] !== wardVal) return false;
+
+                if (kvVal) {
+                    const cleanStreet = street.replace(/\s+/g, '');
+                    const cleanKV = kvVal.replace(/\s+/g, '');
+                    if (!cleanStreet.includes(cleanKV)) return false;
+                }
+
+                if (streetVal && item['Tên đường'] !== streetVal) return false;
+
+                if (keyword) {
+                    const matchText = `${chuHo} ${hsct} ${street} ${nhanKhau}`;
+                    if (!matchText.includes(keyword)) return false;
+                }
+
+                return true;
+            });
+
+            renderTable(filtered);
+            updateDashboard(filtered);
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('dataTableBody');
+            document.getElementById('tableCount').innerText = data.length;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-medium"><i class="fa-solid fa-folder-open text-3xl mb-2 block"></i> Không tìm thấy dữ liệu phù hợp</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = data.map((item, index) => {
+                const realIndex = globalData.indexOf(item);
+                return `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="py-3 px-4 font-medium text-slate-500">${index + 1}</td>
+                        <td class="py-3 px-4 font-semibold text-indigo-600">${item['Số HSCT'] || ''}</td>
+                        <td class="py-3 px-4 font-bold text-slate-900">${item['Chủ hộ'] || ''}</td>
+                        <td class="py-3 px-4 text-slate-700">${item['Tên đường'] || ''}</td>
+                        <td class="py-3 px-4 text-slate-600 text-xs">${item['Phường xã'] || ''}</td>
+                        <td class="py-3 px-4 text-slate-700">
+                            <span class="inline-block bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-xs font-semibold mr-1">${item['Nhân khẩu trong hộ'] || 'Không có'}</span>
+                            <span class="text-xs text-slate-400">(${item['Quan hệ\n chủ hộ'] || item['Quan hệ chủ hộ'] || 'Chủ hộ'})</span>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="openEditModal(${realIndex})" class="bg-amber-50 text-amber-600 hover:bg-amber-100 p-2 rounded-lg transition" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteHousehold(${realIndex})" class="bg-rose-50 text-rose-600 hover:bg-rose-100 p-2 rounded-lg transition" title="Xóa"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateDashboard(currentData) {
+            const totalHh = currentData.length;
+            const totalMembers = currentData.filter(i => i['Nhân khẩu trong hộ']).length;
+            const wards = new Set(currentData.map(i => i['Phường xã']).filter(Boolean)).size;
+            
+            const kvSet = new Set();
+            currentData.forEach(i => {
+                const street = (i['Tên đường'] || '').toUpperCase();
+                for (let k = 1; k <= 12; k++) {
+                    if (street.includes(`KV${k}`) || street.includes(`KV ${k}`)) {
+                        kvSet.add(`KV${k}`);
+                    }
+                }
+            });
+
+            document.getElementById('statTotalHouseholds').innerText = totalHh.toLocaleString();
+            document.getElementById('statTotalMembers').innerText = totalMembers.toLocaleString();
+            document.getElementById('statTotalWards').innerText = wards;
+            document.getElementById('statTotalKV').innerText = kvSet.size || '0';
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').innerText = 'Thêm Hộ Dân Mới';
+            document.getElementById('editIndex').value = '-1';
+            document.getElementById('inputHsct').value = '';
+            document.getElementById('inputChuHo').value = '';
+            document.getElementById('inputDuong').value = '';
+            document.getElementById('inputNhanKhau').value = '';
+            document.getElementById('householdModal').classList.remove('hidden');
+        }
+
+        function openEditModal(index) {
+            const item = globalData[index];
+            document.getElementById('modalTitle').innerText = 'Chỉnh Sửa Thông Tin Hộ Dân';
+            document.getElementById('editIndex').value = index;
+            document.getElementById('inputHsct').value = item['Số HSCT'] || '';
+            document.getElementById('inputChuHo').value = item['Chủ hộ'] || '';
+            document.getElementById('inputDuong').value = item['Tên đường'] || '';
+            document.getElementById('inputPhuong').value = item['Phường xã'] || '';
+            document.getElementById('inputNhanKhau').value = item['Nhân khẩu trong hộ'] || '';
+            document.getElementById('householdModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('householdModal').classList.add('hidden');
+        }
+
+        function saveHousehold() {
+            const index = parseInt(document.getElementById('editIndex').value);
+            const hsct = document.getElementById('inputHsct').value.trim();
+            const chuHo = document.getElementById('inputChuHo').value.trim();
+            const duong = document.getElementById('inputDuong').value.trim();
+            const phuong = document.getElementById('inputPhuong').value.trim();
+            const nhanKhau = document.getElementById('inputNhanKhau').value.trim();
+
+            if (!chuHo) {
+                alert('Vui lòng nhập tên chủ hộ!');
+                return;
+            }
+
+            const newItem = {
+                "Số HSCT": hsct,
+                "Phường xã": phuong,
+                "Chủ hộ": chuHo,
+                "Tên đường": duong,
+                "Nhân khẩu trong hộ": nhanKhau,
+                "Quan hệ chủ hộ": "Thành viên"
+            };
+
+            if (index === -1) {
+                globalData.unshift(newItem);
+            } else {
+                globalData[index] = newItem;
+            }
+
+            saveToLocalStorage();
+            populateDropdowns();
+            filterData();
+            closeModal();
+        }
+
+        function deleteHousehold(index) {
+            if (confirm('Bạn có chắc chắn muốn xóa hộ dân này khỏi danh sách không?')) {
+                globalData.splice(index, 1);
+                saveToLocalStorage();
+                populateDropdowns();
+                filterData();
+            }
+        }
+
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    if (json && json.length > 0) {
+                        globalData = json;
+                        saveToLocalStorage();
+                        populateDropdowns();
+                        filterData();
+                        alert(`Đã tải lên thành công ${json.length} bản ghi vào hệ thống!`);
+                    } else {
+                        alert('File Excel trống hoặc sai định dạng!');
+                    }
+                } catch(err) {
+                    alert('Lỗi đọc file Excel: ' + err.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function exportExcel() {
+            if (globalData.length === 0) {
+                alert('Không có dữ liệu để xuất!');
+                return;
+            }
+            const worksheet = XLSX.utils.json_to_sheet(globalData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Danh_sach_ho_dan");
+            XLSX.writeFile(workbook, "QuanLyDiaBan_CapNhat.xlsx");
+        }
+    </script>
 </body>
 </html>
