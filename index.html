@@ -11,18 +11,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Thư viện mã hóa CryptoJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- Thư viện vẽ mã QR -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Thư viện xử lý TOTP (Google Authenticator) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/otplib/12.0.1/otplib-browser.min.js"></script>
     <style>
         #map { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
-        #qrcode-container canvas, #qrcode-container img {
-            width: 200px !important;
-            height: 200px !important;
-            display: block;
-            margin: 0 auto;
-        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
@@ -37,6 +29,7 @@
             <p class="text-xs text-slate-400 mb-4">Quét mã QR bên dưới bằng ứng dụng Google Authenticator</p>
             
             <div class="mb-4 bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col items-center">
+                <!-- Thẻ chứa mã QR to rõ -->
                 <div id="qrcode-container" class="bg-white p-3 rounded-lg mb-3 shadow-inner flex items-center justify-center"></div>
                 <p class="text-xs text-slate-400">Hoặc nhập mã khóa thủ công:</p>
                 <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold text-sm bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 block mt-1 tracking-wider"></code>
@@ -209,8 +202,8 @@
     <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
         const authenticator = window.otplib.authenticator;
-        const STORAGE_SECRET_KEY = "app_totp_secret_key_v6";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v6";
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v7";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v7";
 
         let currentSecretKey = "";
         let appData = { households: [] };
@@ -275,18 +268,11 @@
 
             currentSecretKey = secret;
 
-            // Render mã QR kích thước chuẩn 200x200
+            // Hiển thị mã QR cực lớn qua API chuẩn trực tiếp (kích thước 220x220)
             const otpauth = authenticator.keyuri("QuanLyHoDan", "QuanLyDiaBan", secret);
             const qrContainer = document.getElementById("qrcode-container");
-            qrContainer.innerHTML = "";
-            new QRCode(qrContainer, { 
-                text: otpauth, 
-                width: 200, 
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
+            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauth)}" alt="QR Code 2FA" width="220" height="220" class="rounded-md">`;
+            
             document.getElementById("manual-secret").innerText = secret;
 
             const verifyBtn = document.getElementById("verify-btn");
