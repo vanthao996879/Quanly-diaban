@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu - Bảo Mật Google Authenticator</title>
+    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu - Phân Cấp Thông Minh</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS (XLSX) để đọc/xuất file Excel -->
@@ -80,7 +80,7 @@
                     <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp chuẩn 103 xã/phường & Khoanh vùng GPS.</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp bộ lọc phân cấp (Phường -> Khu vực/Ấp/Khóm -> Nhà).</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
@@ -97,7 +97,7 @@
             </div>
         </header>
 
-        <!-- Thống kê nhanh & Bộ lọc nhanh khoanh vùng -->
+        <!-- Thống kê nhanh & Bộ lọc phân cấp 3 cấp thông minh -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
                 <p class="text-gray-400 text-xs">Tổng số Nhân khẩu</p>
@@ -107,22 +107,30 @@
                 <p class="text-gray-400 text-xs">Tổng số Hộ gia đình</p>
                 <h3 id="statHoGiaDinh" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
             </div>
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow md:col-span-2 flex flex-col justify-between">
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow md:col-span-2 flex flex-col justify-between space-y-2">
                 <div class="flex justify-between items-center">
-                    <p class="text-gray-400 text-xs">Khoanh Vùng Nhanh (Phường, KDC & Khu Vực)</p>
-                    <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu dân cư</span>
+                    <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Phân Cấp Thông Minh</p>
+                    <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu</span>
                 </div>
-                <select id="filterXaPhuong" onchange="locTheoXaPhuong()" class="mt-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                    <option value="">-- Tất cả Phường / Khu Vực (KDC) --</option>
-                </select>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <!-- Cấp 1: Phường / Xã -->
+                    <select id="filterXaPhuong" onchange="chonPhuongXa()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <option value="">-- 1. Chọn Phường / Xã --</option>
+                    </select>
+                    <!-- Cấp 2: Khu Vực / Ấp / Khóm -->
+                    <select id="filterKhuVuc" onchange="chonKhuVuc()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         <!-- Bảng danh sách Hộ gia đình -->
         <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
-                <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Gia Đình (Gom nhóm thông minh & GPS)</h2>
-                <input type="text" id="searchInput" placeholder="Tìm kiếm theo chủ hộ, KDC 91B, KV7, HSCT..." onkeyup="timKiemHoGiaDinh()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
+                <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Gia Đình & Tìm Kiếm Nhà Cụ Thể</h2>
+                <!-- Cấp 3: Tìm kiếm nhà / chủ hộ / đường -->
+                <input type="text" id="searchInput" placeholder="3. Tìm tên chủ hộ, số nhà, đường Trần Hoàng Na..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
@@ -130,8 +138,8 @@
                         <tr class="bg-gray-700 text-gray-200">
                             <th class="p-2.5 border-b border-gray-600">STT</th>
                             <th class="p-2.5 border-b border-gray-600">Số HSCT</th>
-                            <th class="p-2.5 border-b border-gray-600">Chủ Hộ</th>
-                            <th class="p-2.5 border-b border-gray-600">Địa Chỉ Thường Trú</th>
+                            <th class="p-2.5 border-b border-gray-600">Chủ Hộ (Nhà)</th>
+                            <th class="p-2.5 border-b border-gray-600">Địa Chỉ Thường Trú & Khu Vực</th>
                             <th class="p-2.5 border-b border-gray-600">Tọa Độ GPS</th>
                             <th class="p-2.5 border-b border-gray-600 text-center">Thành Viên</th>
                             <th class="p-2.5 border-b border-gray-600 text-center">Thao Tác</th>
@@ -139,7 +147,7 @@
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-700">
                         <tr>
-                            <td colspan="7" class="text-center p-6 text-gray-400">Vui lòng đăng nhập và bấm "Nhập Excel" để tải dữ liệu.</td>
+                            <td colspan="7" class="text-center p-6 text-gray-400">Vui lòng đăng nhập và bấm "Nhập Excel" để tải dữ liệu dân cư.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -163,13 +171,13 @@
                             <input type="text" id="editChuHo" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-1">Địa chỉ thường trú / Khoanh vùng:</label>
+                            <label class="text-gray-400 block mb-1">Địa chỉ thường trú / Khu vực:</label>
                             <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
                             <label class="text-gray-400 block mb-1">Tọa độ GPS (Vĩ độ, Kinh độ):</label>
                             <div class="flex gap-2">
-                                <input type="text" id="editGps" placeholder="VD: 10.762622, 106.660172" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full font-mono focus:outline-none focus:border-blue-500">
+                                <input type="text" id="editGps" placeholder="VD: 10.033198, 105.782806" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full font-mono focus:outline-none focus:border-blue-500">
                                 <button onclick="layGpsHienTai()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded font-medium whitespace-nowrap shadow">📍 Lấy GPS Thiết Bị</button>
                             </div>
                         </div>
@@ -215,15 +223,8 @@
         let currentUser = { email: "", role: "" };
         let tamEmailDangNhap = "";
 
-        const danhSach103XaPhuongMau = [
-            "Phường Ninh Kiều", "Phường Cái Khế", "Phường Tân An", "Phường An Bình", 
-            "Phường Thới An Đông", "Phường Bình Thủy", "Phường Long Tuyền", "Phường Cái Răng", 
-            "Phường Hưng Phú", "Phường Ô Môn", "Phường Châu Văn Liêm", "Phường Thới An", 
-            "Phường Thới Hòa", "Phường Thới Thạnh", "Phường Thốt Nốt", "Phường Thới Long", 
-            "Phường Thuận Hưng", "Phường Trung Nhứt", "Phường Phước Thới", "Phường Tân Lộc", 
-            "Xã Phong Điền", "Xã Nhơn Ái", "Xã Giai Hòa", "Xã Thới An Hội", "Xã Kế Sách", 
-            "Xã An Lạc Thôn", "Xã Nhơn Mỹ", "Xã Long Phú", "Xã Tân Thạnh", "Xã Đại Ngãi"
-        ];
+        // Dữ liệu phân cấp ánh xạ tự động từ địa chỉ
+        let duLieuPhanCap = {}; // { phuong: Set([khuVuc1, khuVuc2]) }
 
         const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         function base32ToBytes(base32) {
@@ -265,11 +266,11 @@
                 currentUser = JSON.parse(savedUser);
                 kichHoatGiaoDienChinh();
             }
-            khoiTaoBoLocXa();
             const savedData = localStorage.getItem("danhSachHoGiaDinhCache");
             if (savedData) {
                 danhSachHoGiaDinh = JSON.parse(savedData);
                 if (danhSachHoGiaDinh.length > 0) {
+                    phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
                 }
             }
@@ -346,8 +347,6 @@
             badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900/80 text-red-300 border border-red-700";
             badge.innerText = "Quyền: Admin (Toàn quyền)";
             document.getElementById('btnUploadExcelContainer').style.display = 'flex';
-            
-            khoiTaoBoLocXa();
         }
 
         function dangXuat() {
@@ -358,23 +357,124 @@
             document.getElementById('otpCodeInput').value = '';
         }
 
-        function khoiTaoBoLocXa(danhSachXaTuFile = []) {
-            const select = document.getElementById('filterXaPhuong');
-            let currentValue = select.value;
-            
-            let tatCaXa = new Set([...danhSach103XaPhuongMau, ...danhSachXaTuFile]);
-            
-            select.innerHTML = '<option value="">-- Tất cả Phường / Khu Vực (KDC) --</option>';
-            Array.from(tatCaXa).sort().forEach(xa => {
-                let opt = document.createElement('option');
-                opt.value = xa;
-                opt.textContent = xa;
-                select.appendChild(opt);
-            });
-            select.value = currentValue;
+        // TỰ ĐỘNG CHUẨN HÓA KV6 THÀNH KV7 HOẶC BỔ SUNG ĐƯỜNG TRẦN HOÀNG NA
+        function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr) {
+            let full = diaChiGoc;
+            if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) {
+                full = full ? `${full}, ${phuongStr}` : phuongStr;
+            }
+
+            let lower = full.toLowerCase();
+
+            // Ánh xạ thông minh KV6 -> KV7 hoặc gán Trần Hoàng Na vào KV7 / KDC 91B
+            if (lower.includes("trần hoàng na") || lower.includes("tran hoang na")) {
+                if (lower.includes("kv 6") || lower.includes("kv6")) {
+                    full = full.replace(/kv\s*6/gi, "KV7").replace(/khu vực\s*6/gi, "Khu vực 7");
+                } else if (!lower.includes("kv7") && !lower.includes("kv 7") && !lower.includes("khu vực 7")) {
+                    full += " - KV7 (KDC 91B)";
+                }
+            }
+
+            return full;
         }
 
-        // TỰ ĐỘNG NHẬN DIỆN & KHOANH VÙNG TIỂU KHU VỰC (KV, KDC) TỪ FILE EXCEL
+        // PHÂN TÍCH DỮ LIỆU ĐỂ TẠO CẤP 1 (PHƯỜNG) VÀ CẤP 2 (KHU VỰC / ẤP / KHÓM)
+        function phanTichDuLieuPhanCap() {
+            duLieuPhanCap = {};
+            danhSachHoGiaDinh.forEach(ho => {
+                let diaChi = ho.diaChi;
+                // Nhận diện phường
+                let phuongMatch = diaChi.match(/(Phường\s+[\w\s]+|Xã\s+[\w\s]+|Thị trấn\s+[\w\s]+)/gi);
+                let phuong = phuongMatch ? phuongMatch[phuongMatch.length - 1].trim() : "Khu vực chung";
+
+                // Nhận diện khu vực / ấp / khóm / KDC
+                let kvMatches = diaChi.match(/(KV\s*\d+|Khu vực\s*\d+|Ấp\s*[\w\s\d]+|Khóm\s*[\w\s\d]+|KDC\s*[\w\s\d]+)/gi);
+                
+                if (!duLieuPhanCap[phuong]) {
+                    duLieuPhanCap[phuong] = new Set();
+                }
+
+                if (kvMatches) {
+                    kvMatches.forEach(kv => duLieuPhanCap[phuong].add(kv.trim()));
+                } else {
+                    duLieuPhanCap[phuong].add("Khu vực khác");
+                }
+            });
+
+            // Đổ dữ liệu vào ô chọn Cấp 1 (Phường/Xã)
+            const selectXa = document.getElementById('filterXaPhuong');
+            selectXa.innerHTML = '<option value="">-- 1. Chọn Phường / Xã --</option>';
+            Object.keys(duLieuPhanCap).sort().forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = p;
+                selectXa.appendChild(opt);
+            });
+
+            // Reset ô Cấp 2
+            document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
+        }
+
+        // Khi người dùng chọn Cấp 1 (Phường/Xã) -> Tự động cập nhật danh sách Cấp 2 (Khu vực/Ấp/Khóm)
+        function chonPhuongXa() {
+            const phuongChon = document.getElementById('filterXaPhuong').value;
+            const selectKv = document.getElementById('filterKhuVuc');
+            
+            selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
+
+            if (phuongChon && duLieuPhanCap[phuongChon]) {
+                Array.from(duLieuPhanCap[phuongChon]).sort().forEach(kv => {
+                    let opt = document.createElement('option');
+                    opt.value = kv;
+                    opt.textContent = kv;
+                    selectKv.appendChild(opt);
+                });
+            }
+
+            thucHienLocVaTimKiem();
+        }
+
+        // Khi người dùng chọn Cấp 2 (Khu vực/Ấp/Khóm)
+        function chonKhuVuc() {
+            thucHienLocVaTimKiem();
+        }
+
+        // Cấp 3: Tìm kiếm nhà / chủ hộ
+        function timKiemNha() {
+            thucHienLocVaTimKiem();
+        }
+
+        // HÀM LỌC TỔNG HỢP CẢ 3 CẤP (Phường -> Khu vực -> Nhà/Chủ hộ)
+        function thucHienLocVaTimKiem() {
+            const phuongVal = document.getElementById('filterXaPhuong').value.toLowerCase();
+            const khuVucVal = document.getElementById('filterKhuVuc').value.toLowerCase();
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = danhSachHoGiaDinh.filter(ho => {
+                let diaChiLower = ho.diaChi.toLowerCase();
+                let chuHoLower = ho.chuHo.toLowerCase();
+                let hsctLower = ho.hsct.toLowerCase();
+
+                // Điều kiện Cấp 1: Phường
+                let matchPhuong = !phuongVal || diaChiLower.includes(phuongVal);
+                
+                // Điều kiện Cấp 2: Khu vực / Ấp / Khóm
+                let matchKhuVuc = !khuVucVal || diaChiLower.includes(khuVucVal);
+
+                // Điều kiện Cấp 3: Tìm nhà / chủ hộ / từ khóa
+                let matchKeyword = !keyword || 
+                    chuHoLower.includes(keyword) || 
+                    hsctLower.includes(keyword) || 
+                    diaChiLower.includes(keyword) ||
+                    ho.thanhVien.some(tv => tv.hoTen.toLowerCase().includes(keyword));
+
+                return matchPhuong && matchKhuVuc && matchKeyword;
+            });
+
+            renderBangHo(filtered);
+        }
+
+        // NHẬP FILE EXCEL & TỰ ĐỘNG XỬ LÝ
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -394,7 +494,7 @@
                     }
 
                     let headerRowIndex = 0;
-                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, diaChi: 5, phuongXa: -1, chuHo: 7 };
+                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, diaChi: 5, phuongXa: -1, chuHo: 7, gps: -1 };
 
                     for (let i = 0; i < Math.min(5, rows.length); i++) {
                         let r = rows[i];
@@ -409,11 +509,11 @@
                             if (text.includes('địa chỉ') && !text.includes('phường')) { mapping.diaChi = j; headerRowIndex = i; }
                             if (text.includes('phường') || text.includes('xã')) { mapping.phuongXa = j; headerRowIndex = i; }
                             if (text.includes('chủ hộ')) { mapping.chuHo = j; headerRowIndex = i; }
+                            if (text.includes('gps') || text.includes('tọa độ')) { mapping.gps = j; headerRowIndex = i; }
                         }
                     }
 
                     let rawNhanKhau = [];
-                    let khuVucSet = new Set();
 
                     for (let i = headerRowIndex + 1; i < rows.length; i++) {
                         const r = rows[i];
@@ -427,34 +527,15 @@
                         let diaChiGoc = String(r[mapping.diaChi] || '').trim();
                         let phuongStr = mapping.phuongXa !== -1 ? String(r[mapping.phuongXa] || '').trim() : '';
                         let chuHo = String(r[mapping.chuHo] || '').trim();
+                        let gpsExcel = mapping.gps !== -1 ? String(r[mapping.gps] || '').trim() : '';
 
-                        let diaChiFull = diaChiGoc;
-                        if (phuongStr && !diaChiGoc.toLowerCase().includes(phuongStr.toLowerCase())) {
-                            diaChiFull = diaChiGoc ? `${diaChiGoc}, ${phuongStr}` : phuongStr;
-                        }
+                        // Gọi hàm chuẩn hóa tự động KV6 -> KV7 hoặc thêm Trần Hoàng Na
+                        let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr);
 
                         if (hoTen && hoTen !== 'undefined' && !hoTen.toLowerCase().includes('họ và tên')) {
-                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi: diaChiFull, chuHo });
-                            
-                            // Tự động quét và khoanh vùng các cụm từ KDC, KV trong địa chỉ (VD: KDC 91B, KV7, v.v.)
-                            if (diaChiFull) {
-                                // Tìm kiếm các mẫu KDC hoặc KV
-                                let matchKdc = diaChiFull.match(/(KDC\s*[\w\d]+)/gi);
-                                if (matchKdc) matchKdc.forEach(k => khuVucSet.add(k.trim()));
-
-                                let matchKv = diaChiFull.match(/(KV\s*\d+|Khu vực\s*\d+|Kv\s*\d+)/gi);
-                                if (matchKv) matchKv.forEach(k => khuVucSet.add(k.trim()));
-
-                                // Thêm cả Phường Tân An nếu có
-                                if (diaChiFull.toLowerCase().includes("tân an")) {
-                                    khuVucSet.add("Phường Tân An");
-                                }
-                            }
-                            if (phuongStr) khuVucSet.add(phuongStr);
+                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi: diaChiFull, chuHo, gpsExcel });
                         }
                     }
-
-                    khoiTaoBoLocXa(Array.from(khuVucSet));
 
                     let mapHo = {};
                     rawNhanKhau.forEach(nk => {
@@ -464,10 +545,14 @@
                                 hsct: nk.hsct || 'Chưa có',
                                 chuHo: nk.chuHo || nk.hoTen,
                                 diaChi: nk.diaChi || 'Chưa cập nhật',
-                                gps: '',
+                                gps: nk.gpsExcel || '',
                                 hinhAnh: '',
                                 thanhVien: []
                             };
+                        } else {
+                            if (!mapHo[key].gps && nk.gpsExcel) {
+                                mapHo[key].gps = nk.gpsExcel;
+                            }
                         }
                         mapHo[key].thanhVien.push(nk);
                     });
@@ -475,8 +560,9 @@
                     danhSachHoGiaDinh = Object.values(mapHo);
                     localStorage.setItem("danhSachHoGiaDinhCache", JSON.stringify(danhSachHoGiaDinh));
 
+                    phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert(`Đã tự động khoanh vùng khu vực (KDC, KV...) và tải thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
+                    alert(`Đã chuẩn hóa thông tin (KV7/Trần Hoàng Na) và tải thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
                 } catch (err) {
                     console.error(err);
                     alert("Lỗi đọc file Excel: " + err.message);
@@ -493,23 +579,24 @@
 
             document.getElementById('statNhanKhau').innerText = tongNhanKhau;
             document.getElementById('statHoGiaDinh').innerText = danhSachHoGiaDinh.length;
-            document.getElementById('statTrangThai').innerText = "Đã khoanh vùng & tải thành công";
+            document.getElementById('statTrangThai').innerText = "Đã phân cấp & sẵn sàng tra cứu";
             
             renderBangHo(danhSachHoGiaDinh);
         }
 
         function xoaDuLieuExcel() {
-            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu dân cư đã nhập để tải file mới không?")) {
+            if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu để tải file mới không?")) {
                 danhSachHoGiaDinh = [];
+                duLieuPhanCap = {};
                 localStorage.removeItem("danhSachHoGiaDinhCache");
                 document.getElementById('statNhanKhau').innerText = "0";
                 document.getElementById('statHoGiaDinh').innerText = "0";
                 document.getElementById('statTrangThai').innerText = "Đã xóa dữ liệu";
-                document.getElementById('filterXaPhuong').value = "";
+                document.getElementById('filterXaPhuong').innerHTML = '<option value="">-- 1. Chọn Phường / Xã --</option>';
+                document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
                 document.getElementById('searchInput').value = "";
                 renderBangHo([]);
-                khoiTaoBoLocXa();
-                alert("Đã xóa sạch dữ liệu cũ. Bạn có thể chọn file Excel mới.");
+                alert("Đã xóa sạch dữ liệu cũ.");
             }
         }
 
@@ -518,11 +605,16 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp với khu vực này.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy nhà / hộ gia đình phù hợp với bộ lọc phân cấp này.</td></tr>`;
                 return;
             }
 
             data.forEach((ho, index) => {
+                let gpsHtml = '<span class="text-gray-500">Chưa có GPS</span>';
+                if (ho.gps) {
+                    gpsHtml = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ho.gps)}" target="_blank" class="text-emerald-400 hover:underline font-mono flex items-center gap-1" title="Xem vị trí trên Google Maps">📍 ${ho.gps}</a>`;
+                }
+
                 const row = document.createElement('tr');
                 row.className = "hover:bg-gray-700/50 transition";
                 row.innerHTML = `
@@ -530,10 +622,10 @@
                     <td class="p-2.5 border-b border-gray-700 text-blue-300 font-mono">${ho.hsct}</td>
                     <td class="p-2.5 border-b border-gray-700 font-semibold text-white">${ho.chuHo}</td>
                     <td class="p-2.5 border-b border-gray-700 text-gray-300">${ho.diaChi}</td>
-                    <td class="p-2.5 border-b border-gray-700 font-mono text-emerald-400">${ho.gps || '<span class="text-gray-500">Chưa có GPS</span>'}</td>
+                    <td class="p-2.5 border-b border-gray-700">${gpsHtml}</td>
                     <td class="p-2.5 border-b border-gray-700 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full font-bold">${ho.thanhVien.length} người</span></td>
                     <td class="p-2.5 border-b border-gray-700 text-center">
-                        <button onclick="xemChiTiet(${index})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded transition font-medium shadow">👁️ Xem / Gán GPS</button>
+                        <button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded transition font-medium shadow">👁️ Xem / Gán GPS</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -623,31 +715,10 @@
             danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
 
             localStorage.setItem("danhSachHoGiaDinhCache", JSON.stringify(danhSachHoGiaDinh));
+            phanTichDuLieuPhanCap();
             renderBangHo(danhSachHoGiaDinh);
             dongModal();
-            alert("Đã cập nhật tọa độ GPS và thông tin hộ thành công!");
-        }
-
-        function locTheoXaPhuong() {
-            const selectedVal = document.getElementById('filterXaPhuong').value.toLowerCase();
-            if (!selectedVal) {
-                renderBangHo(danhSachHoGiaDinh);
-                return;
-            }
-            const filtered = danhSachHoGiaDinh.filter(ho => ho.diaChi.toLowerCase().includes(selectedVal));
-            renderBangHo(filtered);
-        }
-
-        function timKiemHoGiaDinh() {
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = danhSachHoGiaDinh.filter(ho => 
-                ho.chuHo.toLowerCase().includes(keyword) ||
-                ho.hsct.toLowerCase().includes(keyword) ||
-                ho.diaChi.toLowerCase().includes(keyword) ||
-                ho.gps.toLowerCase().includes(keyword) ||
-                ho.thanhVien.some(tv => tv.hoTen.toLowerCase().includes(keyword))
-            );
-            renderBangHo(filtered);
+            alert("Đã cập nhật thông tin hộ thành công!");
         }
 
         function xuatBaoCaoThongKe() {
@@ -665,7 +736,7 @@
                         "Ngày Sinh": tv.ngaySinh,
                         "Giới Tính": tv.gioiTinh,
                         "Quan Hệ Với Chủ Hộ": tv.quanHe,
-                        "Địa Chỉ Thường Trú / Khoanh Vùng": ho.diaChi,
+                        "Địa Chỉ Thường Trú & Phân Cấp": ho.diaChi,
                         "Tọa Độ GPS": ho.gps,
                         "Chủ Hộ": ho.chuHo
                     });
@@ -675,7 +746,7 @@
             const worksheet = XLSX.utils.json_to_sheet(flatData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoDanCu");
-            XLSX.writeFile(workbook, "Bao_Cao_Quan_Ly_Dan_Cu_GPS.xlsx");
+            XLSX.writeFile(workbook, "Bao_Cao_Quan_Ly_Dan_Cu_Phan_Cap.xlsx");
         }
     </script>
 </body>
