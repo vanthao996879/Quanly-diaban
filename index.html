@@ -16,20 +16,22 @@
         <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🔒</div>
-                <h2 class="text-xl font-bold text-white">Bảo Mật Xác Thực Hệ Thống</h2>
-                <p class="text-xs text-gray-400">Nhập mã xác thực từ ứng dụng Authenticator hoặc Mã PIN quản trị (Mặc định: <span class="text-blue-400 font-mono">888899</span>)</p>
+                <h2 class="text-xl font-bold text-white">Xác Thực Bảo Mật Authenticator</h2>
+                <p class="text-xs text-gray-400">Mã xác thực tự động thay đổi bên dưới hoặc dùng mã PIN quản trị viên:</p>
+                <div id="dynamicAuthCode" class="bg-gray-900 text-blue-400 font-mono tracking-widest text-sm py-2 px-4 rounded border border-gray-700 select-all font-bold">W7NJ4CWSNVMQZ4ZE7UEVXWUFY3PYPD4S</div>
+                <button onclick="taoMaAuthMoi()" class="text-xs text-blue-400 hover:underline">🔄 Tạo mã xác thực mới</button>
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Mã xác thực (6 chữ số):</label>
-                    <input type="password" id="authCodeInput" maxlength="6" placeholder="******" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-center tracking-widest text-lg font-mono text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã xác thực hoặc PIN:</label>
+                    <input type="text" id="authCodeInput" placeholder="Nhập mã xác thực..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-center tracking-wider text-sm font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <button onclick="kiemTraDangNhap()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition shadow">Xác Thực Đăng Nhập</button>
             </div>
         </div>
     </div>
 
-    <!-- GIAO DIỆN CHÍNH (Ẩn khi chưa đăng nhập) -->
+    <!-- GIAO DIỆN CHÍNH -->
     <div id="mainApp" class="container mx-auto space-y-6 max-w-7xl hidden">
         
         <!-- Tiêu đề hệ thống -->
@@ -46,7 +48,7 @@
                 <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
                     <span>📊 Xuất Excel / Báo Cáo</span>
                 </button>
-                <button onclick="dangXuat()" class="bg-red-600/80 hover:bg-red-600 px-3 py-2 rounded-lg text-xs font-medium transition shadow">🔒 Khóa</button>
+                <button onclick="dangXuat()" class="bg-red-600/80 hover:bg-red-600 px-3 py-2 rounded-lg text-xs font-medium transition shadow">🔒 Khóa Phiên</button>
             </div>
         </header>
 
@@ -108,7 +110,6 @@
                 <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto space-y-6 flex-grow text-xs">
-                <!-- Thông tin chung, GPS & Ảnh hộ -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-900 p-4 rounded-lg border border-gray-700">
                     <div class="md:col-span-2 space-y-3">
                         <p><strong class="text-gray-400">Số HSCT:</strong> <span id="modalHsct" class="font-mono text-blue-300"></span></p>
@@ -138,7 +139,6 @@
                     </div>
                 </div>
 
-                <!-- Danh sách nhân khẩu trong hộ -->
                 <div>
                     <h4 class="font-semibold text-gray-300 mb-2">Danh sách nhân khẩu trong hộ:</h4>
                     <div class="overflow-x-auto border border-gray-700 rounded-lg">
@@ -151,9 +151,7 @@
                                     <th class="p-2">Quan hệ với chủ hộ</th>
                                 </tr>
                             </thead>
-                            <tbody id="modalNhanKhauList" class="divide-y divide-gray-700">
-                                <!-- Render động -->
-                            </tbody>
+                            <tbody id="modalNhanKhauList" class="divide-y divide-gray-700"></tbody>
                         </table>
                     </div>
                 </div>
@@ -169,13 +167,33 @@
     <script>
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
+        let currentValidAuthCode = "W7NJ4CWSNVMQZ4ZE7UEVXWUFY3PYPD4S";
 
-        // Danh sách mẫu 103 xã/phường (sau sáp nhập) có thể tự động mở rộng từ file Excel
         const danhSach103XaPhuongMau = [
             "Phường An Cư", "Phường An Bình", "Phường An Khánh", "Phường An Lạc", "Phường An Phú",
-            "Phường Tân An", "Phường Tân Lập", "Phường Tân Hưng", "Phường Thới Bình", "Phường Trà Nóc",
-            "Xã Thạnh Mỹ", "Xã Thạnh Lợi", "Xã Trung Hưng", "Xã Đông Thuận", "Xã Vĩnh Thạnh"
+            "Phường Tân An", "Phường Tân Lập", "Phường Tân Hưng", "Phường Thới Bình", "Phường Trà Nóc"
         ];
+
+        window.onload = function() {
+            // Kiểm tra trạng thái đã đăng nhập lưu trong sessionStorage (giữ nguyên khi chưa thoát ra)
+            if (sessionStorage.getItem("isLoggedIn") === "true") {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                khoiTaoBoLocXa();
+            } else {
+                taoMaAuthMoi();
+            }
+        };
+
+        function taoMaAuthMoi() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let result = "";
+            for (let i = 0; i < 32; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            currentValidAuthCode = result;
+            document.getElementById('dynamicAuthCode').innerText = result;
+        }
 
         function khoiTaoBoLocXa() {
             const select = document.getElementById('filterXaPhuong');
@@ -190,19 +208,22 @@
 
         function kiemTraDangNhap() {
             const code = document.getElementById('authCodeInput').value.trim();
-            if (code === "888899") {
+            if (code === currentValidAuthCode || code === "888899") {
+                sessionStorage.setItem("isLoggedIn", "true");
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
                 khoiTaoBoLocXa();
             } else {
-                alert("Mã xác thực Authenticator/PIN không chính xác! (Mặc định: 888899)");
+                alert("Mã xác thực Authenticator không chính xác! Hãy kiểm tra lại mã hoặc bấm tạo mã mới.");
             }
         }
 
         function dangXuat() {
+            sessionStorage.removeItem("isLoggedIn");
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('authCodeInput').value = '';
+            taoMaAuthMoi();
         }
 
         function nhapFileExcel(event) {
@@ -244,13 +265,10 @@
 
                         if (hoTen && hoTen !== 'undefined' && !hoTen.toLowerCase().includes('họ và tên')) {
                             rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi, gps, chuHo });
-                            if (diaChi) {
-                                xaSet.add(diaChi);
-                            }
+                            if (diaChi) xaSet.add(diaChi);
                         }
                     }
 
-                    // Cập nhật bộ lọc xã phường động từ dữ liệu thực tế file Excel
                     const select = document.getElementById('filterXaPhuong');
                     select.innerHTML = '<option value="">-- Tất cả khu vực / Xã Phường --</option>';
                     Array.from(xaSet).sort().forEach(xa => {
@@ -260,7 +278,6 @@
                         select.appendChild(opt);
                     });
 
-                    // Gom nhóm hộ khẩu thông minh
                     let mapHo = {};
                     rawNhanKhau.forEach(nk => {
                         let key = nk.hsct ? nk.hsct : (nk.chuHo ? nk.chuHo : nk.diaChi);
