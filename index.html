@@ -21,7 +21,7 @@
             <div class="text-center space-y-2">
                 <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🔐</div>
                 <h2 class="text-xl font-bold text-white">Xác Thực Quản Lý Dân Cư</h2>
-                <p class="text-xs text-gray-400">Nhập Gmail của bạn để tiếp tục cấu hình Google Authenticator:</p>
+                <p class="text-xs text-gray-400">Nhập Gmail của bạn để tiếp tục cấu hình Google Authenticator[cite: 4]:</p>
             </div>
 
             <div class="space-y-4">
@@ -40,12 +40,12 @@
             <div class="text-center space-y-2">
                 <div class="bg-emerald-600/20 text-emerald-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-emerald-500/30">🛡️</div>
                 <h2 class="text-xl font-bold text-white">Bảo Mật Google Authenticator</h2>
-                <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span></p>
+                <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span>[cite: 4]</p>
             </div>
 
             <div id="setupAuthSection" class="bg-gray-900 p-5 rounded-xl border border-gray-700 space-y-4 text-center">
                 <p class="text-xs text-amber-400 font-semibold">⚠️ Quét mã QR xác thực thiết lập:</p>
-                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR phóng to bên dưới:</p>
+                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR phóng to bên dưới[cite: 4]:</p>
                 
                 <!-- QR CỰC LỚN (280x280px) -->
                 <div class="flex justify-center bg-white p-4 rounded-xl shadow-inner max-w-[310px] mx-auto border border-gray-600">
@@ -63,7 +63,7 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP gồm 6 chữ số từ ứng dụng Authenticator:</label>
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP gồm 6 chữ số từ ứng dụng Authenticator[cite: 4]:</label>
                     <input type="text" id="otpCodeInput" maxlength="6" placeholder="VD: 482910" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div class="flex gap-3">
@@ -82,7 +82,7 @@
                     <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Đã tích hợp tự động quy đổi KV7.</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Đã tích hợp tự động quy đổi KV7[cite: 4].</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
@@ -153,7 +153,7 @@
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-700">
                         <tr>
-                            <td colspan="8" class="text-center p-6 text-gray-400">Vui lòng đăng nhập và bấm "Nhập Excel" để tải dữ liệu dân cư.</td>
+                            <td colspan="8" class="text-center p-6 text-gray-400">Vui lòng đăng nhập và bấm "Nhập Excel" để tải dữ liệu dân cư[cite: 4].</td>
                         </tr>
                     </tbody>
                 </table>
@@ -425,9 +425,17 @@
         function phanTichDuLieuPhanCap() {
             duLieuPhanCap = {};
             danhSachHoGiaDinh.forEach(ho => {
-                let diaChi = ho.diaChi;
-                let phuongMatch = diaChi.match(/(Phường\s+[\w\s]+|Xã\s+[\w\s]+|Thị trấn\s+[\w\s]+)/gi);
-                let phuong = phuongMatch ? phuongMatch[phuongMatch.length - 1].trim() : "Phường Tân An";
+                let diaChi = ho.diaChi || "";
+                let phuong = "Phường Tân An"; // Mặc định an toàn
+
+                // ĐÃ SỬA: Dùng Regex bắt trọn vẹn tên Phường/Xã có dấu tiếng Việt, không bị cụt chữ đơn lẻ
+                let phuongMatch = diaChi.match(/(Phường\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+|Xã\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+|Thị trấn\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+)/i);
+                if (phuongMatch) {
+                    phuong = phuongMatch[0].split(',')[0].trim();
+                    if (phuong.length <= 8) {
+                        phuong = "Phường Tân An";
+                    }
+                }
                 
                 let kvMatches = diaChi.match(/(KV\s*\d+|Khu vực\s*\d+|Ấp\s*[\w\s\d]+|Khóm\s*[\w\s\d]+)/gi);
                 
@@ -656,7 +664,6 @@
                     gpsHtml = `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ho.gps)}" target="_blank" class="text-emerald-400 hover:underline font-mono flex items-center gap-1" title="Xem vị trí trên Google Maps">📍 ${ho.gps}</a>`;
                 }
 
-                // Hiển thị nhãn ghi chú tình trạng (nếu có)
                 let ghiChuHtml = '<span class="text-gray-500 italic">Bình thường</span>';
                 if (ho.ghiChu && ho.ghiChu.trim() !== '') {
                     ghiChuHtml = `<span class="bg-amber-900/60 text-amber-300 border border-amber-700/50 px-2 py-0.5 rounded text-[11px] font-medium" title="${ho.ghiChu}">${ho.ghiChu}</span>`;
@@ -688,7 +695,7 @@
             document.getElementById('editChuHo').value = ho.chuHo;
             document.getElementById('editDiaChi').value = ho.diaChi;
             document.getElementById('editGps').value = ho.gps;
-            document.getElementById('editGhiChu').value = ho.ghiChu || ''; // Hiển thị ghi chú trong modal
+            document.getElementById('editGhiChu').value = ho.ghiChu || '';
 
             const imgEl = document.getElementById('hoImg');
             const noImgEl = document.getElementById('noImgText');
@@ -762,7 +769,7 @@
             danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = document.getElementById('editDiaChi').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].ghiChu = document.getElementById('editGhiChu').value; // Lưu ghi chú mới
+            danhSachHoGiaDinh[currentSelectedHoIndex].ghiChu = document.getElementById('editGhiChu').value;
 
             localStorage.setItem("danhSachHoGiaDinhCache", JSON.stringify(danhSachHoGiaDinh));
             phanTichDuLieuPhanCap();
