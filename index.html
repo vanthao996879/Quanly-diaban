@@ -81,7 +81,7 @@
         <header class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 gap-4">
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-bold text-blue-400">Quản Lý Địa Bàn Cho CSKV & Bản Đồ GIS</h1>
+                    <h1 class="text-xl font-bold text-blue-400">Quản Lý Địa Bàn Cho CSKV & Bản Đồ Số GIS</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
                 <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền: <span id="userScopeDisplay" class="text-amber-300 font-semibold">Toàn bộ</span>[cite: 4].</p>
@@ -193,7 +193,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-400 mb-1">Khu vực / Địa chỉ liên quan:</label>
-                    <input type="text" id="fbDiaChi" placeholder="VD: Khu Vực 11, Phường Tân An" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+                    <input type="text" id="fbDiaChi" placeholder="VD: Khu Vực 7, Phường Tân An" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
                 </div>
                 <div>
                     <label class="block text-gray-400 mb-1">Nội dung phản hồi / yêu cầu:</label>
@@ -207,7 +207,7 @@
         </div>
     </div>
 
-    <!-- Modal Quản Lý Phân Quyền Cán Bộ (Hỗ trợ Admin và Ban Chỉ Huy phân quyền) -->
+    <!-- Modal Quản Lý Phân Quyền Cán Bộ -->
     <div id="userModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
@@ -226,7 +226,7 @@
                             <option value="chi_huy">Ban Chỉ Huy (Trưởng/Phó)</option>
                             <option value="admin">Admin Tổng</option>
                         </select>
-                        <input type="text" id="newAccScope" placeholder="Phạm vi (VD: Khu Vực 11)" class="bg-gray-800 border border-gray-600 rounded px-2 py-2 text-white sm:col-span-1">
+                        <input type="text" id="newAccScope" placeholder="Phạm vi (VD: Khu Vực 7)" class="bg-gray-800 border border-gray-600 rounded px-2 py-2 text-white sm:col-span-1">
                         <button onclick="luuTaiKhoanPhanQuyen()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded font-medium shadow text-white sm:col-span-1">Lưu</button>
                     </div>
                 </div>
@@ -361,7 +361,7 @@
 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
-        let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 11" };
+        let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
         let tamEmailDangNhap = "";
         let duLieuPhanCap = {}; 
         let mapInstance = null;
@@ -440,11 +440,11 @@
             } else {
                 let danhSachConfigUser = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
                 if (danhSachConfigUser[currentUser.email]) {
-                    currentUser.role = danhSachConfigUser[currentUser.email].role; // 'admin', 'chi_huy', 'can_bo'
+                    currentUser.role = danhSachConfigUser[currentUser.email].role; 
                     currentUser.scope = danhSachConfigUser[currentUser.email].scope;
                 } else {
                     currentUser.role = 'can_bo';
-                    currentUser.scope = 'Khu Vực 11';
+                    currentUser.scope = 'Khu Vực 7';
                 }
             }
         }
@@ -498,7 +498,7 @@
                 return;
             }
 
-            currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 11' };
+            currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7' };
             kiemTraVaGanQuyenThucTe();
 
             sessionStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
@@ -523,13 +523,13 @@
             } else if (currentUser.role === 'chi_huy') {
                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-900/80 text-amber-300 border border-amber-700";
                 badge.innerText = "Quyền: Ban Chỉ Huy (Trưởng/Phó)";
-                document.getElementById('btnQuanLyUser').classList.remove('hidden'); // Ban chỉ huy cũng có quyền phân quyền cán bộ dưới quyền
+                document.getElementById('btnQuanLyUser').classList.remove('hidden');
                 document.getElementById('btnUploadExcelContainer').style.display = 'flex';
             } else {
                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-900/80 text-blue-300 border border-blue-700";
                 badge.innerText = `Cảnh sát khu vực (${currentUser.scope})`;
                 document.getElementById('btnQuanLyUser').classList.add('hidden');
-                document.getElementById('btnUploadExcelContainer').style.display = 'none'; // Cán bộ CSKV chỉ xem và cập nhật địa bàn được phân công
+                document.getElementById('btnUploadExcelContainer').style.display = 'none';
             }
             thucHienLocVaTimKiem();
         }
@@ -615,7 +615,7 @@
         function luuTaiKhoanPhanQuyen() {
             let email = document.getElementById('newAccEmail').value.trim().toLowerCase();
             let role = document.getElementById('newAccRole').value;
-            let scope = document.getElementById('newAccScope').value.trim() || 'Khu Vực 11';
+            let scope = document.getElementById('newAccScope').value.trim() || 'Khu Vực 7';
             
             if (!email) { alert("Vui lòng chọn Gmail cán bộ từ danh sách!"); return; }
             if (email === ADMIN_EMAIL && role !== 'admin') { alert("Không thể hạ quyền Admin Tổng của email gốc!"); return; }
@@ -635,12 +635,26 @@
             moModalQuanLyUser();
         }
 
+        // --- HÀM CHUẨN HÓA ĐỊA CHỈ & KHU VỰC THÔNG MINH (ĐÃ TÍCH HỢP TỰ ĐỘNG NHẬN DIỆN KV7/KP7) ---
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc) {
             let full = diaChiGoc || "";
-            if (!full.toLowerCase().includes("tân an")) {
-                full = full ? `${full}, Phường Tân An` : "Phường Tân An";
+            
+            // Tự động bắt các biến thể viết tắt như kv7, kv 7, khu vực 7, khu pho 7, kp7 để quy về chuẩn
+            const matchKv = full.match(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*(\d+)/i);
+            let khuVucChuan = "Khu Vực 7"; // Mặc định chuẩn file của bạn
+            
+            if (matchKv && matchKv[2]) {
+                khuVucChuan = `Khu Vực ${matchKv[2]}`;
             }
-            full = full.replace(/\b(kv|khu vực|khu vuc)\s*[-_\.]?\s*(4|IV)\b/gi, "Khu Vực 11");
+
+            // Đảm bảo có hậu tố Phường Tân An
+            if (!full.toLowerCase().includes("tân an")) {
+                full = full ? `${full}, Phường Tân An` : `Phường Tân An`;
+            } else {
+                if (matchKv) {
+                    full = full.replace(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*\d+/gi, khuVucChuan);
+                }
+            }
             return full;
         }
 
@@ -648,18 +662,17 @@
             duLieuPhanCap = {"Phường Tân An": new Set()};
             danhSachHoGiaDinh.forEach(ho => {
                 let diaChi = ho.diaChi || "";
-                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Ấp\s*[\w\s\d]+)/gi);
+                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Ấp\s*[\w\s\d]+|Kv\s*\d+|Kp\s*\d+)/gi);
                 
                 if (kvMatches) {
                     kvMatches.forEach(kv => {
                         let textKv = kv.trim().replace(/\s+/g, ' ');
-                        if (textKv.toLowerCase().includes("khu vực 4") || textKv.toLowerCase() === "kv4") {
-                            textKv = "Khu Vực 11";
-                        }
+                        textKv = textKv.replace(/kv\s*(\d+)/i, 'Khu Vực $1')
+                                       .replace(/kp\s*(\d+)/i, 'Khu Vực $1');
                         duLieuPhanCap["Phường Tân An"].add(textKv);
                     });
                 } else {
-                    duLieuPhanCap["Phường Tân An"].add("Khu Vực 11");
+                    duLieuPhanCap["Phường Tân An"].add("Khu Vực 7"); 
                 }
             });
 
@@ -826,8 +839,6 @@
             }
             data.forEach((ho, index) => {
                 let sdtHtml = ho.sdt ? `<a href="tel:${ho.sdt}" class="text-emerald-400 hover:underline font-mono font-semibold">📞 ${ho.sdt}</a>` : '<span class="text-gray-500 italic">Chưa có SĐT</span>';
-                let gpsHtml = ho.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ho.gps)}" target="_blank" class="text-blue-400 hover:underline font-mono">📍 Xem</a>` : '<span class="text-gray-500">Chưa có</span>';
-                
                 let bienDongBadge = ho.bienDong && ho.bienDong !== 'Ổn định' ? 
                     `<span class="bg-red-900/60 text-red-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-red-700">${ho.bienDong}</span>` : 
                     `<span class="bg-emerald-900/50 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-semibold">Ổn định</span>`;
