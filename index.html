@@ -43,7 +43,6 @@
                 <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span></p>
             </div>
 
-            <!-- Phần hiển thị QR Code và Mã thiết lập -->
             <div id="setupAuthSection" class="bg-gray-900 p-4 rounded-xl border border-gray-700 space-y-3">
                 <p class="text-xs text-amber-400 font-semibold">⚠️ Thiết lập mã xác thực:</p>
                 <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR hoặc nhập mã thiết lập bên dưới:</p>
@@ -110,7 +109,7 @@
             </div>
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow md:col-span-2 flex flex-col justify-between">
                 <div class="flex justify-between items-center">
-                    <p class="text-gray-400 text-xs">Bộ lọc nhanh Xã/Phường (Bao gồm dữ liệu file & 103 xã)</p>
+                    <p class="text-gray-400 text-xs">Bộ lọc nhanh Xã/Phường (Thông minh tự động nhận diện)</p>
                     <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu dân cư</span>
                 </div>
                 <select id="filterXaPhuong" onchange="locTheoXaPhuong()" class="mt-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
@@ -380,7 +379,6 @@
             const select = document.getElementById('filterXaPhuong');
             let currentValue = select.value;
             
-            // Kết hợp xã mẫu 103 và các xã có sẵn trong file Excel vừa tải lên
             let tatCaXa = new Set([...danhSach103XaPhuongMau, ...danhSachXaTuFile]);
             
             select.innerHTML = '<option value="">-- Tất cả Xã/Phường --</option>';
@@ -393,6 +391,7 @@
             select.value = currentValue;
         }
 
+        // THUẬT TOÁN NHẬN DIỆN CỘT THÔNG MINH CHO MỌI FILE EXCEL
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -406,33 +405,64 @@
                     const worksheet = workbook.Sheets[firstSheetName];
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                    let dataStartIndex = 0;
-                    if (rows.length > 0) {
-                        const headerRow = rows[0].map(cell => String(cell).toLowerCase());
-                        if (!headerRow.some(c => c.includes('hsct') || c.includes('họ và tên') || c.includes('họ tên'))) {
-                            dataStartIndex = 1;
+                    if (rows.length === 0) {
+                        alert("File Excel trống!");
+                        return;
+                    }
+
+                    // Tự động tìm dòng tiêu đề (header)
+                    let headerRowIndex = 0;
+                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, diaChi: 5, phuongXa: -1, chuHo: 7 };
+
+                    for (let i = 0; i < Math.min(5, rows.length); i++) {
+                        let r = rows[i];
+                        if (!r) continue;
+                        for (let j = 0; j < r.length; j++) {
+                            let text = String(r[j] || '').toLowerCase().trim();
+                            if (text.includes('hsct') || text.includes('số hsct')) { mapping.hsct = j; headerRowIndex = i; }
+                            if (text.includes('họ và tên') || text.includes('họ tên')) { mapping.hoTen = j; headerRowIndex = i; }
+                            if (text.includes('ngày sinh')) { mapping.ngaySinh = j; headerRowIndex = i; }
+                            if (text.includes('quan hệ')) { mapping.quanHe = j; headerRowIndex = i; }
+                            if (text.includes('giới tính')) { mapping.gioiTinh = j; headerRowIndex = i; }
+                            if (text.includes('địa chỉ') && !text.includes('phường')) { mapping.diaChi = j; headerRowIndex = i; }
+                            if (text.includes('phường') || text.includes('xã')) { mapping.phuongXa = j; headerRowIndex = i; }
+                            if (text.includes('chủ hộ')) { mapping.chuHo = j; headerRowIndex = i; }
                         }
                     }
 
                     let rawNhanKhau = [];
                     let xaSet = new Set();
 
-                    for (let i = dataStartIndex; i < rows.length; i++) {
+                    for (let i = headerRowIndex + 1; i < rows.length; i++) {
                         const r = rows[i];
                         if (!r || r.length === 0) continue;
                         
-                        let hsct = String(r[0] || '').trim();
-                        let hoTen = String(r[1] || '').trim();
-                        let ngaySinh = String(r[2] || '').trim();
-                        let quanHe = String(r[3] || '').trim();
-                        let gioiTinh = String(r[4] || '').trim();
-                        let diaChi = String(r[5] || '').trim();
-                        let gps = String(r[6] || '').trim();
-                        let chuHo = String(r[8] || r[7] || '').trim();
+                        let hsct = String(r[mapping.hsct] || '').trim();
+                        let hoTen = String(r[mapping.hoTen] || '').trim();
+                        let ngaySinh = String(r[mapping.ngaySinh] || '').trim();
+                        let quanHe = String(r[mapping.quanHe] || '').trim();
+                        let gioiTinh = String(r[mapping.gioiTinh] || '').trim();
+                        let diaChiGoc = String(r[mapping.diaChi] || '').trim();
+                        let phuongStr = mapping.phuongXa !== -1 ? String(r[mapping.phuongXa] || '').trim() : '';
+                        let chuHo = String(r[mapping.chuHo] || '').trim();
+
+                        // Nếu có cột xã/phường riêng biệt, tự động ghép thông minh vào địa chỉ
+                        let diaChiFull = diaChiGoc;
+                        if (phuongStr && !diaChiGoc.toLowerCase().includes(phuongStr.toLowerCase())) {
+                            diaChiFull = diaChiGoc ? `${diaChiGoc}, ${phuongStr}` : phuongStr;
+                        }
 
                         if (hoTen && hoTen !== 'undefined' && !hoTen.toLowerCase().includes('họ và tên')) {
-                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi, gps, chuHo });
-                            if (diaChi) xaSet.add(diaChi);
+                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi: diaChiFull, chuHo });
+                            if (phuongStr) xaSet.add(phuongStr);
+                            if (diaChiFull) {
+                                // Trích xuất tên phường xã nếu có trong chuỗi địa chỉ
+                                danhSach103XaPhuongMau.forEach(xp => {
+                                    if (diaChiFull.toLowerCase().includes(xp.toLowerCase())) {
+                                        xaSet.add(xp);
+                                    }
+                                });
+                            }
                         }
                     }
 
@@ -446,7 +476,7 @@
                                 hsct: nk.hsct || 'Chưa có',
                                 chuHo: nk.chuHo || nk.hoTen,
                                 diaChi: nk.diaChi || 'Chưa cập nhật',
-                                gps: nk.gps || '',
+                                gps: '',
                                 hinhAnh: '',
                                 thanhVien: []
                             };
@@ -458,7 +488,7 @@
                     localStorage.setItem("danhSachHoGiaDinhCache", JSON.stringify(danhSachHoGiaDinh));
 
                     capNhatGiaoDienSauKhiTai();
-                    alert(`Đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
+                    alert(`Đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình từ file Excel!`);
                 } catch (err) {
                     console.error(err);
                     alert("Lỗi đọc file Excel: " + err.message);
