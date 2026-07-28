@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - Phân Quyền Admin/User</title>
+    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - Đa Người Dùng</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS cho Bản đồ -->
@@ -82,11 +82,11 @@
             </div>
         </div>
 
-        <!-- Form Thêm Hộ Dân & Định Vị Vùng KDC (CHỈ ADMIN MỚI THẤY VÀ THAO TÁC ĐƯỢC) -->
-        <div id="admin-action-section" class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl mb-8 space-y-4">
+        <!-- Form Thêm Hộ Dân & Định Vị Vùng KDC (Cả Admin và User đều thao tác được) -->
+        <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl mb-8 space-y-4">
             <h3 class="text-lg font-semibold text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                Thêm Hộ Dân & Gán Ảnh, Định Vị GPS (Quyền Admin)
+                Thêm Hộ Dân, Gán Ảnh Nhà & Định Vị GPS (Toàn quyền User & Admin)
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -168,7 +168,7 @@
                     <option value="Khu Vực 9">Khu Vực 9</option>
                 </select>
             </div>
-            <div id="admin-buttons-wrapper" class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
                 <label id="btn-import-excel" class="px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30 cursor-pointer transition flex items-center gap-2">
                     📂 Nhập Excel Thông Minh
                     <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
@@ -235,7 +235,7 @@
         </div>
     </div>
 
-    <!-- ================= MODAL QUẢN LÝ THÀNH VIÊN TRONG HỘ ================= -->
+    <!-- ================= MODAL QUẢN LÝ THÀNH VIÊN TRONG HỘ (Tích hợp gán ảnh nhân khẩu) ================= -->
     <div id="members-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-4xl shadow-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
@@ -243,10 +243,10 @@
                 <button onclick="closeMembersModal()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
             </div>
 
-            <!-- Form thêm thành viên (Chỉ hiển thị với Admin) -->
-            <div id="admin-add-member-box" class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
-                <h4 class="text-sm font-semibold text-sky-400">+ Thêm thành viên mới vào hộ</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            <!-- Form thêm thành viên (Cả User và Admin đều dùng được, có gán ảnh nhân khẩu) -->
+            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
+                <h4 class="text-sm font-semibold text-sky-400">+ Thêm thành viên mới vào hộ & Gán ảnh</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <input type="text" id="member-name" placeholder="Họ và tên..." class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
                     <input type="text" id="member-relation" placeholder="Quan hệ (VD: Vợ, Con...)" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
                     <select id="member-gender" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
@@ -255,6 +255,10 @@
                     </select>
                     <input type="text" id="member-dob" placeholder="Ngày sinh (15/05/1995)" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
                     <input type="text" id="member-phone" placeholder="Số điện thoại..." class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Ảnh chân dung / Giấy tờ:</label>
+                        <input type="file" id="member-img" accept="image/*" class="w-full px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[10px] text-slate-400 file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-sky-500/10 file:text-sky-400">
+                    </div>
                 </div>
                 <button onclick="addMemberToCurrentHousehold()" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold rounded-lg text-white transition">Thêm thành viên</button>
             </div>
@@ -269,7 +273,8 @@
                             <th class="p-3">Giới tính</th>
                             <th class="p-3">Ngày sinh</th>
                             <th class="p-3">Số điện thoại</th>
-                            <th class="p-3 text-center admin-col-header">Thao tác</th>
+                            <th class="p-3">Ảnh</th>
+                            <th class="p-3 text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="members-table-body" class="divide-y divide-slate-800">
@@ -331,13 +336,12 @@
         </div>
     </div>
 
-    <!-- ================= LOGIC JAVASCRIPT PHÂN QUYỀN & LƯU THÔNG TIN ================= -->
+    <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
-        const STORAGE_SECRET_KEY = "app_totp_secret_key_v108";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v108";
-        const STORAGE_SAVED_SESSION = "app_saved_login_email_v108";
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v109";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v109";
+        const STORAGE_SAVED_SESSION = "app_saved_login_email_v109";
 
-        // Danh sách định nghĩa Admin tối cao chính xác theo yêu cầu của bạn
         const ADMIN_EMAILS = ["vanthao996879@gmail.com", "vanthao3011@gmail.com"];
 
         let currentSecretKey = "";
@@ -453,11 +457,9 @@
             const inputField = document.getElementById("totp-input");
             const errorMsg = document.getElementById("error-msg");
 
-            // KIỂM TRA PHIÊN ĐĂNG NHẬP ĐÃ LƯU TRƯỚC ĐÓ
             const savedEmail = localStorage.getItem(STORAGE_SAVED_SESSION);
             if (savedEmail) {
                 emailInput.value = savedEmail;
-                // Tự động đăng nhập luôn nếu đã có lịch sử lưu email hợp lệ
                 loginSuccessFlow(savedEmail);
                 return;
             }
@@ -479,7 +481,6 @@
 
                 const isValid = verifyTOTP(token, currentSecretKey);
                 if (isValid) {
-                    // Lưu lại phiên đăng nhập để lần sau vào không cần hỏi lại
                     localStorage.setItem(STORAGE_SAVED_SESSION, email);
                     loginSuccessFlow(email);
                 } else {
@@ -507,14 +508,12 @@
                 roleBadge.innerText = "ADMIN QUẢN TRỊ";
                 roleBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30";
             } else {
-                roleBadge.innerText = "USER (CHỈ XEM)";
-                roleBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
-                document.getElementById("admin-action-section").style.display = "none";
-                document.getElementById("btn-import-excel").style.display = "none";
+                roleBadge.innerText = "USER (CÓ QUYỀN GÁN ẢNH & ĐỊNH VỊ)";
+                roleBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
             }
 
             loadAppData();
-            setTimeout(() => { if (isAdminUser) initMap(); }, 300);
+            setTimeout(() => { initMap(); }, 300);
         }
 
         function logoutApp() {
@@ -523,7 +522,6 @@
         }
 
         function saveAppData() {
-            if (!isAdminUser) return;
             try {
                 const jsonString = JSON.stringify(appData);
                 const encrypted = CryptoJS.AES.encrypt(jsonString, currentSecretKey).toString();
@@ -551,11 +549,6 @@
         }
 
         function addHousehold() {
-            if (!isAdminUser) {
-                alert("Bạn đăng nhập bằng tài khoản User nên không có quyền thực hiện thao tác này!");
-                return;
-            }
-
             const hsct = document.getElementById("input-hsct").value.trim();
             const ward = document.getElementById("input-ward").value;
             let address = document.getElementById("input-address").value.trim();
@@ -603,7 +596,7 @@
                 lng,
                 img: imgData,
                 members: [
-                    { id: Date.now() + 1, name: chuoho, relation: "Chủ hộ", gender: "Nam", dob: "---", phone: "---" }
+                    { id: Date.now() + 1, name: chuoho, relation: "Chủ hộ", gender: "Nam", dob: "---", phone: "---", img: "Không có" }
                 ]
             };
 
@@ -616,12 +609,12 @@
             document.getElementById("input-chuoho").value = "";
             document.getElementById("input-note").value = "";
             document.getElementById("input-img").value = "";
-            alert("Thêm hộ dân thành công!");
+            alert("Thêm hộ dân và gán ảnh thành công!");
         }
 
         function deleteHousehold(id) {
             if (!isAdminUser) {
-                alert("Tài khoản User không có quyền xóa dữ liệu!");
+                alert("Tài khoản User không có quyền xóa hộ dân!");
                 return;
             }
             if (confirm("Gỡ bỏ toàn bộ hộ gia đình này?")) {
@@ -661,7 +654,6 @@
         }
 
         function importExcel(event) {
-            if (!isAdminUser) return;
             const file = event.target.files[0];
             if (!file) return;
 
@@ -783,7 +775,8 @@
                     relation,
                     gender,
                     dob,
-                    phone
+                    phone,
+                    img: "Không có"
                 });
             }
 
@@ -834,14 +827,6 @@
             if (!h) return;
 
             document.getElementById("modal-household-title").innerText = `Danh Sách Nhân Khẩu Hộ: ${h.chuoho} (${h.address})`;
-            
-            const addMemberBox = document.getElementById("admin-add-member-box");
-            if (!isAdminUser) {
-                addMemberBox.style.display = "none";
-            } else {
-                addMemberBox.style.display = "block";
-            }
-
             renderMembersTable();
             document.getElementById("members-modal").classList.remove("hidden");
         }
@@ -865,20 +850,21 @@
                     <td class="p-3 text-slate-300">${m.gender || 'Nam'}</td>
                     <td class="p-3 text-slate-300">${m.dob}</td>
                     <td class="p-3 text-emerald-400 font-mono">${m.phone}</td>
-                    ${isAdminUser ? `<td class="p-3 text-center">
+                    <td class="p-3 text-xs">${m.img && m.img !== "Không có" ? `<a href="${m.img}" target="_blank" class="text-sky-400 underline">Xem ảnh</a>` : "Không có"}</td>
+                    <td class="p-3 text-center">
                         <button onclick="deleteMember(${m.id})" class="px-2.5 py-1 bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 text-xs rounded transition border border-rose-500/20">🗑️ Xóa</button>
-                    </td>` : ''}
+                    </td>
                 </tr>
             `).join('');
         }
 
         function addMemberToCurrentHousehold() {
-            if (!isAdminUser) return;
             const name = document.getElementById("member-name").value.trim();
             const relation = document.getElementById("member-relation").value.trim();
             const gender = document.getElementById("member-gender").value;
             const dob = document.getElementById("member-dob").value.trim();
             const phone = document.getElementById("member-phone").value.trim();
+            const memberImgInput = document.getElementById("member-img");
 
             if (!name || !relation) {
                 alert("Vui lòng nhập tên và quan hệ thành viên!");
@@ -887,21 +873,46 @@
 
             const h = appData.households.find(item => item.id === activeHouseholdId);
             if (h) {
-                h.members.push({ id: Date.now(), name, relation, gender, dob: dob || "---", phone: phone || "---" });
-                saveAppData();
-                renderMembersTable();
-
-                document.getElementById("member-name").value = "";
-                document.getElementById("member-relation").value = "";
-                document.getElementById("member-dob").value = "";
-                document.getElementById("member-phone").value = "";
+                if (memberImgInput.files && memberImgInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        pushMemberData(h, name, relation, gender, dob, phone, e.target.result);
+                    };
+                    reader.readAsDataURL(memberImgInput.files[0]);
+                } else {
+                    pushMemberData(h, name, relation, gender, dob, phone, "Không có");
+                }
             }
         }
 
+        function pushMemberData(household, name, relation, gender, dob, phone, imgData) {
+            household.members.push({
+                id: Date.now(),
+                name,
+                relation,
+                gender,
+                dob: dob || "---",
+                phone: phone || "---",
+                img: imgData
+            });
+            saveAppData();
+            renderMembersTable();
+
+            document.getElementById("member-name").value = "";
+            document.getElementById("member-relation").value = "";
+            document.getElementById("member-dob").value = "";
+            document.getElementById("member-phone").value = "";
+            document.getElementById("member-img").value = "";
+            alert("Thêm thành viên và gán ảnh thành công!");
+        }
+
         function deleteMember(memberId) {
-            if (!isAdminUser) return;
             const h = appData.households.find(item => item.id === activeHouseholdId);
             if (h) {
+                if (h.members.length <= 1) {
+                    alert("Hộ gia đình phải có ít nhất 1 thành viên (chủ hộ)!");
+                    return;
+                }
                 h.members = h.members.filter(m => m.id !== memberId);
                 saveAppData();
                 renderMembersTable();
