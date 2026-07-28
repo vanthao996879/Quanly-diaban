@@ -125,7 +125,7 @@
                         <option value="">-- 1. Chọn Phường / Xã --</option>
                     </select>
                     <select id="filterKhuVuc" onchange="chonKhuVuc()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="">-- 2. Chọn Khu vực (VD: KV7) --</option>
+                        <option value="">-- 2. Chọn Khu vực / Khu phố --</option>
                     </select>
                 </div>
             </div>
@@ -177,7 +177,7 @@
                             <option value="can_bo">Cán bộ / CSKV</option>
                             <option value="admin">Admin Tổng</option>
                         </select>
-                        <input type="text" id="newAccScope" placeholder="Phạm vi (VD: KV7)" class="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white">
+                        <input type="text" id="newAccScope" placeholder="Phạm vi (VD: Khu Vực 7)" class="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white">
                     </div>
                     <button onclick="luuTaiKhoanPhanQuyen()" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded font-medium shadow text-white">Lưu Cấu Hình Tài Khoản</button>
                 </div>
@@ -472,10 +472,18 @@
             moModalQuanLyUser();
         }
 
+        // HÀM TINH CHỈNH CHUẨN HÓA ĐỊA CHỈ VÀ KHU VỰC ĐA DẠNG (KV, KP, SỐ LA MÃ...)
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr) {
-            let full = diaChiGoc;
-            if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) full = full ? `${full}, ${phuongStr}` : phuongStr;
-            return full.replace(/kv\s*6/gi, "KV7").replace(/khu vực\s*6/gi, "Khu vực 7").replace(/kv6/gi, "KV7");
+            let full = diaChiGoc || "";
+            if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) {
+                full = full ? `${full}, ${phuongStr}` : phuongStr;
+            }
+
+            // Tự động quy đổi các biến thể La Mã hoặc Viết tắt sang chuẩn thống nhất (Ví dụ: KV 7, Khu phố 7, Kp7, KvVII -> Khu Vực 7)
+            full = full.replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*(vii|VII)\b/gi, "Khu Vực 7")
+                       .replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*7\b/gi, "Khu Vực 7");
+
+            return full;
         }
 
         function phanTichDuLieuPhanCap() {
@@ -485,10 +493,16 @@
                 let phuong = "Phường Tân An";
                 let phuongMatch = diaChi.match(/(Phường\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+|Xã\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+)/i);
                 if (phuongMatch) phuong = phuongMatch[0].split(',')[0].trim();
-                let kvMatches = diaChi.match(/(KV\s*\d+|Khu vực\s*\d+|Ấp\s*[\w\s\d]+)/gi);
+                
+                // Trích xuất linh hoạt mọi dạng khu vực / khu phố / ấp
+                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|KV\s*\d+|Khu Phố\s*\d+|KP\s*\d+|Ấp\s*[\w\s\d]+)/gi);
                 if (!duLieuPhanCap[phuong]) duLieuPhanCap[phuong] = new Set();
-                if (kvMatches) kvMatches.forEach(kv => duLieuPhanCap[phuong].add(kv.trim().replace(/\s+/g, ' ')));
-                else duLieuPhanCap[phuong].add("KV7");
+                
+                if (kvMatches) {
+                    kvMatches.forEach(kv => duLieuPhanCap[phuong].add(kv.trim().replace(/\s+/g, ' ')));
+                } else {
+                    duLieuPhanCap[phuong].add("Khu Vực 7");
+                }
             });
 
             const selectXa = document.getElementById('filterXaPhuong');
@@ -501,7 +515,7 @@
                 document.getElementById('filterKhuVuc').innerHTML = `<option value="${currentUser.scope}">${currentUser.scope}</option>`;
                 document.getElementById('filterKhuVuc').disabled = true;
             } else {
-                document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực (VD: KV7) --</option>';
+                document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Khu phố --</option>';
             }
         }
 
@@ -509,7 +523,7 @@
             const phuongChon = document.getElementById('filterXaPhuong').value;
             const selectKv = document.getElementById('filterKhuVuc');
             if (currentUser.role === 'admin') {
-                selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực (VD: KV7) --</option>';
+                selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực / Khu phố --</option>';
                 if (phuongChon && duLieuPhanCap[phuongChon]) {
                     Array.from(duLieuPhanCap[phuongChon]).sort().forEach(kv => {
                         let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
@@ -584,6 +598,7 @@
                         let chuHo = String(r[mapping.chuHo] || '').trim();
                         let gpsExcel = mapping.gps !== -1 ? String(r[mapping.gps] || '').trim() : '';
                         let ghiChuExcel = mapping.ghiChu !== -1 ? String(r[mapping.ghiChu] || '').trim() : '';
+                        
                         let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr);
 
                         if (hoTen && !hoTen.toLowerCase().includes('họ và tên')) {
@@ -666,7 +681,7 @@
             document.getElementById('modalHsct').innerText = ho.hsct;
             document.getElementById('editChuHo').value = ho.chuHo;
             document.getElementById('editDiaChi').value = ho.diaChi;
-            document.getElementById('editGps').value = ho.gps || '10.033198, 105.782806'; // Mặc định Cần Thơ nếu chưa có
+            document.getElementById('editGps').value = ho.gps || '10.033198, 105.782806';
             document.getElementById('editGhiChu').value = ho.ghiChu || '';
 
             const imgEl = document.getElementById('hoImg');
@@ -687,14 +702,12 @@
             });
 
             document.getElementById('detailModal').classList.remove('hidden');
-
-            // Khởi tạo bản đồ Leaflet sau khi modal mở hiển thị
             setTimeout(() => { khoiTaoBanDoLeaflet(); }, 300);
         }
 
         function khoiTaoBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
-            let coords = [10.033198, 105.782806]; // Tọa độ mặc định
+            let coords = [10.033198, 105.782806];
             if (gpsVal.includes(',')) {
                 let parts = gpsVal.split(',');
                 let lat = parseFloat(parts[0]);
@@ -715,13 +728,11 @@
 
             markerInstance = L.marker(coords, { draggable: true }).addTo(mapInstance);
             
-            // Cập nhật tọa độ khi kéo thả pin trên bản đồ số
             markerInstance.on('dragend', function(e) {
                 let pos = markerInstance.getLatLng();
                 document.getElementById('editGps').value = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
             });
 
-            // Click vào bản đồ để di chuyển pin định vị
             mapInstance.on('click', function(e) {
                 markerInstance.setLatLng(e.latlng);
                 document.getElementById('editGps').value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
