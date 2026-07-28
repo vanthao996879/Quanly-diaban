@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Địa Bàn & Bản Đồ</title>
+    <title>Hệ Thống Quản Lý Địa Bàn & Nhân Khẩu Chuyên Sâu</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS cho Excel -->
@@ -15,7 +15,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        #map { height: 260px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+        #map { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
         #editMap { height: 220px; width: 100%; border-radius: 0.75rem; z-index: 10; }
     </style>
 </head>
@@ -29,8 +29,8 @@
                     <i class="fa-solid fa-map-location-dot text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold tracking-tight">Hệ Thống Quản Lý Địa Bàn</h1>
-                    <p class="text-xs text-indigo-200">Quản lý Hộ dân, 103 Xã/Phường & Định vị bản đồ</p>
+                    <h1 class="text-lg font-bold tracking-tight">Hệ Thống Quản Lý Địa Bàn Chuyên Sâu</h1>
+                    <p class="text-xs text-indigo-200">Quản lý Hộ dân, Nhân khẩu chi tiết & Bản đồ KDC</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -52,7 +52,7 @@
         <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-100 space-y-3">
             <div class="flex justify-between items-center">
                 <h2 class="text-sm font-bold text-indigo-900 flex items-center gap-2">
-                    <i class="fa-solid fa-gear text-indigo-600"></i> Quản Lý Danh Mục 103 Xã/Phường (Admin)
+                    <i class="fa-solid fa-gear text-indigo-600"></i> Quản Lý Danh Mục 103 Xã/Phường
                 </h2>
                 <button onclick="resetDefaultWards()" class="text-xs text-indigo-600 hover:underline"><i class="fa-solid fa-rotate-right"></i> Khôi phục mặc định 103 xã/phường</button>
             </div>
@@ -62,16 +62,14 @@
                     <i class="fa-solid fa-plus"></i> Thêm Xã/Phường
                 </button>
             </div>
-            <div id="wardListContainer" class="flex flex-wrap gap-2 pt-1 max-h-36 overflow-y-auto border border-slate-100 p-2 rounded-lg bg-slate-50">
-                <!-- Danh sách xã phường -->
-            </div>
+            <div id="wardListContainer" class="flex flex-wrap gap-2 pt-1 max-h-28 overflow-y-auto border border-slate-100 p-2 rounded-lg bg-slate-50"></div>
         </div>
 
         <!-- Dashboard Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tổng số nhà</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tổng số hộ (Nhà)</p>
                     <h3 id="statTotalHouseholds" class="text-xl font-bold text-slate-900 mt-0.5">0</h3>
                 </div>
                 <div class="bg-indigo-50 text-indigo-600 p-2.5 rounded-lg">
@@ -80,7 +78,7 @@
             </div>
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tổng nhân khẩu</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tổng nhân khẩu thực tế</p>
                     <h3 id="statTotalMembers" class="text-xl font-bold text-slate-900 mt-0.5">0</h3>
                 </div>
                 <div class="bg-emerald-50 text-emerald-600 p-2.5 rounded-lg">
@@ -89,7 +87,7 @@
             </div>
             <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Đã chụp ảnh</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Đã chụp ảnh nhà</p>
                     <h3 id="statTotalPhoto" class="text-xl font-bold text-slate-900 mt-0.5">0</h3>
                 </div>
                 <div class="bg-amber-50 text-amber-600 p-2.5 rounded-lg">
@@ -98,20 +96,25 @@
             </div>
         </div>
 
-        <!-- Tìm kiếm nhanh -->
-        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
-            <div class="relative">
+        <!-- Thanh Tìm Kiếm & Lọc Nhanh -->
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-2">
+            <div class="relative flex-grow">
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">
                     <i class="fa-solid fa-search"></i>
                 </span>
-                <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Tìm kiếm Số HSCT, Tên đường, Chủ hộ, Ngày sinh, Ghi chú..." class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Tìm kiếm Số HSCT, Tên đường, Chủ hộ, Thành viên, Ghi chú..." class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <div class="w-full md:w-56">
+                <select id="filterDuong" onchange="filterData()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="">-- Lọc theo Tuyến đường --</option>
+                </select>
             </div>
         </div>
 
         <!-- Form Thêm Căn Nhà Mới & Định Vị Bản Đồ -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
             <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-house-chimney-user text-indigo-600"></i> Thêm Căn Nhà Mới & Định Vị Bản Đồ
+                <i class="fa-solid fa-house-chimney-user text-indigo-600"></i> Thêm Hộ Dân & Định Vị Vùng KDC
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -120,23 +123,23 @@
                     <input type="text" id="inputHsct" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: HSCT-9921">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Xã/Phường sau sáp nhập:</label>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Xã/Phường:</label>
                     <select id="inputPhuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="">-- Chọn Xã/Phường --</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Số nhà, Tên đường:</label>
-                    <input type="text" id="inputDuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 123 Nguyễn Văn Cừ">
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Số nhà, Tên đường (KDC 91B...):</label>
+                    <input type="text" id="inputDuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 12 đường B1">
                 </div>
             </div>
 
             <!-- Bản đồ tương tác -->
             <div class="space-y-1.5">
                 <div class="flex justify-between items-center">
-                    <label class="text-[11px] font-semibold text-slate-600">Chọn vị trí trên bản đồ (Click vào bản đồ hoặc dùng nút lấy vị trí):</label>
+                    <label class="text-[11px] font-semibold text-slate-600">Vị trí căn nhà trên bản đồ khu vực:</label>
                     <button type="button" onclick="getCurrentLocation()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-md text-[11px] font-medium transition flex items-center gap-1">
-                        <i class="fa-solid fa-location-crosshairs"></i> Lấy vị trí hiện tại của tôi
+                        <i class="fa-solid fa-location-crosshairs"></i> Lấy vị trí GPS hiện tại
                     </button>
                 </div>
                 <div id="map"></div>
@@ -144,28 +147,24 @@
                 <input type="hidden" id="inputLng" value="105.7469">
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tên chủ hộ:</label>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Họ tên Chủ hộ:</label>
                     <input type="text" id="inputChuHo" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: Nguyễn Văn A">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ngày sinh chủ hộ:</label>
-                    <input type="text" id="inputNgaySinh" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 15/08/1985">
-                </div>
-                <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Chụp ảnh nhà:</label>
-                    <input type="file" id="inputPhoto" accept="image/*" class="w-full border border-slate-300 rounded-lg px-2 py-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <input type="file" id="inputPhoto" accept="image/*" class="w-full border border-slate-300 rounded-lg px-2 py-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-indigo-50 file:text-indigo-700">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ghi chú:</label>
-                    <input type="text" id="inputGhiChu" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ghi chú thêm...">
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ghi chú chung:</label>
+                    <input type="text" id="inputGhiChu" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ghi chú...">
                 </div>
             </div>
 
             <div class="flex justify-end pt-1">
                 <button onclick="saveHousehold()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-1.5 rounded-lg text-xs font-medium transition shadow-sm flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> Thêm Căn Nhà
+                    <i class="fa-solid fa-plus"></i> Thêm Hộ Dân Mới
                 </button>
             </div>
         </div>
@@ -173,8 +172,8 @@
         <!-- Data Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="px-4 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800 text-xs">Danh Sách Hộ Dân (<span id="tableCount">0</span>)</h3>
-                <span class="text-[11px] text-slate-500">Hiển thị chi tiết</span>
+                <h3 class="font-bold text-slate-800 text-xs">Danh Sách Hộ Dân Khu Vực (<span id="tableCount">0</span>)</h3>
+                <span class="text-[11px] text-slate-500">Quản lý chuyên sâu hộ & nhân khẩu</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -183,16 +182,14 @@
                             <th class="py-2.5 px-3">STT</th>
                             <th class="py-2.5 px-3">Số HSCT</th>
                             <th class="py-2.5 px-3">Chủ Hộ</th>
-                            <th class="py-2.5 px-3">Ngày Sinh</th>
-                            <th class="py-2.5 px-3">Địa Chỉ / Tuyến Đường</th>
+                            <th class="py-2.5 px-3">Nhân Khẩu</th>
+                            <th class="py-2.5 px-3">Địa Chỉ / Đường</th>
                             <th class="py-2.5 px-3">Xã/Phường</th>
                             <th class="py-2.5 px-3 text-center">Ảnh Nhà</th>
-                            <th class="py-2.5 px-3 text-center">Thao Tác</th>
+                            <th class="py-2.5 px-3 text-center">Thao Tác Nghiệp Vụ</th>
                         </tr>
                     </thead>
-                    <tbody id="dataTableBody" class="divide-y divide-slate-200 text-xs">
-                        <!-- Populated by JS -->
-                    </tbody>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-200 text-xs"></tbody>
                 </table>
             </div>
         </div>
@@ -207,12 +204,60 @@
         </div>
     </div>
 
-    <!-- Modal Sửa Thông Tin Hộ Dân -->
+    <!-- Modal Quản Lý Nhân Khẩu Chi Tiết Trong Hộ -->
+    <div id="memberModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl overflow-hidden max-w-3xl w-full p-5 relative shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 class="font-bold text-sm text-indigo-900 flex items-center gap-2">
+                        <i class="fa-solid fa-users text-indigo-600"></i> Danh Sách Nhân Khẩu Hộ: <span id="modalHouseholdTitle" class="text-slate-800 font-extrabold"></span>
+                    </h3>
+                    <p class="text-[11px] text-slate-500">Quản lý thành viên sinh sống, quan hệ với chủ hộ, ngày sinh, CCCD</p>
+                </div>
+                <button onclick="closeMemberModal()" class="text-slate-400 hover:text-slate-700 text-sm"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <input type="hidden" id="modalHouseholdIndex">
+
+            <!-- Form thêm thành viên mới vào hộ -->
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <h4 class="text-xs font-bold text-slate-700"><i class="fa-solid fa-user-plus text-indigo-600"></i> Thêm thành viên mới</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                    <input type="text" id="memName" placeholder="Họ và tên..." class="border border-slate-300 rounded px-2.5 py-1 text-xs outline-none bg-white">
+                    <input type="text" id="memRelation" placeholder="Quan hệ (Vợ, Con...)" class="border border-slate-300 rounded px-2.5 py-1 text-xs outline-none bg-white">
+                    <input type="text" id="memDob" placeholder="Ngày sinh (VD: 1990)" class="border border-slate-300 rounded px-2.5 py-1 text-xs outline-none bg-white">
+                    <button onclick="addMemberToHousehold()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded px-3 py-1 text-xs font-medium transition">Thêm thành viên</button>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách thành viên -->
+            <div class="overflow-x-auto border rounded-lg">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 text-[11px] font-bold uppercase border-b">
+                            <th class="py-2 px-3">STT</th>
+                            <th class="py-2 px-3">Họ và Tên</th>
+                            <th class="py-2 px-3">Quan hệ với chủ hộ</th>
+                            <th class="py-2 px-3">Ngày sinh</th>
+                            <th class="py-2 px-3 text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="memberTableBody" class="divide-y text-xs"></tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t">
+                <button onclick="closeMemberModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium transition">Hoàn tất</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa Thông Tin Căn Nhà & Chủ Hộ -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl overflow-hidden max-w-2xl w-full p-5 relative shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-sm text-indigo-900 flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Cập Nhật Biến Động Hộ Dân / Thay Đổi Chủ Hộ
+                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Cập Nhật Biến Động Hộ Dân / Chủ Hộ
                 </h3>
                 <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-700 text-sm"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
@@ -226,8 +271,7 @@
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Xã/Phường:</label>
-                    <select id="editPhuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
-                    </select>
+                    <select id="editPhuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500"></select>
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Số nhà, Tên đường:</label>
@@ -243,14 +287,10 @@
                 <input type="hidden" id="editLng">
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tên chủ hộ mới:</label>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tên chủ hộ mới (nếu thay đổi chủ hộ):</label>
                     <input type="text" id="editChuHo" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-indigo-700">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ngày sinh chủ hộ:</label>
-                    <input type="text" id="editNgaySinh" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Cập nhật ảnh nhà mới:</label>
@@ -259,7 +299,7 @@
             </div>
 
             <div>
-                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ghi chú biến động (VD: Thay đổi chủ hộ do chủ hộ cũ qua đời...):</label>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ghi chú biến động (VD: Chủ hộ qua đời, sang nhượng nhà...):</label>
                 <input type="text" id="editGhiChu" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
 
@@ -278,23 +318,33 @@
             "Phường Ninh Kiều", "Phường Cái Khế", "Phường Tân An", "Phường An Bình", "Phường Thới An Đông", "Phường Bình Thủy", "Phường Long Tuyền", "Phường Cái Răng", "Phường Hưng Phú", "Phường Ô Môn", "Phường Phước Thới", "Phường Thới Long", "Phường Trung Nhứt", "Phường Thuận Hưng", "Phường Thốt Nốt", "Phường Vị Thanh", "Phường Vị Tân", "Phường Long Bình", "Phường Long Mỹ", "Phường Long Phú 1", "Phường Đại Thành", "Phường Ngã Bảy", "Phường Phú Lợi", "Phường Sóc Trăng", "Phường Mỹ Xuyên", "Phường Vĩnh Phước", "Phường Vĩnh Châu", "Phường Khánh Hòa", "Phường Ngã Năm", "Phường Mỹ Quới", "Xã Phong Điền", "Xã Nhơn Ái", "Xã Thới Lai", "Xã Đông Thuận", "Xã Trường Xuân", "Xã Trường Thành", "Xã Cờ Đỏ", "Xã Đông Hiệp", "Xã Trung Hưng", "Xã Vĩnh Thạnh", "Xã Vĩnh Trinh", "Xã Thạnh An", "Xã Thạnh Quới", "Xã Hỏa Lựu", "Xã Vị Thủy", "Xã Vĩnh Thuận Đông", "Xã Vị Thanh 1", "Xã Vĩnh Tường", "Xã Vĩnh Viễn", "Xã Xà Phiên", "Xã Lương Tâm", "Xã Thạnh Xuân", "Xã Tân Hòa", "Xã Trường Long Tây", "Xã Châu Thành", "Xã Đông Phước", "Xã Phú Hữu", "Xã Tân Bình", "Xã Hòa An", "Xã Phương Bình", "Xã Tân Phước Hưng", "Xã Hiệp Hưng", "Xã Phụng Hiệp", "Xã Thạnh Hòa", "Xã Hòa Tú", "Xã Gia Hòa", "Xã Nhu Gia", "Xã Ngọc Tố", "Xã Trường Khánh", "Xã Đại Ngãi", "Xã Tân Thạnh", "Xã Long Phú", "Xã Nhơn Mỹ", "Xã An Lạc Thôn", "Xã Kế Sách", "Xã Thới An Hội", "Xã Đại Hải", "Xã Phú Tâm", "Xã An Ninh", "Xã Thuận Hòa", "Xã Hồ Đắc Kiện", "Xã Mỹ Tú", "Xã Long Hưng", "Xã Mỹ Hương", "Xã Tân Long", "Xã Phú Lộc", "Xã Vĩnh Lợi", "Xã Lâm Tân", "Xã Thạnh Thới An", "Xã Tài Văn", "Xã Liêu Tú", "Xã Lịch Hội Thượng", "Xã Trần Đề", "Xã An Thạnh", "Xã Cù Lao Dung", "Phường Tân Lộc", "Xã Trường Long", "Xã Thạnh Phú", "Xã Thới Hưng", "Xã Phong Nẫm", "Xã Mỹ Phước", "Xã Lai Hòa", "Xã Vĩnh Hải"
         ];
         let wardList = [...defaultWards];
-        
         let map, marker, editMap, editMarker;
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedWards = localStorage.getItem('quanly_diaban_wards_103');
-            if (savedWards) {
-                try { wardList = JSON.parse(savedWards); } catch(e){}
-            }
+            if (savedWards) { try { wardList = JSON.parse(savedWards); } catch(e){} }
 
-            const savedData = localStorage.getItem('quanly_diaban_data');
-            if (savedData) {
-                try { globalData = JSON.parse(savedData); } catch(e){}
+            const savedData = localStorage.getItem('quanly_diaban_data_v2');
+            if (savedData) { 
+                try { globalData = JSON.parse(savedData); } catch(e){} 
+            } else {
+                // Tương thích dữ liệu cũ nếu có
+                const oldData = localStorage.getItem('quanly_diaban_data');
+                if (oldData) {
+                    try {
+                        const parsed = JSON.parse(oldData);
+                        globalData = parsed.map(item => ({
+                            ...item,
+                            "Thành viên": [{ "Họ tên": item["Chủ hộ"] || "Chủ hộ", "Quan hệ": "Chủ hộ", "Ngày sinh": item["Ngày sinh"] || "" }]
+                        }));
+                    } catch(e){}
+                }
             }
 
             initMap(10.0452, 105.7469);
             renderWards();
             populateWardDropdown();
+            updateStreetDropdown();
             filterData();
         });
 
@@ -302,18 +352,24 @@
             if (map) { map.remove(); }
             map = L.map('map').setView([lat, lng], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap'
+                maxZoom: 19, attribution: '© OpenStreetMap'
             }).addTo(map);
 
-            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+            // Vẽ khung ranh giới giả định vùng KDC quản lý (Ví dụ bao quanh khu vực)
+            const polygonCoords = [
+                [lat + 0.005, lng - 0.005],
+                [lat + 0.005, lng + 0.005],
+                [lat - 0.005, lng + 0.005],
+                [lat - 0.005, lng - 0.005]
+            ];
+            L.polygon(polygonCoords, {color: 'indigo', weight: 2, dashArray: '5, 5', fillOpacity: 0.05}).addTo(map).bindPopup("Ranh giới Khu vực quản lý (KDC)");
 
-            marker.on('dragend', function(e) {
+            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+            marker.on('dragend', function() {
                 const pos = marker.getLatLng();
                 document.getElementById('inputLat').value = pos.lat;
                 document.getElementById('inputLng').value = pos.lng;
             });
-
             map.on('click', function(e) {
                 marker.setLatLng(e.latlng);
                 document.getElementById('inputLat').value = e.latlng.lat;
@@ -323,19 +379,15 @@
 
         function getCurrentLocation() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
                     map.setView([lat, lng], 16);
                     marker.setLatLng([lat, lng]);
                     document.getElementById('inputLat').value = lat;
                     document.getElementById('inputLng').value = lng;
-                }, function(error) {
-                    alert('Không thể lấy vị trí hiện tại của bạn. Vui lòng cấp quyền định vị!');
-                });
-            } else {
-                alert('Trình duyệt của bạn không hỗ trợ định vị.');
-            }
+                }, () => alert('Không thể lấy vị trí GPS!'));
+            } else { alert('Trình duyệt không hỗ trợ định vị.'); }
         }
 
         function renderWards() {
@@ -352,51 +404,50 @@
 
         function addWard() {
             const val = document.getElementById('newWardInput').value.trim();
-            if (!val) { alert('Vui lòng nhập tên xã/phường!'); return; }
+            if (!val) return;
             if (!wardList.includes(val)) {
                 wardList.push(val);
                 document.getElementById('newWardInput').value = '';
                 renderWards();
-                filterData();
-            } else {
-                alert('Xã/Phường này đã có trong danh mục!');
             }
         }
 
-        function deleteWard(idx) {
-            wardList.splice(idx, 1);
-            renderWards();
-            filterData();
-        }
-
-        function resetDefaultWards() {
-            if (confirm('Bạn có muốn khôi phục lại danh sách chuẩn 103 xã/phường không?')) {
-                wardList = [...defaultWards];
-                renderWards();
-                filterData();
-            }
-        }
+        function deleteWard(idx) { wardList.splice(idx, 1); renderWards(); }
+        function resetDefaultWards() { if (confirm('Khôi phục mặc định 103 xã/phường?')) { wardList = [...defaultWards]; renderWards(); } }
 
         function populateWardDropdown() {
-            const selects = [document.getElementById('inputPhuong'), document.getElementById('editPhuong')];
-            selects.forEach(select => {
-                if (select) {
-                    const currentVal = select.value;
-                    select.innerHTML = '<option value="">-- Chọn Xã/Phường --</option>' + wardList.map(w => `<option value="${w}">${w}</option>`).join('');
-                    select.value = currentVal;
+            [document.getElementById('inputPhuong'), document.getElementById('editPhuong')].forEach(sel => {
+                if (sel) {
+                    const cur = sel.value;
+                    sel.innerHTML = '<option value="">-- Chọn Xã/Phường --</option>' + wardList.map(w => `<option value="${w}">${w}</option>`).join('');
+                    sel.value = cur;
                 }
             });
         }
 
+        function updateStreetDropdown() {
+            const sel = document.getElementById('filterDuong');
+            const cur = sel.value;
+            const streets = [...new Set(globalData.map(i => i['Tên đường']).filter(Boolean))];
+            sel.innerHTML = '<option value="">-- Lọc theo Tuyến đường --</option>' + streets.map(s => `<option value="${s}">${s}</option>`).join('');
+            sel.value = cur;
+        }
+
         function saveToLocalStorage() {
-            localStorage.setItem('quanly_diaban_data', JSON.stringify(globalData));
+            localStorage.setItem('quanly_diaban_data_v2', JSON.stringify(globalData));
+            updateStreetDropdown();
         }
 
         function filterData() {
             const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+            const streetFilter = document.getElementById('filterDuong').value;
+
             const filtered = globalData.filter(item => {
+                if (streetFilter && item['Tên đường'] !== streetFilter) return false;
                 if (!keyword) return true;
-                const matchText = `${item['Chủ hộ'] || ''} ${item['Ngày sinh'] || ''} ${item['Số HSCT'] || ''} ${item['Tên đường'] || ''} ${item['Xã/Phường'] || item['Phường xã'] || ''} ${item['Ghi chú'] || ''}`.toLowerCase();
+                
+                const membersStr = (item['Thành viên'] || []).map(m => `${m['Họ tên']} ${m['Quan hệ']} ${m['Ngày sinh']}`).join(' ');
+                const matchText = `${item['Chủ hộ'] || ''} ${item['Số HSCT'] || ''} ${item['Tên đường'] || ''} ${item['Xã/Phường'] || ''} ${item['Ghi chú'] || ''} ${membersStr}`.toLowerCase();
                 return matchText.includes(keyword);
             });
             renderTable(filtered);
@@ -408,17 +459,17 @@
             document.getElementById('tableCount').innerText = data.length;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400"><i class="fa-solid fa-folder-open text-2xl mb-1 block"></i> Chưa có dữ liệu căn nhà nào</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400"><i class="fa-solid fa-folder-open text-2xl mb-1 block"></i> Chưa có dữ liệu hộ dân</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = data.map((item, index) => {
                 const realIndex = globalData.indexOf(item);
-                const wardName = item['Xã/Phường'] || item['Phường xã'] || '';
-                const ngaySinh = item['Ngày sinh'] || '';
+                const wardName = item['Xã/Phường'] || '';
+                const memberCount = (item['Thành viên'] || []).length;
                 let photoHtml = '<span class="text-slate-400">Không có</span>';
                 if (item['Ảnh nhà']) {
-                    photoHtml = `<img src="${item['Ảnh nhà']}" alt="Ảnh nhà" class="w-10 h-10 object-cover rounded-lg mx-auto cursor-pointer border border-slate-200 hover:opacity-80 shadow-sm" onclick="openImageModal('${item['Ảnh nhà']}')" title="Bấm để xem ảnh lớn">`;
+                    photoHtml = `<img src="${item['Ảnh nhà']}" alt="Ảnh" class="w-10 h-10 object-cover rounded-lg mx-auto cursor-pointer border hover:opacity-80" onclick="openImageModal('${item['Ảnh nhà']}')">`;
                 }
 
                 return `
@@ -426,12 +477,16 @@
                         <td class="py-2.5 px-3 font-medium text-slate-500">${index + 1}</td>
                         <td class="py-2.5 px-3 font-semibold text-indigo-600">${item['Số HSCT'] || ''}</td>
                         <td class="py-2.5 px-3 font-bold text-slate-900">${item['Chủ hộ'] || ''}</td>
-                        <td class="py-2.5 px-3 text-slate-600">${ngaySinh}</td>
+                        <td class="py-2.5 px-3">
+                            <button onclick="openMemberModal(${realIndex})" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded font-semibold text-[11px] flex items-center gap-1">
+                                <i class="fa-solid fa-users"></i> ${memberCount} nhân khẩu
+                            </button>
+                        </td>
                         <td class="py-2.5 px-3 text-slate-700">${item['Tên đường'] || ''}</td>
                         <td class="py-2.5 px-3 text-slate-600">${wardName}</td>
                         <td class="py-2.5 px-3 text-center">${photoHtml}</td>
                         <td class="py-2.5 px-3 text-center flex items-center justify-center gap-1.5">
-                            <button onclick="openEditModal(${realIndex})" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 p-1.5 rounded-md transition" title="Sửa thông tin / Thay đổi chủ hộ"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="openEditModal(${realIndex})" class="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 p-1.5 rounded-md transition" title="Sửa hộ"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button onclick="deleteHousehold(${realIndex})" class="bg-rose-50 text-rose-600 hover:bg-rose-100 p-1.5 rounded-md transition" title="Xóa hộ"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
@@ -441,26 +496,75 @@
 
         function updateDashboard(currentData) {
             document.getElementById('statTotalHouseholds').innerText = currentData.length.toLocaleString();
-            document.getElementById('statTotalMembers').innerText = currentData.length.toLocaleString();
-            const photoCount = currentData.filter(i => i['Ảnh nhà']).length;
+            let totalMem = currentData.reduce((sum, item) => sum + (item['Thành viên'] ? item['Thành viên'].length : 1), 0);
+            document.getElementById('statTotalMembers').innerText = totalMem.toLocaleString();
+            let photoCount = currentData.filter(i => i['Ảnh nhà']).length;
             document.getElementById('statTotalPhoto').innerText = photoCount.toLocaleString();
         }
 
-        function openImageModal(imgSrc) {
-            document.getElementById('modalImagePreview').src = imgSrc;
-            document.getElementById('imageModal').classList.remove('hidden');
+        // --- QUẢN LÝ THÀNH VIÊN TRONG HỘ ---
+        function openMemberModal(index) {
+            document.getElementById('modalHouseholdIndex').value = index;
+            const item = globalData[index];
+            document.getElementById('modalHouseholdTitle').innerText = `${item['Chủ hộ']} (${item['Tên đường'] || 'Không rõ địa chỉ'})`;
+            renderMemberList();
+            document.getElementById('memberModal').classList.remove('hidden');
         }
 
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
+        function closeMemberModal() {
+            document.getElementById('memberModal').classList.add('hidden');
+            filterData();
         }
 
+        function renderMemberList() {
+            const index = document.getElementById('modalHouseholdIndex').value;
+            const members = globalData[index]['Thành viên'] || [];
+            const tbody = document.getElementById('memberTableBody');
+
+            tbody.innerHTML = members.map((m, idx) => `
+                <tr>
+                    <td class="py-2 px-3">${idx + 1}</td>
+                    <td class="py-2 px-3 font-semibold text-slate-900">${m['Họ tên']}</td>
+                    <td class="py-2 px-3 text-slate-600">${m['Quan hệ']}</td>
+                    <td class="py-2 px-3 text-slate-600">${m['Ngày sinh'] || ''}</td>
+                    <td class="py-2 px-3 text-center">
+                        <button onclick="deleteMember(${idx})" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function addMemberToHousehold() {
+            const index = document.getElementById('modalHouseholdIndex').value;
+            const name = document.getElementById('memName').value.trim();
+            const rel = document.getElementById('memRelation').value.trim();
+            const dob = document.getElementById('memDob').value.trim();
+
+            if (!name) { alert('Vui lòng nhập tên thành viên!'); return; }
+            if (!globalData[index]['Thành viên']) globalData[index]['Thành viên'] = [];
+
+            globalData[index]['Thành viên'].push({ "Họ tên": name, "Quan hệ": rel || "Thành viên", "Ngày sinh": dob });
+            saveToLocalStorage();
+            renderMemberList();
+
+            document.getElementById('memName').value = '';
+            document.getElementById('memRelation').value = '';
+            document.getElementById('memDob').value = '';
+        }
+
+        function deleteMember(memIdx) {
+            const index = document.getElementById('modalHouseholdIndex').value;
+            globalData[index]['Thành viên'].splice(memIdx, 1);
+            saveToLocalStorage();
+            renderMemberList();
+        }
+
+        // --- LƯU & SỬA HỘ DÂN ---
         function saveHousehold() {
             const hsct = document.getElementById('inputHsct').value.trim();
             const phuong = document.getElementById('inputPhuong').value;
             const duong = document.getElementById('inputDuong').value.trim();
             const chuHo = document.getElementById('inputChuHo').value.trim();
-            const ngaySinh = document.getElementById('inputNgaySinh').value.trim();
             const ghiChu = document.getElementById('inputGhiChu').value.trim();
             const lat = document.getElementById('inputLat').value;
             const lng = document.getElementById('inputLng').value;
@@ -470,53 +574,39 @@
 
             if (photoInput.files && photoInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    finishSave(hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, e.target.result);
-                };
+                reader.onload = e => finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, e.target.result);
                 reader.readAsDataURL(photoInput.files[0]);
             } else {
-                finishSave(hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, '');
+                finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, '');
             }
         }
 
-        function finishSave(hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, photoData) {
+        function finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, photoData) {
             const newItem = {
                 "Số HSCT": hsct,
                 "Xã/Phường": phuong,
                 "Tên đường": duong,
                 "Chủ hộ": chuHo,
-                "Ngày sinh": ngaySinh,
                 "Ghi chú": ghiChu,
                 "Latitude": lat,
                 "Longitude": lng,
-                "Ảnh nhà": photoData
+                "Ảnh nhà": photoData,
+                "Thành viên": [{ "Họ tên": chuHo, "Quan hệ": "Chủ hộ", "Ngày sinh": "" }]
             };
-
             globalData.unshift(newItem);
             saveToLocalStorage();
             filterData();
-
-            document.getElementById('inputHsct').value = '';
-            document.getElementById('inputDuong').value = '';
-            document.getElementById('inputChuHo').value = '';
-            document.getElementById('inputNgaySinh').value = '';
-            document.getElementById('inputGhiChu').value = '';
-            document.getElementById('inputPhoto').value = '';
-            alert('Đã thêm căn nhà mới thành công!');
+            alert('Đã thêm hộ dân mới thành công!');
         }
 
-        // --- CÁC HÀM XỬ LÝ SỬA THÔNG TIN / THAY ĐỔI CHỦ HỘ ---
         function openEditModal(index) {
             const item = globalData[index];
             document.getElementById('editIndex').value = index;
             document.getElementById('editHsct').value = item['Số HSCT'] || '';
             document.getElementById('editDuong').value = item['Tên đường'] || '';
             document.getElementById('editChuHo').value = item['Chủ hộ'] || '';
-            document.getElementById('editNgaySinh').value = item['Ngày sinh'] || '';
             document.getElementById('editGhiChu').value = item['Ghi chú'] || '';
-            
-            const wardName = item['Xã/Phường'] || item['Phường xã'] || '';
-            document.getElementById('editPhuong').value = wardName;
+            document.getElementById('editPhuong').value = item['Xã/Phường'] || '';
 
             const lat = parseFloat(item['Latitude']) || 10.0452;
             const lng = parseFloat(item['Longitude']) || 105.7469;
@@ -524,24 +614,17 @@
             document.getElementById('editLng').value = lng;
 
             document.getElementById('editModal').classList.remove('hidden');
-
             setTimeout(() => {
-                if (editMap) { editMap.remove(); }
+                if (editMap) editMap.remove();
                 editMap = L.map('editMap').setView([lat, lng], 16);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(editMap);
-
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(editMap);
                 editMarker = L.marker([lat, lng], {draggable: true}).addTo(editMap);
-
-                editMarker.on('dragend', function(e) {
-                    const pos = editMarker.getLatLng();
-                    document.getElementById('editLat').value = pos.lat;
-                    document.getElementById('editLng').value = pos.lng;
+                editMarker.on('dragend', () => {
+                    const p = editMarker.getLatLng();
+                    document.getElementById('editLat').value = p.lat;
+                    document.getElementById('editLng').value = p.lng;
                 });
-
-                editMap.on('click', function(e) {
+                editMap.on('click', e => {
                     editMarker.setLatLng(e.latlng);
                     document.getElementById('editLat').value = e.latlng.lat;
                     document.getElementById('editLng').value = e.latlng.lng;
@@ -550,9 +633,7 @@
             }, 100);
         }
 
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-        }
+        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
 
         function updateHousehold() {
             const index = parseInt(document.getElementById('editIndex').value);
@@ -560,83 +641,82 @@
             const phuong = document.getElementById('editPhuong').value;
             const duong = document.getElementById('editDuong').value.trim();
             const chuHo = document.getElementById('editChuHo').value.trim();
-            const ngaySinh = document.getElementById('editNgaySinh').value.trim();
             const ghiChu = document.getElementById('editGhiChu').value.trim();
             const lat = document.getElementById('editLat').value;
             const lng = document.getElementById('editLng').value;
             const photoInput = document.getElementById('editPhoto');
 
             if (!chuHo) { alert('Vui lòng nhập tên chủ hộ!'); return; }
-
             const currentItem = globalData[index];
 
             if (photoInput.files && photoInput.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    finishUpdate(index, hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, e.target.result);
-                };
+                reader.onload = e => finishUpdate(index, hsct, phuong, duong, chuHo, ghiChu, lat, lng, e.target.result);
                 reader.readAsDataURL(photoInput.files[0]);
             } else {
-                finishUpdate(index, hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, currentItem['Ảnh nhà'] || '');
+                finishUpdate(index, hsct, phuong, duong, chuHo, ghiChu, lat, lng, currentItem['Ảnh nhà'] || '');
             }
         }
 
-        function finishUpdate(index, hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, photoData) {
-            globalData[index] = {
-                "Số HSCT": hsct,
-                "Xã/Phường": phuong,
-                "Tên đường": duong,
-                "Chủ hộ": chuHo,
-                "Ngày sinh": ngaySinh,
-                "Ghi chú": ghiChu,
-                "Latitude": lat,
-                "Longitude": lng,
-                "Ảnh nhà": photoData
-            };
+        function finishUpdate(index, hsct, phuong, duong, chuHo, ghiChu, lat, lng, photoData) {
+            globalData[index]['Số HSCT'] = hsct;
+            globalData[index]['Xã/Phường'] = phuong;
+            globalData[index]['Tên đường'] = duong;
+            globalData[index]['Chủ hộ'] = chuHo;
+            globalData[index]['Ghi chú'] = ghiChu;
+            globalData[index]['Latitude'] = lat;
+            globalData[index]['Longitude'] = lng;
+            globalData[index]['Ảnh nhà'] = photoData;
 
             saveToLocalStorage();
             filterData();
             closeEditModal();
-            alert('Đã cập nhật thông tin hộ dân / thay đổi chủ hộ thành công!');
+            alert('Cập nhật thành công!');
         }
 
         function deleteHousehold(index) {
-            if (confirm('Bạn có chắc muốn xóa hộ dân này không?')) {
-                globalData.splice(index, 1);
-                saveToLocalStorage();
-                filterData();
-            }
+            if (confirm('Xóa hộ dân này?')) { globalData.splice(index, 1); saveToLocalStorage(); filterData(); }
         }
+
+        function openImageModal(src) {
+            document.getElementById('modalImagePreview').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
 
         function handleExcelUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = e => {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(firstSheet);
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     if (json && json.length > 0) {
-                        globalData = json;
+                        globalData = json.map(item => ({
+                            ...item,
+                            "Thành viên": item["Thành viên"] ? JSON.parse(item["Thành viên"]) : [{ "Họ tên": item["Chủ hộ"] || "Chủ hộ", "Quan hệ": "Chủ hộ", "Ngày sinh": "" }]
+                        }));
                         saveToLocalStorage();
                         filterData();
-                        alert(`Đã tải lên thành công ${json.length} bản ghi!`);
+                        alert(`Đã nhập thành công ${json.length} bản ghi!`);
                     }
-                } catch(err) {
-                    alert('Lỗi đọc file Excel: ' + err.message);
-                }
+                } catch(err) { alert('Lỗi đọc file: ' + err.message); }
             };
             reader.readAsArrayBuffer(file);
         }
 
         function exportExcel() {
-            if (globalData.length === 0) { alert('Không có dữ liệu để xuất!'); return; }
-            const worksheet = XLSX.utils.json_to_sheet(globalData);
+            if (globalData.length === 0) { alert('Không có dữ liệu!'); return; }
+            const exportData = globalData.map(item => ({
+                ...item,
+                "Thành viên": JSON.stringify(item["Thành viên"])
+            }));
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Danh_sach_ho_dan");
-            XLSX.writeFile(workbook, "QuanLyDiaBan_BanDo.xlsx");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "HoDan_NhanKhau");
+            XLSX.writeFile(workbook, "QuanLyDiaBan_ChuyenSau.xlsx");
         }
     </script>
 </body>
