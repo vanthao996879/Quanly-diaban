@@ -17,6 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/otplib/12.0.1/otplib-browser.min.js"></script>
     <style>
         #map { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+        #qrcode-container img { margin: 0 auto; display: block; border-radius: 0.5rem; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
@@ -24,24 +25,24 @@
     <!-- ================= MÀN HÌNH KHÓA XÁC THỰC GOOGLE AUTHENTICATOR ================= -->
     <div id="security-lock-screen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
-            <div class="inline-flex p-3 bg-sky-500/10 text-sky-400 rounded-full mb-4">
+            <div class="inline-flex p-3 bg-sky-500/10 text-sky-400 rounded-full mb-3">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
-            <h2 class="text-2xl font-bold text-white mb-2">Bảo Mật Hệ Thống</h2>
-            <p id="lock-subtitle" class="text-sm text-slate-400 mb-6">Quét mã QR bằng Google Authenticator để lấy mã mở khóa</p>
+            <h2 class="text-2xl font-bold text-white mb-1">Bảo Mật Hệ Thống</h2>
+            <p class="text-xs text-slate-400 mb-4">Quét mã QR bên dưới bằng ứng dụng Google Authenticator</p>
             
-            <div id="setup-section" class="mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center">
-                <p class="text-xs text-amber-400 mb-3">Mở ứng dụng Authenticator và quét mã QR này:</p>
-                <div id="qrcode-container" class="bg-white p-3 inline-block rounded-lg mb-3"></div>
-                <p class="text-xs text-slate-400">Hoặc nhập Secret Key chuẩn: <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold block mt-1"></code></p>
+            <div class="mb-4 bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col items-center">
+                <div id="qrcode-container" class="bg-white p-3 rounded-lg mb-3 shadow-inner"></div>
+                <p class="text-xs text-slate-400">Hoặc nhập mã khóa thủ công:</p>
+                <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold text-sm bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 block mt-1 tracking-wider"></code>
             </div>
 
-            <div class="mb-6">
+            <div class="mb-4">
                 <input type="text" id="totp-input" placeholder="000000" maxlength="6" class="w-full py-3 text-center text-3xl font-mono tracking-[1em] rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-sky-500 transition" autofocus>
             </div>
 
             <button id="verify-btn" class="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl shadow-lg shadow-sky-500/20 transition">Xác Thực Mở Khóa</button>
-            <p id="error-msg" class="text-rose-400 text-sm mt-4 hidden"></p>
+            <p id="error-msg" class="text-rose-400 text-sm mt-3 hidden"></p>
         </div>
     </div>
 
@@ -203,9 +204,8 @@
     <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
         const authenticator = window.otplib.authenticator;
-        // Đổi tên key để tự động tạo mới hoàn toàn chuẩn Base32
-        const STORAGE_SECRET_KEY = "app_totp_secret_key_v4";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v4";
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v5";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v5";
 
         let currentSecretKey = "";
         let appData = { households: [] };
@@ -259,9 +259,7 @@
             let secret = localStorage.getItem(STORAGE_SECRET_KEY);
             const lockScreen = document.getElementById("security-lock-screen");
 
-            // Luôn tạo mới một chuỗi Base32 cực kỳ chuẩn để app Authenticator nhận diện 100%
             if (!secret) {
-                // Tạo chuỗi base32 ngẫu nhiên hợp chuẩn
                 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
                 secret = "";
                 for (let i = 0; i < 32; i++) {
@@ -272,13 +270,17 @@
 
             currentSecretKey = secret;
 
-            // Hiển thị mã QR tự động
+            // Render mã QR kích thước to rõ (220x220)
             const otpauth = authenticator.keyuri("QuanLyHoDan", "QuanLyDiaBan", secret);
-            document.getElementById("qrcode-container").innerHTML = "";
-            new QRCode(document.getElementById("qrcode-container"), { 
+            const qrContainer = document.getElementById("qrcode-container");
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, { 
                 text: otpauth, 
-                width: 150, 
-                height: 150 
+                width: 220, 
+                height: 220,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
             document.getElementById("manual-secret").innerText = secret;
 
