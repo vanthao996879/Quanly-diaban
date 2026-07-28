@@ -11,8 +11,15 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Thư viện mã hóa CryptoJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- Thư viện hỗ trợ xuất Excel (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         #map { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+        @media print {
+            body * { visibility: hidden; }
+            #printable-area, #printable-area * { visibility: visible; }
+            #printable-area { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; }
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
@@ -27,7 +34,6 @@
             <p class="text-xs text-slate-400 mb-4">Quét mã QR bên dưới bằng ứng dụng Google Authenticator</p>
             
             <div class="mb-4 bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col items-center">
-                <!-- Thẻ chứa ảnh QR chuẩn kích thước 220x220 -->
                 <div id="qrcode-container" class="bg-white p-3 rounded-lg mb-3 shadow-inner flex items-center justify-center min-h-[220px]"></div>
                 <p class="text-xs text-slate-400">Hoặc nhập mã khóa thủ công:</p>
                 <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold text-sm bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 block mt-1 tracking-wider"></code>
@@ -79,7 +85,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Số HSCT (Hồ sơ cư trú)</label>
+                    <label class="block text-xs text-slate-400 mb-1">Số Hồ sơ cư trú (HSCT)</label>
                     <input type="text" id="input-hsct" placeholder="VD: HSCT-9921" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div>
@@ -124,9 +130,23 @@
             <button onclick="addHousehold()" class="w-full py-3 bg-sky-600 hover:bg-sky-500 font-semibold rounded-xl transition shadow-lg shadow-sky-600/20 text-white mt-2">+ Thêm Hộ Dân Mới</button>
         </div>
 
-        <!-- Thanh tìm kiếm -->
-        <div class="mb-6">
-            <input type="text" id="search-input" oninput="renderUI()" placeholder="🔍 Tìm kiếm theo số HSCT, tên chủ hộ hoặc địa chỉ..." class="w-full px-4 py-3 rounded-xl bg-slate-800/40 border border-slate-800 text-white focus:outline-none focus:border-sky-500">
+        <!-- Thanh tìm kiếm & Các nút Nhập/Xuất Excel, Báo cáo -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <div class="w-full md:w-1/2">
+                <input type="text" id="search-input" oninput="renderUI()" placeholder="🔍 Tìm kiếm theo số HSCT, chủ hộ, địa chỉ..." class="w-full px-4 py-3 rounded-xl bg-slate-800/40 border border-slate-800 text-white focus:outline-none focus:border-sky-500 text-sm">
+            </div>
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <label class="px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30 cursor-pointer transition flex items-center gap-2">
+                    📂 Nhập Excel
+                    <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
+                </label>
+                <button onclick="exportExcel()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+                    📊 Xuất Excel Chuẩn Mẫu
+                </button>
+                <button onclick="openReportModal()" class="px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-lg shadow-sky-600/20">
+                    📈 Báo Cáo Thống Kê
+                </button>
+            </div>
         </div>
 
         <!-- Bảng danh sách hộ dân chính -->
@@ -157,9 +177,9 @@
         </div>
     </div>
 
-    <!-- ================= MODAL QUẢN LÝ THÀNH VIÊN TRONG HỘ (CON MẮT) ================= -->
+    <!-- ================= MODAL QUẢN LÝ THÀNH VIÊN TRONG HỘ ================= -->
     <div id="members-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-4xl shadow-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
                 <h3 class="text-lg font-bold text-white" id="modal-household-title">Quản Lý Nhân Khẩu Hộ</h3>
                 <button onclick="closeMembersModal()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
@@ -167,10 +187,14 @@
 
             <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
                 <h4 class="text-sm font-semibold text-sky-400">+ Thêm thành viên mới vào hộ</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <input type="text" id="member-name" placeholder="Họ và tên..." class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
                     <input type="text" id="member-relation" placeholder="Quan hệ (VD: Vợ, Con...)" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
-                    <input type="text" id="member-dob" placeholder="Ngày sinh (VD: 1995)" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
+                    <select id="member-gender" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                    </select>
+                    <input type="text" id="member-dob" placeholder="Ngày sinh (VD: 15/05/1995)" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
                 </div>
                 <button onclick="addMemberToCurrentHousehold()" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold rounded-lg text-white transition">Thêm thành viên</button>
             </div>
@@ -182,7 +206,8 @@
                             <th class="p-3">STT</th>
                             <th class="p-3">Họ và tên</th>
                             <th class="p-3">Quan hệ với chủ hộ</th>
-                            <th class="p-3">Ngày sinh</th>
+                            <th class="p-3">Giới tính</th>
+                            <th class="p-3">Ngày tháng năm sinh</th>
                             <th class="p-3 text-center">Thao tác</th>
                         </tr>
                     </thead>
@@ -197,17 +222,64 @@
         </div>
     </div>
 
+    <!-- ================= MODAL BÁO CÁO THỐNG KÊ ================= -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-3xl shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-white">📈 Báo Cáo Thống Kê Dân Cư Khu Vực</h3>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
+            </div>
+
+            <div id="printable-area" class="flex-1 overflow-y-auto space-y-4 p-2">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-bold text-white">BÁO CÁO TỔNG HỢP HỘ DÂN CƯ & NHÂN KHẨU</h2>
+                    <p class="text-xs text-slate-400 mt-1">Ngày xuất báo cáo: <span id="report-date"></span></p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
+                        <p class="text-xs text-slate-400">Tổng số hộ dân:</p>
+                        <p id="report-total-houses" class="text-2xl font-bold text-sky-400 mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
+                        <p class="text-xs text-slate-400">Tổng nhân khẩu thực tế:</p>
+                        <p id="report-total-residents" class="text-2xl font-bold text-emerald-400 mt-1">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-800">
+                    <h4 class="text-sm font-semibold text-white mb-3">Thống kê theo Phường:</h4>
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-700">
+                                <th class="pb-2">Xã/Phường</th>
+                                <th class="pb-2 text-center">Số hộ</th>
+                                <th class="pb-2 text-center">Số nhân khẩu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ward-stats-body" class="divide-y divide-slate-800/50">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-800 flex justify-end gap-3">
+                <button onclick="window.print()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2">🖨️ In Báo Cáo / Lưu PDF</button>
+                <button onclick="closeReportModal()" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-xl transition">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
-        const STORAGE_SECRET_KEY = "app_totp_secret_key_v100";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v100";
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v101";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v101";
 
         let currentSecretKey = "";
         let appData = { households: [] };
         let activeHouseholdId = null;
         let map, marker;
 
-        // --- HÀM GIẢI MÃ BASE32 THUẦN JS CHO TOTP ---
         function base32ToBytes(base32) {
             const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
             let bits = "";
@@ -224,7 +296,6 @@
             return CryptoJS.enc.Hex.parse(hex);
         }
 
-        // --- HÀM TẠO MÃ TOTP 6 SỐ CHUẨN GOOGLE AUTHENTICATOR ---
         function generateTOTP(secret, windowOffset = 0) {
             try {
                 const key = base32ToBytes(secret);
@@ -246,12 +317,9 @@
             }
         }
 
-        // --- KIỂM TRA Mã 6 SỐ (Cho phép sai số lệch 1 khoảng thời gian 30s trước/sau tránh lệch đồng hồ) ---
         function verifyTOTP(token, secret) {
             for (let offset of [-1, 0, 1]) {
-                if (generateTOTP(secret, offset) === token) {
-                    return true;
-                }
+                if (generateTOTP(secret, offset) === token) return true;
             }
             return false;
         }
@@ -314,7 +382,6 @@
 
             currentSecretKey = secret;
 
-            // Render ảnh QR chuẩn Google Authenticator trực tiếp kích thước lớn 220x220
             const otpauth = `otpauth://totp/QuanLyHoDan:HeThong?secret=${secret}&issuer=QuanLyDiaBan`;
             const qrContainer = document.getElementById("qrcode-container");
             qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauth)}" alt="QR Code 2FA" width="220" height="220" style="width: 220px !important; height: 220px !important; display: block;" class="rounded-md">`;
@@ -424,7 +491,7 @@
                 lng,
                 img: imgData,
                 members: [
-                    { id: Date.now() + 1, name: chuoho, relation: "Chủ hộ", dob: "---" }
+                    { id: Date.now() + 1, name: chuoho, relation: "Chủ hộ", gender: "Nam", dob: "---" }
                 ]
             };
 
@@ -446,6 +513,136 @@
                 saveAppData();
                 renderUI();
             }
+        }
+
+        // --- XUẤT EXCEL CHUẨN MẪU BIỂU ---
+        function exportExcel() {
+            if (appData.households.length === 0) {
+                alert("Không có dữ liệu để xuất Excel!");
+                return;
+            }
+
+            let dataToExport = [];
+            appData.households.forEach((h, idx) => {
+                h.members.forEach((m, mIdx) => {
+                    dataToExport.push({
+                        "STT": idx + 1,
+                        "Số hồ sơ cư trú": h.hsct,
+                        "Xã/Phường": h.ward,
+                        "Địa chỉ cư trú": h.address,
+                        "Chủ hộ / Đại diện": h.chuoho,
+                        "Họ và tên thành viên": m.name,
+                        "Quan hệ với chủ hộ": m.relation,
+                        "Giới tính": m.gender,
+                        "Ngày tháng năm sinh": m.dob,
+                        "Vĩ độ (Lat)": h.lat,
+                        "Kinh độ (Lng)": h.lng,
+                        "Ghi chú": h.note
+                    });
+                });
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "SoQuanLyCuTru");
+            XLSX.writeFile(workbook, "SoQuanLyCuTru_BieuMau.xlsx");
+        }
+
+        // --- NHẬP EXCEL ---
+        function importExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    let householdsMap = {};
+
+                    json.forEach(row => {
+                        let hsct = row["Số hồ sơ cư trú"] || row["Số HSCT"] || row["hsct"] || "HSCT-UNKNOWN";
+                        let chuoho = row["Chủ hộ / Đại diện"] || row["Chủ hộ"] || row["chuoho"] || "Chưa rõ";
+                        let ward = row["Xã/Phường"] || row["ward"] || "Phường Tân An";
+                        let address = row["Địa chỉ cư trú"] || row["Địa chỉ"] || row["address"] || "Chưa cập nhật";
+                        let memberName = row["Họ và tên thành viên"] || row["Tên thành viên"] || row["name"] || chuoho;
+                        let relation = row["Quan hệ với chủ hộ"] || row["relation"] || "Chủ hộ";
+                        let gender = row["Giới tính"] || row["gender"] || "Nam";
+                        let dob = row["Ngày tháng năm sinh"] || row["Ngày sinh"] || row["dob"] || "---";
+                        let lat = row["Vĩ độ (Lat)"] || "10.0452";
+                        let lng = row["Kinh độ (Lng)"] || "105.7469";
+                        let note = row["Ghi chú"] || "";
+
+                        if (!householdsMap[hsct]) {
+                            householdsMap[hsct] = {
+                                id: Date.now() + Math.random(),
+                                hsct,
+                                ward,
+                                address,
+                                chuoho,
+                                note,
+                                lat,
+                                lng,
+                                img: "Không có",
+                                members: []
+                            };
+                        }
+
+                        householdsMap[hsct].members.push({
+                            id: Date.now() + Math.random(),
+                            name: memberName,
+                            relation,
+                            gender,
+                            dob
+                        });
+                    });
+
+                    appData.households = Object.values(householdsMap);
+                    saveAppData();
+                    renderUI();
+                    alert("Nhập file Excel thành công!");
+                } catch (err) {
+                    alert("Lỗi đọc file Excel. Vui lòng kiểm tra lại định dạng!");
+                }
+                event.target.value = "";
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- BÁO CÁO THỐNG KÊ ---
+        function openReportModal() {
+            document.getElementById("report-date").innerText = new Date().toLocaleDateString("vi-VN");
+            document.getElementById("report-total-houses").innerText = appData.households.length;
+            let totalRes = appData.households.reduce((sum, h) => sum + h.members.length, 0);
+            document.getElementById("report-total-residents").innerText = totalRes;
+
+            let wardStats = {};
+            appData.households.forEach(h => {
+                if (!wardStats[h.ward]) wardStats[h.ward] = { houses: 0, residents: 0 };
+                wardStats[h.ward].houses += 1;
+                wardStats[h.ward].residents += h.members.length;
+            });
+
+            const wardBody = document.getElementById("ward-stats-body");
+            wardBody.innerHTML = Object.keys(wardStats).length === 0 
+                ? `<tr><td colspan="3" class="text-center py-4 text-slate-500">Chưa có dữ liệu</td></tr>`
+                : Object.entries(wardStats).map(([ward, stat]) => `
+                    <tr>
+                        <td class="py-2 text-white font-medium">${ward}</td>
+                        <td class="py-2 text-center text-sky-400 font-bold">${stat.houses}</td>
+                        <td class="py-2 text-center text-emerald-400 font-bold">${stat.residents}</td>
+                    </tr>
+                `).join('');
+
+            document.getElementById("report-modal").classList.remove("hidden");
+        }
+
+        function closeReportModal() {
+            document.getElementById("report-modal").classList.add("hidden");
         }
 
         function openMembersModal(id) {
@@ -474,6 +671,7 @@
                     <td class="p-3 text-slate-400">${index + 1}</td>
                     <td class="p-3 font-medium text-white">${m.name}</td>
                     <td class="p-3 text-sky-300">${m.relation}</td>
+                    <td class="p-3 text-slate-300">${m.gender || 'Nam'}</td>
                     <td class="p-3 text-slate-300">${m.dob}</td>
                     <td class="p-3 text-center">
                         <button onclick="deleteMember(${m.id})" class="px-2.5 py-1 bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 text-xs rounded transition border border-rose-500/20">🗑️ Xóa</button>
@@ -485,6 +683,7 @@
         function addMemberToCurrentHousehold() {
             const name = document.getElementById("member-name").value.trim();
             const relation = document.getElementById("member-relation").value.trim();
+            const gender = document.getElementById("member-gender").value;
             const dob = document.getElementById("member-dob").value.trim();
 
             if (!name || !relation) {
@@ -494,7 +693,7 @@
 
             const h = appData.households.find(item => item.id === activeHouseholdId);
             if (h) {
-                h.members.push({ id: Date.now(), name, relation, dob: dob || "---" });
+                h.members.push({ id: Date.now(), name, relation, gender, dob: dob || "---" });
                 saveAppData();
                 renderMembersTable();
 
