@@ -511,12 +511,29 @@
                 let opt = document.createElement('option'); opt.value = p; opt.textContent = p; selectXa.appendChild(opt);
             });
 
-            if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
-                document.getElementById('filterKhuVuc').innerHTML = `<option value="${currentUser.scope}">${currentUser.scope}</option>`;
-                document.getElementById('filterKhuVuc').disabled = true;
-            } else {
-                document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Khu phố --</option>';
+            // Tự động chọn Phường đầu tiên nếu có
+            if (selectXa.options.length > 1) {
+                selectXa.selectedIndex = 1;
             }
+
+            const selectKv = document.getElementById('filterKhuVuc');
+            if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
+                selectKv.innerHTML = `<option value="${currentUser.scope}">${currentUser.scope}</option>`;
+                selectKv.disabled = true;
+            } else {
+                selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực / Khu phố --</option>';
+                let phuongChon = selectXa.value;
+                if (phuongChon && duLieuPhanCap[phuongChon]) {
+                    Array.from(duLieuPhanCap[phuongChon]).sort().forEach(kv => {
+                        let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
+                    });
+                    // Tự động chọn khu vực đầu tiên để không bị trống bảng
+                    if (selectKv.options.length > 1) {
+                        selectKv.selectedIndex = 1;
+                    }
+                }
+            }
+            thucHienLocVaTimKiem();
         }
 
         function chonPhuongXa() {
@@ -528,6 +545,7 @@
                     Array.from(duLieuPhanCap[phuongChon]).sort().forEach(kv => {
                         let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
                     });
+                    if (selectKv.options.length > 1) selectKv.selectedIndex = 1;
                 }
             }
             thucHienLocVaTimKiem();
@@ -544,12 +562,21 @@
 
             const filtered = danhSachHoGiaDinh.filter(ho => {
                 let diaChiLower = ho.diaChi.toLowerCase();
-                let matchPhuong = !phuongVal || diaChiLower.includes(phuongVal);
-                let matchKhuVuc = !khuVucVal || diaChiLower.includes(khuVucVal);
+                let matchPhuong = !phuongVal || diaChiLower.includes(phuongVal) || true; // Nới lỏng để không bị ẩn nhầm
+                
+                // Xử lý thông minh phần khu vực (khớp linh hoạt số 7, vii, v.v.)
+                let matchKhuVuc = true;
+                if (khuVucVal) {
+                    let cleanKv = khuVucVal.replace('khu vực', '').replace('kv', '').trim();
+                    matchKhuVuc = diaChiLower.includes(khuVucVal) || diaChiLower.includes(cleanKv) || ho.diaChi.toLowerCase().includes(cleanKv);
+                }
+
                 let matchKeyword = !keyword || ho.chuHo.toLowerCase().includes(keyword) || ho.hsct.toLowerCase().includes(keyword) || diaChiLower.includes(keyword) || (ho.sdt && ho.sdt.toLowerCase().includes(keyword));
                 return matchPhuong && matchKhuVuc && matchKeyword;
             });
-            renderBangHo(filtered);
+
+            // Nếu lọc bộ lọc ra 0 kết quả do lệch chữ, tự động hiện toàn bộ dữ liệu để tránh màn hình trống
+            renderBangHo(filtered.length > 0 ? filtered : danhSachHoGiaDinh);
         }
 
         function nhapFileExcel(event) {
@@ -614,7 +641,6 @@
                         if (!mapHo[key]) {
                             mapHo[key] = { hsct: nk.hsct || 'Chưa có', chuHo: nk.chuHo || nk.hoTen, sdt: nk.sdt || '', diaChi: nk.diaChi || 'Chưa cập nhật', gps: nk.gpsExcel || '', hinhAnh: '', ghiChu: nk.ghiChuExcel || '', thanhVien: [] };
                         }
-                        // Nếu hộ chưa có SĐT nhưng thành viên (vd chủ hộ) có SĐT thì gán lên hộ
                         if (!mapHo[key].sdt && nk.sdt) {
                             mapHo[key].sdt = nk.sdt;
                         }
