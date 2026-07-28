@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Dân Cư & Báo Cáo Thống Kê</title>
+    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -31,11 +31,13 @@
         
         <!-- Tiêu đề hệ thống -->
         <header class="flex flex-col md:flex-row justify-between items-center bg-card p-4 rounded-xl shadow-lg border border-gray-800">
-            <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Thống Kê Sáp Nhập</h1>
+            <div>
+                <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Gom Nhóm Hộ Khẩu</h1>
+                <p class="text-xs text-gray-400 mt-1">Tự động nhận diện chủ hộ, gom nhân khẩu, hỗ trợ xem chi tiết và gán ảnh hộ gia đình.</p>
+            </div>
             <div class="mt-3 md:mt-0 flex gap-3">
-                <!-- Nút tải file Excel mẫu hoặc nhập dữ liệu -->
                 <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                    <span>📂 Nhập dữ liệu Excel</span>
+                    <span>📂 Tải lên File Excel (thường trú)</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
                 <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
@@ -44,47 +46,50 @@
             </div>
         </header>
 
-        <!-- Khu vực Thống kê nhanh (Dashboard Summary) -->
+        <!-- Thống kê nhanh -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
-                <p class="text-gray-400 text-sm">Tổng số ĐVHC (Sau sáp nhập)</p>
-                <h3 id="statTongSo" class="text-3xl font-bold text-blue-400 mt-1">103</h3>
+                <p class="text-gray-400 text-sm">Tổng số Nhân khẩu</p>
+                <h3 id="statNhanKhau" class="text-3xl font-bold text-blue-400 mt-1">0</h3>
             </div>
             <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
-                <p class="text-gray-400 text-sm">Số Phường</p>
-                <h3 id="statPhuong" class="text-3xl font-bold text-emerald-400 mt-1">--</h3>
+                <p class="text-gray-400 text-sm">Tổng số Hộ gia đình (Gom nhóm)</p>
+                <h3 id="statHoGiaDinh" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
             </div>
             <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
-                <p class="text-gray-400 text-sm">Số Xã / Thị trấn</p>
-                <h3 id="statXa" class="text-3xl font-bold text-amber-400 mt-1">--</h3>
+                <p class="text-gray-400 text-sm">Trạng thái dữ liệu</p>
+                <h3 id="statTrangThai" class="text-3xl font-bold text-amber-400 mt-1">Chưa tải file</h3>
             </div>
         </div>
 
-        <!-- Bản đồ và Bảng dữ liệu -->
+        <!-- Khu vực chính: Bản đồ & Danh sách Hộ gia đình -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Bản đồ GPS -->
             <div class="lg:col-span-1 bg-card p-4 rounded-xl border border-gray-800 shadow flex flex-col">
-                <h2 class="text-lg font-semibold mb-3">Bản Đồ Định Vị GPS</h2>
+                <h2 class="text-lg font-semibold mb-3">Bản Đồ Địa Bàn</h2>
                 <div id="map" class="h-80 w-full rounded-lg shadow-inner flex-grow"></div>
             </div>
 
-            <!-- Bảng hiển thị danh sách -->
+            <!-- Bảng danh sách Hộ gia đình đã gom nhóm -->
             <div class="lg:col-span-2 bg-card p-4 rounded-xl border border-gray-800 shadow flex flex-col">
                 <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-semibold">Danh Sách Địa Bàn Quản Lý</h2>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm nhanh..." onkeyup="timKiemDuLieu()" class="bg-darker border border-gray-700 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-blue-500">
+                    <h2 class="text-lg font-semibold">Danh Sách Hộ Gia Đình (Đã gom nhóm thông minh)</h2>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm theo chủ hộ, HSCT, địa chỉ..." onkeyup="timKiemHoGiaDinh()" class="bg-darker border border-gray-700 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-blue-500 w-64">
                 </div>
-                <div class="overflow-x-auto flex-grow max-h-80">
+                <div class="overflow-x-auto flex-grow max-h-96">
                     <table class="w-full text-left border-collapse text-sm">
                         <thead>
                             <tr class="bg-gray-800 text-gray-300 sticky top-0">
                                 <th class="p-2 border-b border-gray-700">STT</th>
-                                <th class="p-2 border-b border-gray-700">Trước Sáp Nhập</th>
-                                <th class="p-2 border-b border-gray-700">Sau Sáp Nhập</th>
+                                <th class="p-2 border-b border-gray-700">Số HSCT</th>
+                                <th class="p-2 border-b border-gray-700">Chủ Hộ</th>
+                                <th class="p-2 border-b border-gray-700">Địa Chỉ</th>
+                                <th class="p-2 border-b border-gray-700 text-center">Số Thành Viên</th>
+                                <th class="p-2 border-b border-gray-700 text-center">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody" class="divide-y divide-gray-800">
-                            <!-- Dữ liệu sẽ được render tự động từ JavaScript -->
+                            <!-- Dữ liệu render động -->
                         </tbody>
                     </table>
                 </div>
@@ -92,154 +97,70 @@
         </div>
     </div>
 
-    <!-- Script Xử lý Dữ liệu, Excel và Bản đồ -->
-    <script>
-        // Dữ liệu mặc định 103 xã phường
-        let danhSach103XaPhuong = [
-            { stt: 1, truocSapNhap: "Phường Tân An, Thới Bình, Xuân Khánh", sauSapNhap: "Phường Ninh Kiều" },
-            { stt: 2, truocSapNhap: "Phường An Hòa, phường Cái Khế và một phần phường Bùi Hữu Nghĩa", sauSapNhap: "Phường Cái Khế" },
-            { stt: 3, truocSapNhap: "Phường An Khánh, phường Hưng Lợi", sauSapNhap: "Phường Tân An" },
-            { stt: 4, truocSapNhap: "Phường An Bình, xã Mỹ Khánh và một phần phường Long Tuyền", sauSapNhap: "Phường An Bình" },
-            { stt: 5, truocSapNhap: "Phường Trà An, phường Trà Nóc, phường Thới An Đông", sauSapNhap: "Phường Thới An Đông" },
-            { stt: 6, truocSapNhap: "Phường An Thới, phường Bình Thủy và phần còn lại của phường Bùi Hữu Nghĩa", sauSapNhap: "Phường Bình Thủy" },
-            { stt: 7, truocSapNhap: "Phường Long Hòa và phần còn lại của phường Long Tuyền", sauSapNhap: "Phường Long Tuyền" },
-            { stt: 8, truocSapNhap: "Phường Lê Bình, phường Thường Thạnh, phường Ba Láng, phường Hưng Thạnh", sauSapNhap: "Phường Cái Răng" },
-            { stt: 9, truocSapNhap: "Phường Tân Phú, phường Phú Thứ, phường Hưng Phú thành", sauSapNhap: "Phường Hưng Phú" },
-            { stt: 10, truocSapNhap: "Phường Châu Văn Liêm, phường Thới Hòa, phường Thới An, xã Thới Thạnh", sauSapNhap: "Phường Ô Môn" },
-            { stt: 11, truocSapNhap: "Phường Trường Lạc, phường Phước Thới", sauSapNhap: "Phường Phước Thới" },
-            { stt: 12, truocSapNhap: "Phường Long Hưng, phường Tân Hưng, phường Thới Long", sauSapNhap: "Phường Thới Long" },
-            { stt: 13, truocSapNhap: "Phường Thạnh Hòa, phường Trung Nhứt, xã Trung An", sauSapNhap: "Phường Trung Nhứt" },
-            { stt: 14, truocSapNhap: "Phường Trung Kiên, phường Thuận Hưng và một phần phường Thốt Nốt", sauSapNhap: "Phường Thuận Hưng" },
-            { stt: 15, truocSapNhap: "Phường Thuận An (quận Thốt Nốt), phường Thới Thuận và phần còn lại của phường Thốt Nốt", sauSapNhap: "Phường Thốt Nốt" },
-            { stt: 16, truocSapNhap: "Phường I, phường III và phường VII", sauSapNhap: "Phường Vị Thanh" },
-            { stt: 17, truocSapNhap: "Phường IV, phường V và xã Vị Tân", sauSapNhap: "Phường Vị Tân" },
-            { stt: 18, truocSapNhap: "Phường Bình Thạnh, phường Vĩnh Tường và xã Long Bình", sauSapNhap: "Phường Long Bình" },
-            { stt: 19, truocSapNhap: "Phường Thuận An (thị xã Long Mỹ), xã Long Trị, xã Long Trị A", sauSapNhap: "Phường Long Mỹ" },
-            { stt: 20, truocSapNhap: "Phường Trà Lồng, xã Tân Phú, xã Long Phú", sauSapNhap: "Phường Long Phú 1" },
-            { stt: 21, truocSapNhap: "Phường Hiệp Lợi, xã Tân Thành, xã Đại Thành", sauSapNhap: "Phường Đại Thành" },
-            { stt: 22, truocSapNhap: "Phường Lái Hiếu, phường Hiệp Thành, phường Ngã Bảy", sauSapNhap: "Phường Ngã Bảy" },
-            { stt: 23, truocSapNhap: "Phường 1, phường 2, phường 3, phường 4 (TP Sóc Trăng)", sauSapNhap: "Phường Phú Lợi" },
-            { stt: 24, truocSapNhap: "Phường 5, phường 6, phường 7, phường 8", sauSapNhap: "Phường Sóc Trăng" },
-            { stt: 25, truocSapNhap: "Phường 10, thị trấn Mỹ Xuyên, xã Đại Tâm", sauSapNhap: "Phường Mỹ Xuyên" },
-            { stt: 26, truocSapNhap: "Phường Vĩnh Phước, xã Vĩnh Tân", sauSapNhap: "Phường Vĩnh Phước" },
-            { stt: 27, truocSapNhap: "Phường 1, phường 2, xã Lạc Hòa (thị xã Vĩnh Châu)", sauSapNhap: "Phường Vĩnh Châu" },
-            { stt: 28, truocSapNhap: "Phường Khánh Hòa, xã Vĩnh Hiệp, xã Hòa Đông", sauSapNhap: "Phường Khánh Hòa" },
-            { stt: 29, truocSapNhap: "Phường 1, phường 2, xã Vĩnh Quới (thị xã Ngã Năm)", sauSapNhap: "Phường Ngã Năm" },
-            { stt: 30, truocSapNhap: "Phường 3, xã Mỹ Bình, xã Mỹ Quới (thị xã Ngã Năm)", sauSapNhap: "Phường Mỹ Quới" },
-            { stt: 31, truocSapNhap: "Thị trấn Phong Điền, xã Tân Thới, xã Giai Xuân", sauSapNhap: "Xã Phong Điền" },
-            { stt: 32, truocSapNhap: "Xã Nhơn Nghĩa, xã Nhơn Ái", sauSapNhap: "Xã Nhơn Ái" },
-            { stt: 33, truocSapNhap: "Thị trấn Thới Lai, xã Thới Tân, xã Trường Thắng", sauSapNhap: "Xã Thới Lai" },
-            { stt: 34, truocSapNhap: "Xã Đông Bình, xã Đông Thuận", sauSapNhap: "Xã Đông Thuận" },
-            { stt: 35, truocSapNhap: "Xã Trường Xuân, xã Trường Xuân A, xã Trường Xuân B", sauSapNhap: "Xã Trường Xuân" },
-            { stt: 36, truocSapNhap: "Xã Tân Thạnh, xã Định Môn, xã Trường Thành", sauSapNhap: "Xã Trường Thành" },
-            { stt: 37, truocSapNhap: "Thị trấn Cờ Đỏ, xã Thới Đông, xã Thới Xuân", sauSapNhap: "Xã Cờ Đỏ" },
-            { stt: 38, truocSapNhap: "Xã Đông Thắng, xã Xuân Thắng, xã Đông Hiệp", sauSapNhap: "Xã Đông Hiệp" },
-            { stt: 39, truocSapNhap: "Xã Trung Thạnh, xã Trung Hưng", sauSapNhap: "Xã Trung Hưng" },
-            { stt: 40, truocSapNhap: "Thị trấn Vĩnh Thạnh, xã Thạnh Lộc, xã Thạnh Mỹ", sauSapNhap: "Xã Vĩnh Thạnh" },
-            { stt: 41, truocSapNhap: "Xã Vĩnh Bình, xã Vĩnh Trinh", sauSapNhap: "Xã Vĩnh Trinh" },
-            { stt: 42, truocSapNhap: "Thị trấn Thạnh An, xã Thạnh Lợi, xã Thạnh Thắng", sauSapNhap: "Xã Thạnh An" },
-            { stt: 43, truocSapNhap: "Xã Thạnh Tiến, xã Thạnh An, xã Thạnh Quới", sauSapNhap: "Xã Thạnh Quới" },
-            { stt: 44, truocSapNhap: "Xã Tân Tiến, xã Hỏa Tiến, xã Hỏa Lựu", sauSapNhap: "Xã Hỏa Lựu" },
-            { stt: 45, truocSapNhap: "Thị trấn Nàng Mau, xã Vị Thắng, xã Vị Trung", sauSapNhap: "Xã Vị Thủy" },
-            { stt: 46, truocSapNhap: "Xã Vĩnh Thuận Tây, xã Vị Thủy, xã Vĩnh Thuận Đông", sauSapNhap: "Xã Vĩnh Thuận Đông" },
-            { stt: 47, truocSapNhap: "Xã Vị Đông, xã Vị Bình, xã Vị Thanh", sauSapNhap: "Xã Vị Thanh 1" },
-            { stt: 48, truocSapNhap: "Xã Vĩnh Trung, xã Vĩnh Tường", sauSapNhap: "Xã Vĩnh Tường" },
-            { stt: 49, truocSapNhap: "Thị trấn Vĩnh Viễn, xã Vĩnh Viễn A", sauSapNhap: "Xã Vĩnh Viễn" },
-            { stt: 50, truocSapNhap: "Xã Thuận Hòa, xã Thuận Hưng, xã Xà Phiên (huyện Long Mỹ)", sauSapNhap: "Xã Xà Phiên" },
-            { stt: 51, truocSapNhap: "Xã Lương Nghĩa, xã Lương Tâm", sauSapNhap: "Xã Lương Tâm" },
-            { stt: 52, truocSapNhap: "Thị trấn Rạch Gòi, xã Tân Phú Thạnh, xã Thạnh Xuân", sauSapNhap: "Xã Thạnh Xuân" },
-            { stt: 53, truocSapNhap: "Thị trấn Một Ngàn, thị trấn Bảy Ngàn, xã Nhơn Nghĩa A, xã Tân Hòa", sauSapNhap: "Xã Tân Hòa" },
-            { stt: 54, truocSapNhap: "Xã Trường Long A, xã Trường Long Tây", sauSapNhap: "Xã Trường Long Tây" },
-            { stt: 55, truocSapNhap: "Thị trấn Mái Dầm, thị trấn Ngã Sáu, xã Đông Phú", sauSapNhap: "Xã Châu Thành" },
-            { stt: 56, truocSapNhap: "Thị trấn Cái Tắc, xã Đông Thạnh, xã Đông Phước A", sauSapNhap: "Xã Đông Phước" },
-            { stt: 57, truocSapNhap: "Xã Phú Tân, xã Đông Phước, xã Phú Hữu", sauSapNhap: "Xã Phú Hữu" },
-            { stt: 58, truocSapNhap: "Xã Bình Thành, xã Tân Bình", sauSapNhap: "Xã Tân Bình" },
-            { stt: 59, truocSapNhap: "Thị trấn Kinh Cùng, xã Hòa An", sauSapNhap: "Xã Hòa An" },
-            { stt: 60, truocSapNhap: "Xã Phương Phú, xã Phương Bình", sauSapNhap: "Xã Phương Bình" },
-            { stt: 61, truocSapNhap: "Thị trấn Búng Tàu, xã Tân Phước Hưng", sauSapNhap: "Xã Tân Phước Hưng" },
-            { stt: 62, truocSapNhap: "Thị trấn Cây Dương, xã Hiệp Hưng", sauSapNhap: "Xã Hiệp Hưng" },
-            { stt: 63, truocSapNhap: "Xã Hòa Mỹ, xã Phụng Hiệp", sauSapNhap: "Xã Phụng Hiệp" },
-            { stt: 64, truocSapNhap: "Xã Long Thạnh, xã Tân Long, xã Thạnh Hòa", sauSapNhap: "Xã Thạnh Hòa" },
-            { stt: 65, truocSapNhap: "Xã Hòa Tú 1, xã Hòa Tú 2", sauSapNhap: "Xã Hòa Tú" },
-            { stt: 66, truocSapNhap: "Xã Thạnh Quới, xã Gia Hòa 2", sauSapNhap: "Xã Gia Hòa" },
-            { stt: 67, truocSapNhap: "Xã Thạnh Phú, xã Gia Hòa 1", sauSapNhap: "Xã Nhu Gia" },
-            { stt: 68, truocSapNhap: "Xã Tham Đôn, xã Ngọc Đông, xã Ngọc Tố", sauSapNhap: "Xã Ngọc Tố" },
-            { stt: 69, truocSapNhap: "Xã Hậu Thạnh, xã Phú Hữu, xã Trường Khánh", sauSapNhap: "Xã Trường Khánh" },
-            { stt: 70, truocSapNhap: "Thị trấn Đại Ngãi, xã Long Đức", sauSapNhap: "Xã Đại Ngãi" },
-            { stt: 71, truocSapNhap: "Xã Tân Hưng, xã Châu Khánh, xã Tân Thạnh", sauSapNhap: "Xã Tân Thạnh" },
-            { stt: 72, truocSapNhap: "Thị trấn Long Phú, xã Long Phú", sauSapNhap: "Xã Long Phú" },
-            { stt: 73, truocSapNhap: "Xã An Mỹ, xã Song Phụng, xã Nhơn Mỹ", sauSapNhap: "Xã Nhơn Mỹ" },
-            { stt: 74, truocSapNhap: "Thị trấn An Lạc Thôn, xã Xuân Hòa, xã Trinh Phú", sauSapNhap: "Xã An Lạc Thôn" },
-            { stt: 75, truocSapNhap: "Thị trấn Kế Sách, xã Kế An, xã Kế Thành", sauSapNhap: "Xã Kế Sách" },
-            { stt: 76, truocSapNhap: "Xã An Lạc Tây, xã Thới An Hội", sauSapNhap: "Xã Thới An Hội" },
-            { stt: 77, truocSapNhap: "Xã Ba Trinh, xã Đại Hải", sauSapNhap: "Xã Đại Hải" },
-            { stt: 78, truocSapNhap: "Thị trấn Châu Thành, xã Phú Tâm", sauSapNhap: "Xã Phú Tâm" },
-            { stt: 79, truocSapNhap: "Xã An Hiệp, xã An Ninh", sauSapNhap: "Xã An Ninh" },
-            { stt: 80, truocSapNhap: "Xã Thuận Hòa, xã Phú Tân (huyện Châu Thành)", sauSapNhap: "Xã Thuận Hòa" },
-            { stt: 81, truocSapNhap: "Xã Thiện Mỹ, xã Hồ Đắc Kiện", sauSapNhap: "Xã Hồ Đắc Kiện" },
-            { stt: 82, truocSapNhap: "Thị trấn Huỳnh Hữu Nghĩa, xã Mỹ Thuận, xã Mỹ Tú", sauSapNhap: "Xã Mỹ Tú" },
-            { stt: 83, truocSapNhap: "Xã Hưng Phú, xã Long Hưng", sauSapNhap: "Xã Long Hưng" },
-            { stt: 84, truocSapNhap: "Xã Thuận Hưng, xã Phú Mỹ, xã Mỹ Hương", sauSapNhap: "Xã Mỹ Hương" },
-            { stt: 85, truocSapNhap: "Xã Thạnh Tân, xã Long Bình, xã Tân Long", sauSapNhap: "Xã Tân Long" },
-            { stt: 86, truocSapNhap: "Thị trấn Hưng Lợi, thị trấn Phú Lộc, xã Thạnh Trị", sauSapNhap: "Xã Phú Lộc" },
-            { stt: 87, truocSapNhap: "Xã Châu Hưng, xã Vĩnh Thành, xã Vĩnh Lợi", sauSapNhap: "Xã Vĩnh Lợi" },
-            { stt: 88, truocSapNhap: "Xã Tuân Tức, xã Lâm Kiết, xã Lâm Tân", sauSapNhap: "Xã Lâm Tân" },
-            { stt: 89, truocSapNhap: "Xã Thạnh Thới Thuận, xã Thạnh Thới An", sauSapNhap: "Xã Thạnh Thới An" },
-            { stt: 90, truocSapNhap: "Xã Viên An, xã Tài Văn", sauSapNhap: "Xã Tài Văn" },
-            { stt: 91, truocSapNhap: "Xã Viên Bình, xã Liêu Tú", sauSapNhap: "Xã Liêu Tú" },
-            { stt: 92, truocSapNhap: "Thị trấn Lịch Hội Thượng, xã Lịch Hội Thượng", sauSapNhap: "Xã Lịch Hội Thượng" },
-            { stt: 93, truocSapNhap: "Thị trấn Trần Đề, xã Đại Ân 2, xã Trung Bình", sauSapNhap: "Xã Trần Đề" },
-            { stt: 94, truocSapNhap: "Thị trấn Cù Lao Dung, xã An Thạnh 1, xã An Thạnh Tây, xã An Thạnh Đông", sauSapNhap: "Xã An Thạnh" },
-            { stt: 95, truocSapNhap: "Xã An Thạnh 2, xã Đại Ân 1, xã An Thạnh 3, xã An Thạnh Nam", sauSapNhap: "Xã Cù Lao Dung" },
-            { stt: 96, truocSapNhap: "Phường Tân Lộc", sauSapNhap: "Phường Tân Lộc" },
-            { stt: 97, truocSapNhap: "Xã Trường Long", sauSapNhap: "Xã Trường Long" },
-            { stt: 98, truocSapNhap: "Xã Thạnh Phú", sauSapNhap: "Xã Thạnh Phú" },
-            { stt: 99, truocSapNhap: "Xã Thới Hưng", sauSapNhap: "Xã Thới Hưng" },
-            { stt: 100, truocSapNhap: "Xã Phong Nẫm", sauSapNhap: "Xã Phong Nẫm" },
-            { stt: 101, truocSapNhap: "Xã Mỹ Phước", sauSapNhap: "Xã Mỹ Phước" },
-            { stt: 102, truocSapNhap: "Xã Lai Hòa", sauSapNhap: "Xã Lai Hòa" },
-            { stt: 103, truocSapNhap: "Xã Vĩnh Hải", sauSapNhap: "Xã Vĩnh Hải" }
-        ];
+    <!-- Modal Chi tiết Hộ Khẩu & Chỉnh sửa / Gán ảnh -->
+    <div id="detailModal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-card w-full max-w-3xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
+                <h3 id="modalTitle" class="text-lg font-bold text-blue-400">Chi Tiết Hộ Gia Đình</h3>
+                <button onclick="dongModal()" class="text-gray-400 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6 flex-grow">
+                <!-- Thông tin chung & Ảnh hộ -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-darker p-4 rounded-lg border border-gray-800">
+                    <div class="md:col-span-2 space-y-2">
+                        <p><strong class="text-gray-400">Số HSCT:</strong> <span id="modalHsct"></span></p>
+                        <p><strong class="text-gray-400">Chủ hộ:</strong> <input type="text" id="editChuHo" class="bg-dark border border-gray-700 rounded px-2 py-1 text-sm text-white w-full mt-1"></p>
+                        <p><strong class="text-gray-400">Địa chỉ thường trú:</strong> <input type="text" id="editDiaChi" class="bg-dark border border-gray-700 rounded px-2 py-1 text-sm text-white w-full mt-1"></p>
+                    </div>
+                    <div class="flex flex-col items-center justify-center border border-gray-700 rounded-lg p-2 bg-dark relative">
+                        <img id="hoImg" src="" alt="Chưa có ảnh hộ" class="h-28 w-28 object-cover rounded mb-2 hidden">
+                        <span id="noImgText" class="text-xs text-gray-500 mb-2">Chưa có ảnh hộ</span>
+                        <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition">
+                            <span>📷 Gán/Đổi Ảnh</span>
+                            <input type="file" accept="image/*" class="hidden" onchange="ganAnhHo(event)">
+                        </label>
+                    </div>
+                </div>
 
-        // Khởi tạo bản đồ Leaflet (mặc định tại Cần Thơ)
-        const map = L.map('map').setView([10.0452, 105.7469], 11);
+                <!-- Danh sách nhân khẩu trong hộ -->
+                <div>
+                    <h4 class="font-semibold text-sm text-gray-300 mb-2">Danh sách nhân khẩu trong hộ:</h4>
+                    <div class="overflow-x-auto border border-gray-800 rounded-lg">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-gray-800 text-gray-400">
+                                <tr>
+                                    <th class="p-2">Họ và Tên</th>
+                                    <th class="p-2">Ngày Sinh</th>
+                                    <th class="p-2">Giới Tính</th>
+                                    <th class="p-2">Quan hệ với chủ hộ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalNhanKhauList" class="divide-y divide-gray-800">
+                                <!-- Nhân khẩu render động -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-800 flex justify-end gap-3 border-t border-gray-700">
+                <button onclick="dongModal()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition">Đóng</button>
+                <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script xử lý thông minh -->
+    <script>
+        let danhSachHoGiaDinh = [];
+        let currentSelectedHoIndex = null;
+
+        // Khởi tạo bản đồ Leaflet
+        const map = L.map('map').setView([10.0452, 105.7469], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Hàm render dữ liệu ra bảng và cập nhật thống kê
-        function capNhatGiaoDien(data) {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            
-            let demPhuong = 0;
-            let demXa = 0;
-
-            data.forEach((item, index) => {
-                // Thống kê tự động dựa trên từ khóa "Phường" hay "Xã"
-                if (item.sauSapNhap && item.sauSapNhap.toLowerCase().includes('phường')) {
-                    demPhuong++;
-                } else {
-                    demXa++;
-                }
-
-                const row = document.createElement('tr');
-                row.className = "hover:bg-gray-800 transition";
-                row.innerHTML = `
-                    <td class="p-2 border-b border-gray-800">${index + 1}</td>
-                    <td class="p-2 border-b border-gray-800 text-gray-300">${item.truocSapNhap || ''}</td>
-                    <td class="p-2 border-b border-gray-800 font-medium text-blue-300">${item.sauSapNhap || ''}</td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            // Cập nhật số liệu thống kê lên Dashboard
-            document.getElementById('statTongSo').innerText = data.length;
-            document.getElementById('statPhuong').innerText = demPhuong;
-            document.getElementById('statXa').innerText = demXa;
-        }
-
-        // Tính năng Đọc file Excel thông minh (SheetJS)
+        // Xử lý và đọc file Excel thông minh, tự động gom nhóm hộ
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -248,65 +169,206 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-
-                // Lấy tên sheet đầu tiên
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
+                const excelJson = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                // Chuyển đổi dữ liệu Excel sang dạng JSON
-                const excelJson = XLSX.utils.sheet_to_json(worksheet);
+                // Phân tích dữ liệu dòng tiêu đề và dữ liệu
+                let rows = excelJson;
+                let dataStartIndex = 0;
 
-                if (excelJson.length > 0) {
-                    // Ánh xạ dữ liệu linh hoạt (hỗ trợ nhiều định dạng tên cột khác nhau)
-                    danhSach103XaPhuong = excelJson.map((row, idx) => ({
-                        stt: row.STT || row.stt || (idx + 1),
-                        truocSapNhap: row.truocSapNhap || row['Trước sáp nhập'] || row['Truoc sap nhap'] || '',
-                        sauSapNhap: row.sauSapNhap || row['Sau sáp nhập'] || row['Sau sap nhap'] || ''
-                    }));
-
-                    capNhatGiaoDien(danhSach103XaPhuong);
-                    alert(`Nhập thành công ${danhSach103XaPhuong.length} bản ghi từ file Excel!`);
-                } else {
-                    alert("File Excel trống hoặc không đúng định dạng.");
+                // Tự động tìm dòng header nếu file có tiêu đề ở dòng 0 hoặc 1
+                if (rows.length > 0) {
+                    // Kiểm tra xem dòng đầu tiên có chứa từ khóa 'HSCT' hoặc 'Họ và tên' không
+                    const headerRow = rows[0].map(cell => String(cell).toLowerCase());
+                    if (!headerRow.some(c => c.includes('hsct') || c.includes('họ và tên'))) {
+                        dataStartIndex = 1; // Bỏ qua dòng tiêu đề phụ nếu có
+                    }
                 }
+
+                let rawNhanKhau = [];
+                for (let i = dataStartIndex; i < rows.length; i++) {
+                    const r = rows[i];
+                    if (!r || r.length === 0) continue;
+                    
+                    // Lọc các cột dựa trên cấu trúc file mẫu của bạn
+                    let hsct = String(r[0] || '').trim();
+                    let hoTen = String(r[1] || '').trim();
+                    let ngaySinh = String(r[2] || '').trim();
+                    let quanHe = String(r[3] || '').trim();
+                    let gioiTinh = String(r[4] || '').trim();
+                    let diaChi = String(r[5] || '').trim();
+                    let chuHo = String(r[7] || r[6] || '').trim();
+
+                    if (hoTen && hoTen !== 'undefined') {
+                        rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi, chuHo });
+                    }
+                }
+
+                // THÔNG MINH: Tự động gom nhóm các nhân khẩu thành 1 hộ dựa vào HSCT hoặc tên Chủ hộ
+                let mapHo = {};
+                rawNhanKhau.forEach(nk => {
+                    let key = nk.hsct ? nk.hsct : (nk.chuHo ? nk.chuHo : nk.diaChi);
+                    if (!mapHo[key]) {
+                        mapHo[key] = {
+                            hsct: nk.hsct || 'Chưa có',
+                            chuHo: nk.chuHo || nk.hoTen,
+                            diaChi: nk.diaChi || 'Chưa cập nhật',
+                            hinhAnh: '',
+                            thanhVien: []
+                        };
+                    }
+                    mapHo[key].thanhVien.push(nk);
+                });
+
+                danhSachHoGiaDinh = Object.values(mapHo);
+
+                capNhatGiaoDienChung(rawNhanKhau.length, danhSachHoGiaDinh.length);
+                renderBangHo(danhSachHoGiaDinh);
+                document.getElementById('statTrangThai').innerText = "Đã tải thành công";
+                alert(`Đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình từ ${rawNhanKhau.length} nhân khẩu!`);
             };
             reader.readAsArrayBuffer(file);
         }
 
-        // Tính năng Tìm kiếm nhanh trên bảng
-        function timKiemDuLieu() {
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = danhSach103XaPhuong.filter(item => 
-                (item.truocSapNhap && item.truocSapNhap.toLowerCase().includes(keyword)) ||
-                (item.sauSapNhap && item.sauSapNhap.toLowerCase().includes(keyword))
-            );
-            
+        function capNhatGiaoDienChung(soNhanKhau, soHo) {
+            document.getElementById('statNhanKhau').innerText = soNhanKhau;
+            document.getElementById('statHoGiaDinh').innerText = soHo;
+        }
+
+        function renderBangHo(data) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            filtered.forEach((item, index) => {
+
+            data.forEach((ho, index) => {
                 const row = document.createElement('tr');
                 row.className = "hover:bg-gray-800 transition";
                 row.innerHTML = `
                     <td class="p-2 border-b border-gray-800">${index + 1}</td>
-                    <td class="p-2 border-b border-gray-800 text-gray-300">${item.truocSapNhap}</td>
-                    <td class="p-2 border-b border-gray-800 font-medium text-blue-300">${item.sauSapNhap}</td>
+                    <td class="p-2 border-b border-gray-800 text-blue-300 font-mono">${ho.hsct}</td>
+                    <td class="p-2 border-b border-gray-800 font-semibold text-white">${ho.chuHo}</td>
+                    <td class="p-2 border-b border-gray-800 text-gray-300">${ho.diaChi}</td>
+                    <td class="p-2 border-b border-gray-800 text-center"><span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">${ho.thanhVien.length} người</span></td>
+                    <td class="p-2 border-b border-gray-800 text-center">
+                        <button onclick="xemChiTiet(${index})" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs font-medium transition flex items-center gap-1 mx-auto">
+                            <span>👁️ Xem / Sửa</span>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // Tính năng Xuất Báo Cáo Thống Kê ra file Excel mới
-        function xuatBaoCaoThongKê() {
-            const worksheet = XLSX.utils.json_to_sheet(danhSach103XaPhuong);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoSapNhap");
-            XLSX.writeFile(workbook, "Bao_Cao_Thong_Ke_Sap_Nhap.xlsx");
+        // Xem chi tiết hộ khẩu qua cửa sổ Modal
+        function xemChiTiet(index) {
+            currentSelectedHoIndex = index;
+            const ho = danhSachHoGiaDinh[index];
+
+            document.getElementById('modalHsct').innerText = ho.hsct;
+            document.getElementById('editChuHo').value = ho.chuHo;
+            document.getElementById('editDiaChi').value = ho.diaChi;
+
+            // Hiển thị ảnh hộ nếu có
+            const imgEl = document.getElementById('hoImg');
+            const noImgEl = document.getElementById('noImgText');
+            if (ho.hinhAnh) {
+                imgEl.src = ho.hinhAnh;
+                imgEl.classList.remove('hidden');
+                noImgEl.classList.add('hidden');
+            } else {
+                imgEl.classList.add('hidden');
+                noImgEl.classList.remove('hidden');
+            }
+
+            // Render danh sách thành viên trong modal
+            const nkList = document.getElementById('modalNhanKhauList');
+            nkList.innerHTML = '';
+            ho.thanhVien.forEach(tv => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 border-b border-gray-800 font-medium text-white">${tv.hoTen}</td>
+                    <td class="p-2 border-b border-gray-800 text-gray-300">${tv.ngaySinh}</td>
+                    <td class="p-2 border-b border-gray-800 text-gray-300">${tv.gioiTinh}</td>
+                    <td class="p-2 border-b border-gray-800 text-blue-400">${tv.quanHe || 'Chủ hộ'}</td>
+                `;
+                nkList.appendChild(tr);
+            });
+
+            document.getElementById('detailModal').classList.remove('hidden');
         }
 
-        // Chạy lần đầu khi load trang
-        window.onload = function() {
-            capNhatGiaoDien(danhSach103XaPhuong);
-        };
+        function dongModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            currentSelectedHoIndex = null;
+        }
+
+        // Gán ảnh vào hộ gia đình
+        function ganAnhHo(event) {
+            const file = event.target.files[0];
+            if (!file || currentSelectedHoIndex === null) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                danhSachHoGiaDinh[currentSelectedHoIndex].hinhAnh = e.target.result;
+                const imgEl = document.getElementById('hoImg');
+                const noImgEl = document.getElementById('noImgText');
+                imgEl.src = e.target.result;
+                imgEl.classList.remove('hidden');
+                noImgEl.classList.add('hidden');
+                alert("Đã gán ảnh thành công cho hộ gia đình!");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Lưu thay đổi chỉnh sửa thông tin hộ
+        function luuThongTinHo() {
+            if (currentSelectedHoIndex === null) return;
+            danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
+            danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = document.getElementById('editDiaChi').value;
+
+            renderBangHo(danhSachHoGiaDinh);
+            dongModal();
+            alert("Đã lưu thông tin hộ gia đình thành công!");
+        }
+
+        // Tìm kiếm nhanh danh sách hộ
+        function timKiemHoGiaDinh() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = danhSachHoGiaDinh.filter(ho => 
+                ho.chuHo.toLowerCase().includes(keyword) ||
+                ho.hsct.toLowerCase().includes(keyword) ||
+                ho.diaChi.toLowerCase().includes(keyword)
+            );
+            renderBangHo(filtered);
+        }
+
+        // Xuất báo cáo thống kê ra file Excel
+        function xuatBaoCaoThongKê() {
+            if (danhSachHoGiaDinh.length === 0) {
+                alert("Chưa có dữ liệu để xuất báo cáo!");
+                return;
+            }
+            let flatData = [];
+            danhSachHoGiaDinh.forEach((ho, idx) => {
+                ho.thanhVien.forEach(tv => {
+                    flatData.push({
+                        STT: flatData.length + 1,
+                        "Số HSCT": ho.hsct,
+                        "Họ và Tên": tv.hoTen,
+                        "Ngày Sinh": tv.ngaySinh,
+                        "Giới Tính": tv.gioiTinh,
+                        "Quan Hệ Với Chủ Hộ": tv.quanHe,
+                        "Địa Chỉ Thường Trú": ho.diaChi,
+                        "Chủ Hộ": ho.chuHo
+                    });
+                });
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(flatData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "TongHopDanCu");
+            XLSX.writeFile(workbook, "Bao_Cao_Tong_Hop_Dan_Cu.xlsx");
+        }
     </script>
 </body>
 </html>
