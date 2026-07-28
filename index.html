@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu - Phân Cấp Thông Minh</title>
+    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu - Bản Nền Móng Đầy Đủ</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS (XLSX) để đọc/xuất file Excel -->
@@ -34,28 +34,29 @@
         </div>
     </div>
 
-    <!-- MÀN HÌNH BƯỚC 2: NHẬP MÃ OTP TỪ GOOGLE AUTHENTICATOR -->
+    <!-- MÀN HÌNH BƯỚC 2: NHẬP MÃ OTP TỪ GOOGLE AUTHENTICATOR (QR CỰC LỚN) -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-gray-800 border border-gray-700 w-full max-w-lg p-6 rounded-2xl shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div class="bg-gray-800 border border-gray-700 w-full max-w-xl p-6 rounded-2xl shadow-2xl space-y-6 max-h-[95vh] overflow-y-auto">
             <div class="text-center space-y-2">
                 <div class="bg-emerald-600/20 text-emerald-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-emerald-500/30">🛡️</div>
                 <h2 class="text-xl font-bold text-white">Bảo Mật Google Authenticator</h2>
                 <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span></p>
             </div>
 
-            <div id="setupAuthSection" class="bg-gray-900 p-4 rounded-xl border border-gray-700 space-y-3">
-                <p class="text-xs text-amber-400 font-semibold">⚠️ Thiết lập mã xác thực:</p>
-                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR lớn bên dưới:</p>
+            <div id="setupAuthSection" class="bg-gray-900 p-5 rounded-xl border border-gray-700 space-y-4 text-center">
+                <p class="text-xs text-amber-400 font-semibold">⚠️ Quét mã QR xác thực thiết lập:</p>
+                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR phóng to bên dưới:</p>
                 
-                <!-- ĐÃ CẬP NHẬT: Giao diện chứa QR lớn hơn và rõ ràng hơn -->
-                <div class="flex flex-col md:flex-row items-center justify-center gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
-                    <div id="qrcode" class="bg-white p-3 rounded-lg shadow-md flex items-center justify-center"></div>
-                    <div class="space-y-2 w-full">
-                        <label class="block text-[11px] text-gray-400">Mã thiết lập (Copy dán vào Authenticator nếu không quét được):</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="secretKeyDisplay" readonly class="bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-xs font-mono text-emerald-300 w-full select-all">
-                            <button onclick="copySecretKey()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded text-xs whitespace-nowrap">📋 Copy</button>
-                        </div>
+                <!-- ĐÃ PHÓNG TO MÃ QR CỰC LỚN (280x280px) -->
+                <div class="flex justify-center bg-white p-4 rounded-xl shadow-inner max-w-[310px] mx-auto border border-gray-600">
+                    <div id="qrcode"></div>
+                </div>
+
+                <div class="space-y-1 text-left">
+                    <label class="block text-[11px] text-gray-400">Hoặc nhập thủ công mã thiết lập (Secret Key):</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="secretKeyDisplay" readonly class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-xs font-mono text-emerald-300 w-full select-all">
+                        <button onclick="copySecretKey()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-xs whitespace-nowrap font-medium">📋 Copy</button>
                     </div>
                 </div>
             </div>
@@ -81,7 +82,7 @@
                     <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp bộ lọc phân cấp (Phường -> Khu vực/Ấp/Khóm -> Nhà).</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Đã tích hợp đầy đủ tiện ích nền móng.</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
@@ -89,10 +90,13 @@
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
                 <button onclick="xoaDuLieuExcel()" class="bg-amber-600 hover:bg-amber-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
-                    <span>🗑️ Xóa Dữ Liệu Cũ</span>
+                    <span>🗑️ Xóa Dữ Liệu</span>
                 </button>
                 <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
-                    <span>📊 Xuất Excel / Báo Cáo</span>
+                    <span>📊 Xuất Excel</span>
+                </button>
+                <button onclick="xemNhatKyHoatDong()" class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
+                    <span>📜 Nhật Ký (Audit Log)</span>
                 </button>
                 <button onclick="dangXuat()" class="bg-red-600/80 hover:bg-red-600 px-3 py-2 rounded-lg text-xs font-medium transition shadow">🔒 Đăng Xuất</button>
             </div>
@@ -131,7 +135,7 @@
             <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
                 <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Gia Đình & Tìm Kiếm Nhà Cụ Thể</h2>
                 <!-- Cấp 3: Tìm kiếm nhà / chủ hộ / đường -->
-                <input type="text" id="searchInput" placeholder="3. Tìm tên chủ hộ, số nhà, đường Trần Hoàng Na..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
+                <input type="text" id="searchInput" placeholder="3. Tìm tên chủ hộ, số nhà, đường..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
@@ -156,11 +160,11 @@
         </div>
     </div>
 
-    <!-- Modal Chi tiết Hộ Khẩu, Gán Ảnh & GPS -->
+    <!-- Modal Chi tiết Hộ Khẩu, Gán Ảnh, GPS & In Sổ -->
     <div id="detailModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-gray-800 w-full max-w-4xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
-                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu, Ảnh & Định Vị GPS</h3>
+                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu, Ảnh, GPS & Tiện Ích In Ấn</h3>
                 <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto space-y-6 flex-grow text-xs">
@@ -179,7 +183,7 @@
                             <label class="text-gray-400 block mb-1">Tọa độ GPS (Vĩ độ, Kinh độ):</label>
                             <div class="flex gap-2">
                                 <input type="text" id="editGps" placeholder="VD: 10.033198, 105.782806" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full font-mono focus:outline-none focus:border-blue-500">
-                                <button onclick="layGpsHienTai()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded font-medium whitespace-nowrap shadow">📍 Lấy GPS Thiết Bị</button>
+                                <button onclick="layGpsHienTai()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded font-medium whitespace-nowrap shadow">📍 Lấy GPS</button>
                             </div>
                         </div>
                     </div>
@@ -187,7 +191,7 @@
                         <img id="hoImg" src="" alt="Ảnh hộ gia đình" class="h-28 w-28 object-cover rounded mb-2 hidden shadow border border-gray-600">
                         <span id="noImgText" class="text-gray-500 mb-2 text-center">Chưa có ảnh hộ</span>
                         <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded transition font-medium shadow">
-                            <span>📷 Gán/Đổi Ảnh</span>
+                            <span>📷 Gán Ảnh</span>
                             <input type="file" accept="image/*" class="hidden" onchange="ganAnhHo(event)">
                         </label>
                     </div>
@@ -210,9 +214,28 @@
                     </div>
                 </div>
             </div>
-            <div class="p-4 bg-gray-700 flex justify-end gap-3 border-t border-gray-600">
-                <button onclick="dongModal()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
-                <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition font-medium shadow">Lưu Thay Đổi</button>
+            <div class="p-4 bg-gray-700 flex justify-between items-center border-t border-gray-600">
+                <button onclick="inTrichXuatHoKhau()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition font-medium shadow flex items-center gap-1">🖨️ In / Xuất Biên Bản Hộ Khẩu</button>
+                <div class="flex gap-3">
+                    <button onclick="dongModal()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
+                    <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition font-medium shadow">Lưu Thay Đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xem Nhật Ký Hoạt Động (Audit Log) -->
+    <div id="logModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
+                <h3 class="text-sm font-bold text-purple-300">📜 Nhật Ký Thao Tác Hệ Thống (Audit Log)</h3>
+                <button onclick="dongModalLog()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow text-xs space-y-2" id="logContentList">
+                <p class="text-gray-400">Chưa có hoạt động nào được ghi nhận.</p>
+            </div>
+            <div class="p-4 bg-gray-700 flex justify-end border-t border-gray-600">
+                <button onclick="dongModalLog()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
             </div>
         </div>
     </div>
@@ -223,8 +246,6 @@
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "" };
         let tamEmailDangNhap = "";
-
-        // Dữ liệu phân cấp ánh xạ tự động từ địa chỉ
         let duLieuPhanCap = {}; 
 
         const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -259,6 +280,14 @@
             } catch (e) {
                 return null;
             }
+        }
+
+        function ghiNhatKy(hanhDong) {
+            let logs = JSON.parse(localStorage.getItem("heThongAuditLogs") || "[]");
+            let thoiGian = new Date().toLocaleString('vi-VN');
+            logs.unshift({ thoiGian, user: currentUser.email || tamEmailDangNhap || 'Khách', hanhDong });
+            if (logs.length > 50) logs.pop(); // Giữ tối đa 50 log gần nhất
+            localStorage.setItem("heThongAuditLogs", JSON.stringify(logs));
         }
 
         window.onload = function() {
@@ -303,11 +332,11 @@
             let otpauthUrl = `otpauth://totp/QuanLyDanCu:${emailInput}?secret=${storedSecret}&issuer=HeThongDanCu`;
             document.getElementById('qrcode').innerHTML = "";
             
-            // ĐÃ CẬP NHẬT: Phóng to mã QR kích thước 220x220 và cấu hình sửa lỗi cao (CorrectLevel.H)
+            // ĐÃ PHÓNG TO MÃ QR LÊN 280x280px VÀ ĐỘ NÉT CAO (CorrectLevel.H)
             new QRCode(document.getElementById("qrcode"), {
                 text: otpauthUrl,
-                width: 220,
-                height: 220,
+                width: 280,
+                height: 280,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
@@ -341,6 +370,7 @@
                 role: 'admin'
             };
             sessionStorage.setItem("currentUserAuth", JSON.stringify(currentUser));
+            ghiNhatKy("Đăng nhập hệ thống thành công");
             document.getElementById('otpScreen').classList.add('hidden');
             kichHoatGiaoDienChinh();
         }
@@ -356,6 +386,7 @@
         }
 
         function dangXuat() {
+            ghiNhatKy("Đăng xuất khỏi hệ thống");
             sessionStorage.removeItem("currentUserAuth");
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
@@ -548,6 +579,7 @@
 
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
+                    ghiNhatKy(`Nhập file Excel thành công (${danhSachHoGiaDinh.length} hộ)`);
                     alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
                 } catch (err) {
                     console.error(err);
@@ -582,6 +614,7 @@
                 document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
                 document.getElementById('searchInput').value = "";
                 renderBangHo([]);
+                ghiNhatKy("Xóa sạch toàn bộ dữ liệu dân cư");
                 alert("Đã xóa sạch dữ liệu cũ.");
             }
         }
@@ -611,7 +644,7 @@
                     <td class="p-2.5 border-b border-gray-700">${gpsHtml}</td>
                     <td class="p-2.5 border-b border-gray-700 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full font-bold">${ho.thanhVien.length} người</span></td>
                     <td class="p-2.5 border-b border-gray-700 text-center">
-                        <button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded transition font-medium shadow">👁️ Xem / Gán GPS</button>
+                        <button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded transition font-medium shadow">👁️ Xem / Sửa</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -703,8 +736,113 @@
             localStorage.setItem("danhSachHoGiaDinhCache", JSON.stringify(danhSachHoGiaDinh));
             phanTichDuLieuPhanCap();
             renderBangHo(danhSachHoGiaDinh);
+            ghiNhatKy(`Cập nhật thông tin hộ: ${danhSachHoGiaDinh[currentSelectedHoIndex].chuHo}`);
             dongModal();
             alert("Đã cập nhật thông tin hộ thành công!");
+        }
+
+        function inTrichXuatHoKhau() {
+            if (currentSelectedHoIndex === null) return;
+            const ho = danhSachHoGiaDinh[currentSelectedHoIndex];
+            
+            let printWindow = window.open('', '_blank');
+            let htmlContent = `
+                <html>
+                <head>
+                    <title>Trích Xuất Sổ Hộ Khẩu - ${ho.chuHo}</title>
+                    <style>
+                        body { font-family: 'Times New Roman', Times, serif; padding: 20px; color: #000; }
+                        h2, h3 { text-align: center; margin: 5px 0; }
+                        .header { text-align: center; margin-bottom: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; font-size: 13px; }
+                        th { background-color: #f2f2f2; }
+                        .info { margin: 15px 0; font-size: 14px; }
+                        .footer { margin-top: 40px; display: flex; justify-content: space-between; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
+                        <p><strong>Độc lập - Tự do - Hạnh phúc</strong></p>
+                        <hr style="width: 200px; margin: 5px auto;">
+                        <h2>TRÍCH XUẤT THÔNG TIN SỔ HỘ KHẨU ĐIỆN TỬ</h2>
+                    </div>
+                    <div class="info">
+                        <p><strong>Số HSCT:</strong> ${ho.hsct}</p>
+                        <p><strong>Họ và tên chủ hộ:</strong> ${ho.chuHo}</p>
+                        <p><strong>Địa chỉ thường trú:</strong> ${ho.diaChi}</p>
+                        <p><strong>Tọa độ GPS:</strong> ${ho.gps || 'Chưa cập nhật'}</p>
+                    </div>
+                    <h4>Danh sách các thành viên trong hộ:</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Họ và Tên</th>
+                                <th>Ngày Sinh</th>
+                                <th>Giới Tính</th>
+                                <th>Quan hệ với chủ hộ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            ho.thanhVien.forEach((tv, idx) => {
+                htmlContent += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${tv.hoTen}</td>
+                        <td>${tv.ngaySinh}</td>
+                        <td>${tv.gioiTinh}</td>
+                        <td>${tv.quanHe || 'Chủ hộ'}</td>
+                    </tr>
+                `;
+            });
+
+            htmlContent += `
+                        </tbody>
+                    </table>
+                    <div class="footer">
+                        <div><br/><strong>XÁC NHẬN CỦA CƠ QUAN QUẢN LÝ</strong></div>
+                        <div><em>Ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}</em><br/><strong>CHỦ HỘ / NGƯỜI KHAI KÝ</strong></div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => { printWindow.print(); }, 500);
+        }
+
+        function xemNhatKyHoatDong() {
+            let logs = JSON.parse(localStorage.getItem("heThongAuditLogs") || "[]");
+            const container = document.getElementById('logContentList');
+            container.innerHTML = '';
+
+            if (logs.length === 0) {
+                container.innerHTML = `<p class="text-gray-400">Chưa có nhật ký hoạt động nào.</p>`;
+            } else {
+                logs.forEach(log => {
+                    let div = document.createElement('div');
+                    div.className = "bg-gray-900 p-2.5 rounded border border-gray-700 flex justify-between items-center";
+                    div.innerHTML = `
+                        <div>
+                            <span class="text-blue-400 font-semibold">[${log.user}]</span> 
+                            <span class="text-gray-200">${log.hanhDong}</span>
+                        </div>
+                        <span class="text-[10px] text-gray-400 font-mono">${log.thoiGian}</span>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+            document.getElementById('logModal').classList.remove('hidden');
+        }
+
+        function dongModalLog() {
+            document.getElementById('logModal').classList.add('hidden');
         }
 
         function xuatBaoCaoThongKe() {
@@ -733,6 +871,7 @@
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoDanCu");
             XLSX.writeFile(workbook, "Bao_Cao_Quan_Ly_Dan_Cu_Phan_Cap.xlsx");
+            ghiNhatKy("Xuất báo cáo Excel toàn hệ thống");
         }
     </script>
 </body>
