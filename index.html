@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phần Mềm Quản Lý Nhân Hộ Khẩu - Công An Phường</title>
+    <!-- Thư viện hỗ trợ đọc file Excel (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -125,8 +127,9 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
         }
-        .action-bar input, .action-bar select {
+        .action-bar input[type="text"], .action-bar select {
             padding: 9px 12px;
             font-size: 14px;
             border: 1px solid var(--border-color);
@@ -136,6 +139,11 @@
         }
         .action-bar input:focus, .action-bar select:focus {
             border-color: var(--primary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
 
         button {
@@ -201,6 +209,7 @@
         }
         .badge-thuongtru { background: #dcfce7; color: #166534; }
         .badge-tamtru { background: #e0f2fe; color: #0369a1; }
+        .badge-luutru { background: #fef08a; color: #854d0e; }
         .badge-warning { background: #fef3c7; color: #92400e; }
         .badge-danger { background: #fee2e2; color: #991b1b; }
     </style>
@@ -224,7 +233,7 @@
                     <div class="number" id="lblThuongTru">0</div>
                 </div>
                 <div class="card info">
-                    <h4>Tạm Trú</h4>
+                    <h4>Tạm Trú / Lưu Trú</h4>
                     <div class="number" id="lblTamTru">0</div>
                 </div>
                 <div class="card warning">
@@ -247,11 +256,12 @@
             <div class="filter-group">
                 <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm họ tên, CCCD..." onkeyup="renderTable()" style="width: 220px;">
                 
-                <!-- Lọc theo loại cư trú (Thường trú / Tạm trú) -->
+                <!-- Lọc theo loại cư trú -->
                 <select id="loaiCuTruFilter" onchange="renderTable()">
                     <option value="all">-- Tất cả loại cư trú --</option>
                     <option value="Thường trú">Thường trú</option>
                     <option value="Tạm trú">Tạm trú</option>
+                    <option value="Lưu trú">Lưu trú</option>
                 </select>
 
                 <!-- Lọc theo biến động -->
@@ -263,8 +273,11 @@
                     <option value="Đi nước ngoài/Bỏ địa phương">Đi nước ngoài / Bỏ địa phương</option>
                 </select>
             </div>
-            <div>
-                <button class="btn-success" onclick="themHoSoMẫu()"><i class="fa-solid fa-user-plus"></i> Thêm Khai Báo Mới</button>
+            <div class="btn-group">
+                <!-- Nút Import Excel ẩn input file -->
+                <input type="file" id="excelFile" accept=".xlsx, .xls" style="display: none;" onchange="xuLyImportExcel(event)">
+                <button class="btn-success" onclick="document.getElementById('excelFile').click()"><i class="fa-solid fa-file-excel"></i> Import Excel</button>
+                <button onclick="themHoSoMẫu()"><i class="fa-solid fa-user-plus"></i> Thêm Khai Báo Mới</button>
             </div>
         </div>
 
@@ -276,7 +289,7 @@
                         <th>STT</th>
                         <th>Họ và Tên</th>
                         <th>Loại Cư Trú</th>
-                        <th>Mã Hộ / Sổ Tạm Trú</th>
+                        <th>Mã Hộ / Sổ Định Danh</th>
                         <th>CCCD / Định Danh</th>
                         <th>Khu vực</th>
                         <th>Trạng thái biến động</th>
@@ -291,12 +304,12 @@
     </div>
 
     <script>
-        // Mở rộng dữ liệu mẫu bao gồm cả Thường trú và Tạm trú
+        // Dữ liệu mẫu ban đầu
         let danhSachNhanKhau = [
             { id: 1, hoTen: "Nguyễn Văn A", loaiCuTru: "Thường trú", maHo: "HK001", cccd: "092083000123", khuVuc: "KV1", trangThai: "Ổn định" },
             { id: 2, hoTen: "Trần Thị B", loaiCuTru: "Tạm trú", maHo: "TT015", cccd: "092085000456", khuVuc: "KV2", trangThai: "Ổn định" },
             { id: 3, hoTen: "Lê Văn C", loaiCuTru: "Thường trú", maHo: "HK003", cccd: "092070000789", khuVuc: "KV1", trangThai: "Bán nhà/Giải tỏa" },
-            { id: 4, hoTen: "Phạm Thị D", loaiCuTru: "Tạm trú", maHo: "TT022", cccd: "092066000111", khuVuc: "KV3", trangThai: "Đi nước ngoài/Bỏ địa phương" },
+            { id: 4, hoTen: "Phạm Thị D", loaiCuTru: "Lưu trú", maHo: "LT022", cccd: "092066000111", khuVuc: "KV3", trangThai: "Đi nước ngoài/Bỏ địa phương" },
             { id: 5, hoTen: "Hoàng Văn E", loaiCuTru: "Thường trú", maHo: "HK005", cccd: "092055000321", khuVuc: "KV3", trangThai: "Chết" }
         ];
 
@@ -322,7 +335,9 @@
             }
 
             filteredData.forEach((item, index) => {
-                let badgeCuTru = item.loaiCuTru === "Thường trú" ? "badge-thuongtru" : "badge-tamtru";
+                let badgeCuTru = "badge-thuongtru";
+                if(item.loaiCuTru === "Tạm trú") badgeCuTru = "badge-tamtru";
+                if(item.loaiCuTru === "Lưu trú") badgeCuTru = "badge-luutru";
                 
                 let badgeTrangThai = "badge-success";
                 if(item.trangThai === "Bán nhà/Giải tỏa" || item.trangThai === "Đi nước ngoài/Bỏ địa phương") badgeTrangThai = "badge-warning";
@@ -350,7 +365,7 @@
         // Tự động đếm số liệu cho từng thẻ thống kê
         function capNhatTheThongKe() {
             document.getElementById('lblThuongTru').innerText = danhSachNhanKhau.filter(i => i.loaiCuTru === 'Thường trú').length;
-            document.getElementById('lblTamTru').innerText = danhSachNhanKhau.filter(i => i.loaiCuTru === 'Tạm trú').length;
+            document.getElementById('lblTamTru').innerText = danhSachNhanKhau.filter(i => i.loaiCuTru === 'Tạm trú' || i.loaiCuTru === 'Lưu trú').length;
             document.getElementById('lblBanNha').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Bán nhà/Giải tỏa').length;
             document.getElementById('lblChet').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Chết').length;
             document.getElementById('lblBienDongKhac').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Đi nước ngoài/Bỏ địa phương').length;
@@ -369,12 +384,16 @@
         function themHoSoMẫu() {
             let ten = prompt("Nhập họ tên nhân khẩu mới:");
             if(ten && ten.trim() !== "") {
-                let loai = confirm("Nhấn OK nếu là THƯỜNG TRÚ. Nhấn Cancel nếu là TẠM TRÚ.") ? "Thường trú" : "Tạm trú";
+                let loaiInput = prompt("Chọn loại cư trú (Nhập số):\n1. Thường trú\n2. Tạm trú\n3. Lưu trú", "1");
+                let loai = "Thường trú";
+                if(loaiInput === "2") loai = "Tạm trú";
+                if(loaiInput === "3") loai = "Lưu trú";
+
                 danhSachNhanKhau.push({
                     id: danhSachNhanKhau.length > 0 ? danhSachNhanKhau[danhSachNhanKhau.length - 1].id + 1 : 1,
                     hoTen: ten,
                     loaiCuTru: loai,
-                    maHo: (loai === "Thường trú" ? "HK00" : "TT0") + (Math.floor(Math.random() * 90) + 10),
+                    maHo: (loai === "Thường trú" ? "HK00" : (loai === "Tạm trú" ? "TT0" : "LT0")) + (Math.floor(Math.random() * 90) + 10),
                     cccd: "0920" + Math.floor(10000000 + Math.random() * 90000000),
                     khuVuc: "KV" + (Math.floor(Math.random() * 3) + 1),
                     trangThai: "Ổn định"
@@ -388,6 +407,61 @@
                 danhSachNhanKhau = danhSachNhanKhau.filter(i => i.id !== id);
                 renderTable();
             }
+        }
+
+        // Xử lý Import File Excel và hộp thoại hỏi loại cư trú
+        function xuLyImportExcel(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+
+            // Hỏi người dùng phân loại file trước khi đọc dữ liệu
+            let luaChon = prompt("Xác định loại cư trú cho file Excel bạn đang tải lên:\n1. Thường trú\n2. Tạm trú\n3. Lưu trú", "1");
+            let loaiCuTruChon = "Thường trú";
+            if (luaChon === "2") loaiCuTruChon = "Tạm trú";
+            else if (luaChon === "3") loaiCuTruChon = "Lưu trú";
+
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let data = new Uint8Array(e.target.result);
+                    let workbook = XLSX.read(data, { type: 'array' });
+                    let firstSheetName = workbook.SheetNames[0];
+                    let worksheet = workbook.Sheets[firstSheetName];
+                    let jsonSheet = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    let countThem = 0;
+                    // Bỏ qua dòng tiêu đề (dòng 0), đọc từ dòng 1 trở đi
+                    for (let i = 1; i < jsonSheet.length; i++) {
+                        let row = jsonSheet[i];
+                        if (row && row.length > 0 && row[0]) { // Giả định cột đầu tiên có Họ tên
+                            let hoTenExcel = row[0] ? row[0].toString() : "Chưa rõ";
+                            let maHoExcel = row[1] ? row[1].toString() : ((loaiCuTruChon === "Thường trú" ? "HK" : "TT") + Math.floor(100 + Math.random() * 900));
+                            let cccdExcel = row[2] ? row[2].toString() : ("0920" + Math.floor(10000000 + Math.random() * 90000000));
+                            let khuVucExcel = row[3] ? row[3].toString() : "KV1";
+
+                            danhSachNhanKhau.push({
+                                id: danhSachNhanKhau.length > 0 ? danhSachNhanKhau[danhSachNhanKhau.length - 1].id + 1 : 1,
+                                hoTen: hoTenExcel,
+                                loaiCuTru: loaiCuTruChon,
+                                maHo: maHoExcel,
+                                cccd: cccdExcel,
+                                khuVuc: khuVucExcel,
+                                trangThai: "Ổn định"
+                            });
+                            countThem++;
+                        }
+                    }
+
+                    alert(`Import thành công ${countThem} nhân khẩu dưới diện "${loaiCuTruChon}"!`);
+                    renderTable();
+                } catch (error) {
+                    alert("Lỗi đọc file Excel! Vui lòng kiểm tra lại cấu trúc file.");
+                    console.error(error);
+                }
+                // Reset ô input file để có thể chọn lại cùng 1 file nếu cần
+                event.target.value = "";
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         window.onload = function() {
