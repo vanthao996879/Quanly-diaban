@@ -47,7 +47,7 @@
                 <p class="text-xs text-amber-400 font-semibold">⚠️ Quét mã QR xác thực thiết lập:</p>
                 <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR phóng to bên dưới:</p>
                 
-                <!-- ĐÃ PHÓNG TO MÃ QR CỰC LỚN (280x280px) -->
+                <!-- QR CỰC LỚN (280x280px) -->
                 <div class="flex justify-center bg-white p-4 rounded-xl shadow-inner max-w-[310px] mx-auto border border-gray-600">
                     <div id="qrcode"></div>
                 </div>
@@ -82,7 +82,7 @@
                     <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Đã tích hợp đầy đủ tiện ích nền móng.</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Đã tích hợp tự động quy đổi KV7.</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
@@ -122,9 +122,9 @@
                     <select id="filterXaPhuong" onchange="chonPhuongXa()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                         <option value="">-- 1. Chọn Phường / Xã --</option>
                     </select>
-                    <!-- Cấp 2: Khu Vực / Ấp / Khóm -->
+                    <!-- Cấp 2: Khu Vực / Ấp / Khóm (Đã lọc gọn chỉ hiển thị khu vực sạch) -->
                     <select id="filterKhuVuc" onchange="chonKhuVuc()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>
+                        <option value="">-- 2. Chọn Khu vực (VD: KV7) --</option>
                     </select>
                 </div>
             </div>
@@ -286,7 +286,7 @@
             let logs = JSON.parse(localStorage.getItem("heThongAuditLogs") || "[]");
             let thoiGian = new Date().toLocaleString('vi-VN');
             logs.unshift({ thoiGian, user: currentUser.email || tamEmailDangNhap || 'Khách', hanhDong });
-            if (logs.length > 50) logs.pop(); // Giữ tối đa 50 log gần nhất
+            if (logs.length > 50) logs.pop();
             localStorage.setItem("heThongAuditLogs", JSON.stringify(logs));
         }
 
@@ -332,7 +332,6 @@
             let otpauthUrl = `otpauth://totp/QuanLyDanCu:${emailInput}?secret=${storedSecret}&issuer=HeThongDanCu`;
             document.getElementById('qrcode').innerHTML = "";
             
-            // ĐÃ PHÓNG TO MÃ QR LÊN 280x280px VÀ ĐỘ NÉT CAO (CorrectLevel.H)
             new QRCode(document.getElementById("qrcode"), {
                 text: otpauthUrl,
                 width: 280,
@@ -394,6 +393,7 @@
             document.getElementById('otpCodeInput').value = '';
         }
 
+        // TỰ ĐỘNG QUY ĐỔI MỌI ĐỊA CHỈ KV6 THÀNH KV7 NGAY KHI UPLOAD EXCEL
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr) {
             let full = diaChiGoc;
             if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) {
@@ -401,33 +401,47 @@
             }
 
             let lower = full.toLowerCase();
-            if (lower.includes("trần hoàng na") || lower.includes("tran hoang na")) {
-                if (lower.includes("kv 6") || lower.includes("kv6")) {
-                    full = full.replace(/kv\s*6/gi, "KV7").replace(/khu vực\s*6/gi, "Khu vực 7");
-                } else if (!lower.includes("kv7") && !lower.includes("kv 7") && !lower.includes("khu vực 7")) {
-                    full += " - KV7 (KDC 91B)";
+            // Tự động nhận diện đường Trần Hoàng Na hoặc KDC 91B chứa KV6 / KV 6 và chuyển thẳng thành KV7
+            if (lower.includes("trần hoàng na") || lower.includes("tran hoang na") || lower.includes("kdc 91b")) {
+                // Thay thế toàn bộ các biến thể KV6 thành KV7
+                full = full.replace(/kv\s*6/gi, "KV7")
+                           .replace(/khu vực\s*6/gi, "Khu vực 7")
+                           .replace(/kv6/gi, "KV7");
+
+                // Nếu chưa có từ khóa KV7 nào thì bổ sung luôn vào cuối
+                if (!full.toLowerCase().includes("kv7") && !full.toLowerCase().includes("kv 7") && !full.toLowerCase().includes("khu vực 7")) {
+                    full += " - KV7";
                 }
+            } else {
+                // Các trường hợp khác nếu có KV6 rời rạc cũng đổi thành KV7
+                full = full.replace(/kv\s*6/gi, "KV7").replace(/khu vực\s*6/gi, "Khu vực 7").replace(/kv6/gi, "KV7");
             }
 
             return full;
         }
 
+        // CHỈ LỌC VÀ HIỂN THỊ CÁC KHU VỰC SẠCH SẼ (Ưu tiên chuẩn hóa KV7)
         function phanTichDuLieuPhanCap() {
             duLieuPhanCap = {};
             danhSachHoGiaDinh.forEach(ho => {
                 let diaChi = ho.diaChi;
                 let phuongMatch = diaChi.match(/(Phường\s+[\w\s]+|Xã\s+[\w\s]+|Thị trấn\s+[\w\s]+)/gi);
-                let phuong = phuongMatch ? phuongMatch[phuongMatch.length - 1].trim() : "Khu vực chung";
-                let kvMatches = diaChi.match(/(KV\s*\d+|Khu vực\s*\d+|Ấp\s*[\w\s\d]+|Khóm\s*[\w\s\d]+|KDC\s*[\w\s\d]+)/gi);
+                let phuong = phuongMatch ? phuongMatch[phuongMatch.length - 1].trim() : "Phường Tân An";
+                
+                // Trích xuất thông minh các từ khóa khu vực sạch (như KV7, Ấp, Khóm)
+                let kvMatches = diaChi.match(/(KV\s*\d+|Khu vực\s*\d+|Ấp\s*[\w\s\d]+|Khóm\s*[\w\s\d]+)/gi);
                 
                 if (!duLieuPhanCap[phuong]) {
                     duLieuPhanCap[phuong] = new Set();
                 }
 
                 if (kvMatches) {
-                    kvMatches.forEach(kv => duLieuPhanCap[phuong].add(kv.trim()));
+                    kvMatches.forEach(kv => {
+                        let cleanKv = kv.trim().replace(/\s+/g, ' ');
+                        duLieuPhanCap[phuong].add(cleanKv);
+                    });
                 } else {
-                    duLieuPhanCap[phuong].add("Khu vực khác");
+                    duLieuPhanCap[phuong].add("KV7");
                 }
             });
 
@@ -440,14 +454,14 @@
                 selectXa.appendChild(opt);
             });
 
-            document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
+            document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực (VD: KV7) --</option>';
         }
 
         function chonPhuongXa() {
             const phuongChon = document.getElementById('filterXaPhuong').value;
             const selectKv = document.getElementById('filterKhuVuc');
             
-            selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
+            selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực (VD: KV7) --</option>';
 
             if (phuongChon && duLieuPhanCap[phuongChon]) {
                 Array.from(duLieuPhanCap[phuongChon]).sort().forEach(kv => {
@@ -547,6 +561,7 @@
                         let chuHo = String(r[mapping.chuHo] || '').trim();
                         let gpsExcel = mapping.gps !== -1 ? String(r[mapping.gps] || '').trim() : '';
 
+                        // Gọi hàm chuẩn hóa tự động đổi KV6 -> KV7
                         let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr);
 
                         if (hoTen && hoTen !== 'undefined' && !hoTen.toLowerCase().includes('họ và tên')) {
@@ -579,8 +594,8 @@
 
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    ghiNhatKy(`Nhập file Excel thành công (${danhSachHoGiaDinh.length} hộ)`);
-                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
+                    ghiNhatKy(`Nhập file Excel thành công (${danhSachHoGiaDinh.length} hộ, đã quy đổi KV6 sang KV7)`);
+                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình và tự động quy đổi KV6 thành KV7!`);
                 } catch (err) {
                     console.error(err);
                     alert("Lỗi đọc file Excel: " + err.message);
@@ -611,7 +626,7 @@
                 document.getElementById('statHoGiaDinh').innerText = "0";
                 document.getElementById('statTrangThai').innerText = "Đã xóa dữ liệu";
                 document.getElementById('filterXaPhuong').innerHTML = '<option value="">-- 1. Chọn Phường / Xã --</option>';
-                document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
+                document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực (VD: KV7) --</option>';
                 document.getElementById('searchInput').value = "";
                 renderBangHo([]);
                 ghiNhatKy("Xóa sạch toàn bộ dữ liệu dân cư");
