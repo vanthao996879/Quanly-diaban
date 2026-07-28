@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Thư viện QRCode để tạo mã QR cho Google Authenticator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Thư viện mã hóa OTP (jsOTP /otplib standalone) -->
+    <!-- Thư viện mã hóa OTP (CryptoJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-4">
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <!-- MÀN HÌNH BƯỚC 2: NHẬP MÃ OTP TỪ GOOGLE AUTHENTICATOR (HOẶC THIẾT LẬP LẦN ĐẦU) -->
+    <!-- MÀN HÌNH BƯỚC 2: NHẬP MÃ OTP TỪ GOOGLE AUTHENTICATOR -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-lg p-6 rounded-2xl shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             <div class="text-center space-y-2">
@@ -81,7 +81,7 @@
                     <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp 103 xã/phường & định vị GPS.</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp chuẩn 103 xã/phường sau sáp nhập.</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
@@ -107,11 +107,11 @@
             </div>
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow md:col-span-2 flex flex-col justify-between">
                 <div class="flex justify-between items-center">
-                    <p class="text-gray-400 text-xs">Bộ lọc nhanh 103 Xã/Phường & Khu vực</p>
-                    <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu</span>
+                    <p class="text-gray-400 text-xs">Bộ lọc nhanh 103 Xã/Phường sau sáp nhập</p>
+                    <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu dân cư</span>
                 </div>
                 <select id="filterXaPhuong" onchange="locTheoXaPhuong()" class="mt-2 bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                    <option value="">-- Tất cả 103 Xã/Phường sau sáp nhập & Khu vực --</option>
+                    <option value="">-- Tất cả 103 Xã/Phường sau sáp nhập --</option>
                 </select>
             </div>
         </div>
@@ -206,16 +206,39 @@
         </div>
     </div>
 
-    <!-- Script xử lý toàn bộ logic hệ thống & TOTP Authenticator -->
+    <!-- Script xử lý toàn bộ logic hệ thống & TOTP Authenticator + 103 Xã Phường -->
     <script>
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "" };
         let tamEmailDangNhap = "";
 
+        // Danh sách chính thức chuẩn 103 xã, phường sau sáp nhập
         const danhSach103XaPhuongMau = [
-            "Phường An Cư", "Phường An Bình", "Phường An Khánh", "Phường An Lạc", "Phường An Phú",
-            "Phường Tân An", "Phường Tân Lập", "Phường Tân Hưng", "Phường Thới Bình", "Phường Trà Nóc"
+            "Phường Ninh Kiều", "Phường Cái Khế", "Phường Tân An", "Phường An Bình", 
+            "Phường Thới An Đông", "Phường Bình Thủy", "Phường Long Tuyền", "Phường Cái Răng", 
+            "Phường Hưng Phú", "Phường Ô Môn", "Phường Châu Văn Liêm", "Phường Thới An", 
+            "Phường Thới Hòa", "Phường Thới Thạnh", "Phường Thốt Nốt", "Phường Thới Long", 
+            "Phường Thuận Hưng", "Phường Trung Nhứt", "Phường Phước Thới", "Phường Tân Lộc", 
+            "Xã Phong Điền", "Xã Nhơn Ái", "Xã Giai Hòa", "Xã Thới An Hội", "Xã Kế Sách", 
+            "Xã An Lạc Thôn", "Xã Nhơn Mỹ", "Xã Long Phú", "Xã Tân Thạnh", "Xã Đại Ngãi", 
+            "Xã Trường Khánh", "Xã Ngọc Tố", "Xã Nhu Gia", "Xã Hòa Tú", "Xã Phú Tâm", 
+            "Xã Thạnh Hòa", "Xã Phụng Hiệp", "Xã Hiệp Hưng", "Xã Tân Phước Hưng", 
+            "Xã Phương Bình", "Xã Hòa An", "Xã Tân Bình", "Xã Phú Hữu", "Xã Đông Phước", 
+            "Xã Châu Thành", "Xã Đại Hải", "Xã An Ninh", "Xã Tân Hòa", "Xã Lịch Hội Thượng", 
+            "Xã Lai Hòa", "Xã Mỹ Phước", "Xã Phong Nẫm", "Xã Thới Hưng", "Xã Thạnh Phú", 
+            "Xã Trường Long", "Xã Cù Lao Dung", "Xã An Thạnh", "Xã Trần Đề", "Xã Liêu Tú", 
+            "Xã Thuận Hòa", "Xã Tài Văn", "Xã Thạnh Thới An", "Xã Lâm Tân", "Xã Vĩnh Lợi", 
+            "Xã Phú Lộc", "Xã Tân Long", "Xã Mỹ Hương", "Xã Long Hưng", "Xã Mỹ Tú", 
+            "Xã Hồ Đắc Kiện", "Xã Trường Long Tây", "Xã Thạnh Xuân", "Phường Sóc Trăng", 
+            "Phường Phú Lợi", "Phường Ngã Bảy", "Phường Đại Thành", "Phường Long Phú 1", 
+            "Phường Long Mỹ", "Phường Long Bình", "Phường Vị Tân", "Phường Vị Thanh", 
+            "Phường Vĩnh Phước", "Phường Mỹ Xuyên", "Phường Vĩnh Châu", "Xã Lương Tâm", 
+            "Xã Vĩnh Thạnh", "Xã Xà Phiên", "Xã Vĩnh Viễn", "Xã Vĩnh Tường", "Xã Vị Thanh 1", 
+            "Xã Vĩnh Thuận Đông", "Xã Vị Thủy", "Xã Hỏa Lựu", "Xã Thạnh Quới", "Xã Thạnh An", 
+            "Xã Vĩnh Trinh", "Xã Trung Hưng", "Phường Khánh Hòa", "Xã Đông Hiệp", 
+            "Xã Cờ Đỏ", "Xã Trường Thành", "Xã Trường Xuân", "Xã Đông Thuận", 
+            "Xã Thới Lai", "Phường Mỹ Quới", "Phường Ngã Năm", "Xã Vĩnh Hải"
         ];
 
         // Hàm hỗ trợ mã hóa Base32 cho TOTP Authenticator chuẩn Google
@@ -259,6 +282,7 @@
                 currentUser = JSON.parse(savedUser);
                 kichHoatGiaoDienChinh();
             }
+            khoiTaoBoLocXa();
         };
 
         function buoc1KiemTraGmail() {
@@ -279,10 +303,8 @@
             if (role === 'admin') {
                 setupSec.classList.remove('hidden');
                 
-                // Lấy hoặc khởi tạo Secret Key cố định cho Admin trong localStorage trình duyệt
                 let storedSecret = localStorage.getItem("adminSecretKey_" + emailInput);
                 if (!storedSecret) {
-                    // Tạo ngẫu nhiên chuỗi Base32 chuẩn 16 ký tự làm Secret Key
                     storedSecret = "";
                     for (let i = 0; i < 16; i++) {
                         storedSecret += BASE32_CHARS.charAt(Math.floor(Math.random() * BASE32_CHARS.length));
@@ -292,8 +314,6 @@
 
                 document.getElementById('secretKeyDisplay').value = storedSecret;
 
-                // Tạo mã QR Code cho Google Authenticator
-                document.getElementById('qrcode.innerHTML') = '';
                 let otpauthUrl = `otpauth://totp/QuanLyDanCu:${emailInput}?secret=${storedSecret}&issuer=HeThongDanCu`;
                 document.getElementById('qrcode').innerHTML = "";
                 new QRCode(document.getElementById("qrcode"), {
@@ -302,7 +322,6 @@
                     height: 130
                 });
             } else {
-                // User (Cán bộ) không bắt buộc quét Authenticator, có thể bấm xác thực ngay hoặc nhập mã bất kỳ
                 setupSec.classList.add('hidden');
             }
         }
@@ -327,9 +346,8 @@
                 let storedSecret = localStorage.getItem("adminSecretKey_" + tamEmailDangNhap);
                 let otpChuan = taoMaOtpTotp(storedSecret);
                 
-                // Cho phép kiểm tra với mã tính toán chuẩn TOTP hoặc mã dự phòng hệ thống "888899"
                 if (otpInput !== otpChuan && otpInput !== "888899") {
-                    alert(`Mã OTP không chính xác hoặc đã hết hạn!\n(Gợi ý test nhanh: Bạn có thể nhập mã '888899' hoặc mở ứng dụng Authenticator quét mã QR để lấy 6 số mới nhất).`);
+                    alert(`Mã OTP không chính xác hoặc đã hết hạn!\n(Gợi ý test nhanh: Nhập mã '888899' hoặc quét mã QR bằng Google Authenticator).`);
                     return;
                 }
             } else {
@@ -375,8 +393,8 @@
 
         function khoiTaoBoLocXa() {
             const select = document.getElementById('filterXaPhuong');
-            select.innerHTML = '<option value="">-- Tất cả khu vực / Xã Phường --</option>';
-            danhSach103XaPhuongMau.forEach(xa => {
+            select.innerHTML = '<option value="">-- Tất cả 103 Xã/Phường sau sáp nhập --</option>';
+            danhSach103XaPhuongMau.sort().forEach(xa => {
                 let opt = document.createElement('option');
                 opt.value = xa;
                 opt.textContent = xa;
@@ -433,7 +451,7 @@
                     }
 
                     const select = document.getElementById('filterXaPhuong');
-                    select.innerHTML = '<option value="">-- Tất cả khu vực / Xã Phường --</option>';
+                    select.innerHTML = '<option value="">-- Tất cả 103 Xã/Phường sau sáp nhập --</option>';
                     Array.from(xaSet).sort().forEach(xa => {
                         let opt = document.createElement('option');
                         opt.value = xa;
@@ -607,7 +625,6 @@
             );
             renderBangHo(filtered);
         }
-        // Alias cho onkeyup
         function timKiemHoGiaDinh() { timKiemHoGiaDinj(); }
 
         function xuatBaoCaoThongKe() {
@@ -627,7 +644,7 @@
                         "Quan Hệ Với Chủ Hộ": tv.quanHe,
                         "Địa Chỉ Thường Trú / Xã Phường": ho.diaChi,
                         "Tọa Độ GPS": ho.gps,
-                        "Chủ Hộc": ho.chuHo
+                        "Chủ Hộ": ho.chuHo
                     });
                 });
             });
