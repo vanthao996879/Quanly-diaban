@@ -21,13 +21,13 @@
             <div class="text-center space-y-2">
                 <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🔐</div>
                 <h2 class="text-xl font-bold text-white">Xác Thực Quản Lý Dân Cư</h2>
-                <p class="text-xs text-gray-400">Nhập Gmail để tiếp tục (Email chứa chữ <strong>admin</strong> sẽ kích hoạt 2FA Authenticator):</p>
+                <p class="text-xs text-gray-400">Nhập Gmail của bạn để tiếp tục cấu hình Google Authenticator:</p>
             </div>
 
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs text-gray-400 mb-1">Địa chỉ Gmail:</label>
-                    <input type="email" id="gmailInput" placeholder="vd: admin.cantho@gmail.com" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                    <input type="email" id="gmailInput" placeholder="vd: vanthao3011@gmail.com" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <button onclick="buoc1KiemTraGmail()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition shadow text-sm">Tiếp Tục</button>
             </div>
@@ -43,10 +43,10 @@
                 <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span></p>
             </div>
 
-            <!-- Phần hiển thị QR Code và Mã thiết lập cho lần đầu tiên cài đặt -->
-            <div id="setupAuthSection" class="bg-gray-900 p-4 rounded-xl border border-gray-700 space-y-3 hidden">
-                <p class="text-xs text-amber-400 font-semibold">⚠️ Thiết lập lần đầu cho Admin:</p>
-                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> hoặc <strong>Microsoft Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR hoặc nhập mã thiết lập bên dưới:</p>
+            <!-- Phần hiển thị QR Code và Mã thiết lập (Luôn hiển thị cho mọi tài khoản) -->
+            <div id="setupAuthSection" class="bg-gray-900 p-4 rounded-xl border border-gray-700 space-y-3">
+                <p class="text-xs text-amber-400 font-semibold">⚠️ Thiết lập mã xác thực:</p>
+                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR hoặc nhập mã thiết lập bên dưới:</p>
                 
                 <div class="flex flex-col md:flex-row items-center gap-4 bg-gray-800 p-3 rounded-lg border border-gray-700">
                     <div id="qrcode" class="bg-white p-2 rounded"></div>
@@ -137,7 +137,7 @@
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-700">
                         <tr>
-                            <td colspan="7" class="text-center p-6 text-gray-400">Vui lòng đăng nhập quyền Admin và bấm "Nhập Excel" để tải dữ liệu.</td>
+                            <td colspan="7" class="text-center p-6 text-gray-400">Vui lòng đăng nhập và bấm "Nhập Excel" để tải dữ liệu.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -293,37 +293,31 @@
             }
 
             tamEmailDangNhap = emailInput;
-            let role = emailInput.includes('admin') ? 'admin' : 'user';
+            let role = 'admin'; // Cấp toàn quyền cho mọi tài khoản đăng nhập
 
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('otpEmailDisplay').innerText = emailInput;
             document.getElementById('otpScreen').classList.remove('hidden');
 
-            const setupSec = document.getElementById('setupAuthSection');
-            if (role === 'admin') {
-                setupSec.classList.remove('hidden');
-                
-                let storedSecret = localStorage.getItem("adminSecretKey_" + emailInput);
-                if (!storedSecret) {
-                    storedSecret = "";
-                    for (let i = 0; i < 16; i++) {
-                        storedSecret += BASE32_CHARS.charAt(Math.floor(Math.random() * BASE32_CHARS.length));
-                    }
-                    localStorage.setItem("adminSecretKey_" + emailInput, storedSecret);
+            // Luôn hiển thị phần thiết lập Authenticator cho mọi tài khoản
+            let storedSecret = localStorage.getItem("adminSecretKey_" + emailInput);
+            if (!storedSecret) {
+                storedSecret = "";
+                for (let i = 0; i < 16; i++) {
+                    storedSecret += BASE32_CHARS.charAt(Math.floor(Math.random() * BASE32_CHARS.length));
                 }
-
-                document.getElementById('secretKeyDisplay').value = storedSecret;
-
-                let otpauthUrl = `otpauth://totp/QuanLyDanCu:${emailInput}?secret=${storedSecret}&issuer=HeThongDanCu`;
-                document.getElementById('qrcode').innerHTML = "";
-                new QRCode(document.getElementById("qrcode"), {
-                    text: otpauthUrl,
-                    width: 130,
-                    height: 130
-                });
-            } else {
-                setupSec.classList.add('hidden');
+                localStorage.setItem("adminSecretKey_" + emailInput, storedSecret);
             }
+
+            document.getElementById('secretKeyDisplay').value = storedSecret;
+
+            let otpauthUrl = `otpauth://totp/QuanLyDanCu:${emailInput}?secret=${storedSecret}&issuer=HeThongDanCu`;
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: otpauthUrl,
+                width: 130,
+                height: 130
+            });
         }
 
         function copySecretKey() {
@@ -340,26 +334,17 @@
 
         function xacThucOtp() {
             const otpInput = document.getElementById('otpCodeInput').value.trim();
-            let role = tamEmailDangNhap.includes('admin') ? 'admin' : 'user';
-
-            if (role === 'admin') {
-                let storedSecret = localStorage.getItem("adminSecretKey_" + tamEmailDangNhap);
-                let otpChuan = taoMaOtpTotp(storedSecret);
-                
-                if (otpInput !== otpChuan && otpInput !== "888899") {
-                    alert(`Mã OTP không chính xác hoặc đã hết hạn!\n(Gợi ý test nhanh: Nhập mã '888899' hoặc quét mã QR bằng Google Authenticator).`);
-                    return;
-                }
-            } else {
-                if (otpInput.length !== 6 && otpInput !== "888899") {
-                    alert("Vui lòng nhập đủ 6 chữ số OTP hoặc mã xác thực!");
-                    return;
-                }
+            let storedSecret = localStorage.getItem("adminSecretKey_" + tamEmailDangNhap);
+            let otpChuan = taoMaOtpTotp(storedSecret);
+            
+            if (otpInput !== otpChuan && otpInput !== "888899") {
+                alert(`Mã OTP không chính xác hoặc đã hết hạn!\n(Gợi ý test nhanh: Nhập mã '888899' hoặc lấy mã từ ứng dụng Authenticator).`);
+                return;
             }
 
             currentUser = {
                 email: tamEmailDangNhap,
-                role: role
+                role: 'admin'
             };
             sessionStorage.setItem("currentUserAuth", JSON.stringify(currentUser));
             document.getElementById('otpScreen').classList.add('hidden');
@@ -371,15 +356,10 @@
             document.getElementById('userNameDisplay').innerText = currentUser.email;
             const badge = document.getElementById('userBadgeRole');
             
-            if (currentUser.role === 'admin') {
-                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900/80 text-red-300 border border-red-700";
-                badge.innerText = "Quyền: Admin (Toàn quyền 2FA)";
-                document.getElementById('btnUploadExcelContainer').style.display = 'flex';
-            } else {
-                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-900/80 text-blue-300 border border-blue-700";
-                badge.innerText = "Quyền: User (Cán bộ địa bàn)";
-                document.getElementById('btnUploadExcelContainer').style.display = 'none';
-            }
+            badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900/80 text-red-300 border border-red-700";
+            badge.innerText = "Quyền: Admin (Toàn quyền)";
+            document.getElementById('btnUploadExcelContainer').style.display = 'flex';
+            
             khoiTaoBoLocXa();
         }
 
@@ -403,11 +383,6 @@
         }
 
         function nhapFileExcel(event) {
-            if (currentUser.role !== 'admin') {
-                alert("Bạn không có quyền nhập file Excel! Vui lòng đăng nhập tài khoản Admin.");
-                return;
-            }
-
             const file = event.target.files[0];
             if (!file) return;
 
