@@ -45,12 +45,13 @@
 
             <div id="setupAuthSection" class="bg-gray-900 p-4 rounded-xl border border-gray-700 space-y-3">
                 <p class="text-xs text-amber-400 font-semibold">⚠️ Thiết lập mã xác thực:</p>
-                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR hoặc nhập mã thiết lập bên dưới:</p>
+                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR lớn bên dưới:</p>
                 
-                <div class="flex flex-col md:flex-row items-center gap-4 bg-gray-800 p-3 rounded-lg border border-gray-700">
-                    <div id="qrcode" class="bg-white p-2 rounded"></div>
+                <!-- ĐÃ CẬP NHẬT: Giao diện chứa QR lớn hơn và rõ ràng hơn -->
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div id="qrcode" class="bg-white p-3 rounded-lg shadow-md flex items-center justify-center"></div>
                     <div class="space-y-2 w-full">
-                        <label class="block text-[10px] text-gray-400">Mã thiết lập (Copy dán vào Authenticator):</label>
+                        <label class="block text-[11px] text-gray-400">Mã thiết lập (Copy dán vào Authenticator nếu không quét được):</label>
                         <div class="flex gap-2">
                             <input type="text" id="secretKeyDisplay" readonly class="bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-xs font-mono text-emerald-300 w-full select-all">
                             <button onclick="copySecretKey()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded text-xs whitespace-nowrap">📋 Copy</button>
@@ -301,10 +302,15 @@
 
             let otpauthUrl = `otpauth://totp/QuanLyDanCu:${emailInput}?secret=${storedSecret}&issuer=HeThongDanCu`;
             document.getElementById('qrcode').innerHTML = "";
+            
+            // ĐÃ CẬP NHẬT: Phóng to mã QR kích thước 220x220 và cấu hình sửa lỗi cao (CorrectLevel.H)
             new QRCode(document.getElementById("qrcode"), {
                 text: otpauthUrl,
-                width: 130,
-                height: 130
+                width: 220,
+                height: 220,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
             });
         }
 
