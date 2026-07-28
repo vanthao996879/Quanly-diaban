@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phần Mềm Quản Lý Nhân Hộ Khẩu - Công An Phường</title>
-    <!-- Thêm FontAwesome để sử dụng icon chuyên nghiệp -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -13,6 +12,7 @@
             --accent-color: #d9534f;
             --warning-color: #f0ad4e;
             --success-color: #5cb85c;
+            --info-color: #0275d8;
             --light-bg: #f4f6f9;
             --border-color: #d1d5db;
             --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -26,7 +26,6 @@
             color: #333;
         }
 
-        /* Header phong cách ngành */
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
@@ -52,11 +51,10 @@
 
         .container {
             padding: 25px;
-            max-width: 1300px;
+            max-width: 1350px;
             margin: auto;
         }
 
-        /* Bảng thống kê tổng quan */
         .command-section {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -79,8 +77,8 @@
 
         .dashboard-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
         }
         .card {
             background: #fff;
@@ -94,23 +92,23 @@
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
+        .card.success { border-left-color: var(--success-color); }
+        .card.info { border-left-color: var(--info-color); }
         .card.warning { border-left-color: var(--warning-color); }
         .card.danger { border-left-color: var(--accent-color); }
-        .card.success { border-left-color: var(--success-color); }
         
         .card h4 {
             margin: 0 0 8px 0;
-            font-size: 13px;
+            font-size: 12px;
             color: #64748b;
             font-weight: 600;
         }
         .card .number {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             color: #1e293b;
         }
 
-        /* Thanh công cụ tìm kiếm và lọc */
         .action-bar {
             background: white;
             padding: 15px 20px;
@@ -140,7 +138,6 @@
             border-color: var(--primary-color);
         }
 
-        /* Nút bấm tinh tế */
         button {
             background-color: var(--primary-color);
             color: white;
@@ -169,7 +166,6 @@
             font-size: 12px;
         }
 
-        /* Bảng dữ liệu */
         .table-container {
             background: white;
             border-radius: 8px;
@@ -196,7 +192,6 @@
         }
         tr:hover { background-color: #f8fafc; }
 
-        /* Badge trạng thái */
         .badge {
             padding: 5px 10px;
             border-radius: 12px;
@@ -204,7 +199,8 @@
             font-weight: 600;
             display: inline-block;
         }
-        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-thuongtru { background: #dcfce7; color: #166534; }
+        .badge-tamtru { background: #e0f2fe; color: #0369a1; }
         .badge-warning { background: #fef3c7; color: #92400e; }
         .badge-danger { background: #fee2e2; color: #991b1b; }
     </style>
@@ -219,17 +215,17 @@
     </header>
 
     <div class="container">
-        <!-- BẢNG THỐNG KÊ TỔNG QUAN & BIẾN ĐỘNG TỰ ĐỘNG -->
+        <!-- BẢNG THỐNG KÊ TỔNG QUAN PHÂN LOẠI CƯ TRÚ & BIẾN ĐỘNG -->
         <div class="command-section">
-            <h3><i class="fa-solid fa-chart-pie"></i> Bảng Thống Kê Tổng Quan & Biến Động Dân Cư Toàn Phường</h3>
+            <h3><i class="fa-solid fa-chart-pie"></i> Bảng Thống Kê Tổng Quan Cư Trú & Biến Động Toàn Phường</h3>
             <div class="dashboard-cards">
-                <div class="card">
-                    <h4>Tổng số Hộ Khẩu</h4>
-                    <div class="number" id="lblTotalHo">0</div>
-                </div>
                 <div class="card success">
-                    <h4>Thường Trú Ổn Định</h4>
+                    <h4>Thường Trú</h4>
                     <div class="number" id="lblThuongTru">0</div>
+                </div>
+                <div class="card info">
+                    <h4>Tạm Trú</h4>
+                    <div class="number" id="lblTamTru">0</div>
                 </div>
                 <div class="card warning">
                     <h4>Hộ Bán Nhà / Giải Tỏa</h4>
@@ -246,13 +242,22 @@
             </div>
         </div>
 
-        <!-- THANH TÌM KIẾM VÀ ĐIỀU HƯỚNG -->
+        <!-- THANH TÌM KIẾM VÀ LỌC PHÂN LOẠI -->
         <div class="action-bar">
             <div class="filter-group">
-                <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm họ tên, CCCD..." onkeyup="renderTable()" style="width: 230px;">
+                <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm họ tên, CCCD..." onkeyup="renderTable()" style="width: 220px;">
+                
+                <!-- Lọc theo loại cư trú (Thường trú / Tạm trú) -->
+                <select id="loaiCuTruFilter" onchange="renderTable()">
+                    <option value="all">-- Tất cả loại cư trú --</option>
+                    <option value="Thường trú">Thường trú</option>
+                    <option value="Tạm trú">Tạm trú</option>
+                </select>
+
+                <!-- Lọc theo biến động -->
                 <select id="bienDongFilter" onchange="renderTable()">
                     <option value="all">-- Tất cả trạng thái biến động --</option>
-                    <option value="Thường trú">Thường trú ổn định</option>
+                    <option value="Ổn định">Ổn định</option>
                     <option value="Bán nhà/Giải tỏa">Hộ bán nhà / Giải tỏa</option>
                     <option value="Chết">Chết</option>
                     <option value="Đi nước ngoài/Bỏ địa phương">Đi nước ngoài / Bỏ địa phương</option>
@@ -270,7 +275,8 @@
                     <tr>
                         <th>STT</th>
                         <th>Họ và Tên</th>
-                        <th>Mã Hộ Khẩu</th>
+                        <th>Loại Cư Trú</th>
+                        <th>Mã Hộ / Sổ Tạm Trú</th>
                         <th>CCCD / Định Danh</th>
                         <th>Khu vực</th>
                         <th>Trạng thái biến động</th>
@@ -285,15 +291,18 @@
     </div>
 
     <script>
+        // Mở rộng dữ liệu mẫu bao gồm cả Thường trú và Tạm trú
         let danhSachNhanKhau = [
-            { id: 1, hoTen: "Nguyễn Văn A", maHo: "HK001", cccd: "092083000123", khuVuc: "KV1", trangThai: "Thường trú" },
-            { id: 2, hoTen: "Trần Thị B", maHo: "HK002", cccd: "092085000456", khuVuc: "KV2", trangThai: "Đi nước ngoài/Bỏ địa phương" },
-            { id: 3, hoTen: "Lê Văn C", maHo: "HK003", cccd: "092070000789", khuVuc: "KV1", trangThai: "Bán nhà/Giải tỏa" },
-            { id: 4, hoTen: "Phạm Văn D", maHo: "HK004", cccd: "092055000321", khuVuc: "KV3", trangThai: "Chết" }
+            { id: 1, hoTen: "Nguyễn Văn A", loaiCuTru: "Thường trú", maHo: "HK001", cccd: "092083000123", khuVuc: "KV1", trangThai: "Ổn định" },
+            { id: 2, hoTen: "Trần Thị B", loaiCuTru: "Tạm trú", maHo: "TT015", cccd: "092085000456", khuVuc: "KV2", trangThai: "Ổn định" },
+            { id: 3, hoTen: "Lê Văn C", loaiCuTru: "Thường trú", maHo: "HK003", cccd: "092070000789", khuVuc: "KV1", trangThai: "Bán nhà/Giải tỏa" },
+            { id: 4, hoTen: "Phạm Thị D", loaiCuTru: "Tạm trú", maHo: "TT022", cccd: "092066000111", khuVuc: "KV3", trangThai: "Đi nước ngoài/Bỏ địa phương" },
+            { id: 5, hoTen: "Hoàng Văn E", loaiCuTru: "Thường trú", maHo: "HK005", cccd: "092055000321", khuVuc: "KV3", trangThai: "Chết" }
         ];
 
         function renderTable() {
             const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const filterLoaiCuTru = document.getElementById('loaiCuTruFilter').value;
             const filterTrangThai = document.getElementById('bienDongFilter').value;
             const tbody = document.getElementById('dataTableBody');
             
@@ -301,30 +310,34 @@
 
             let filteredData = danhSachNhanKhau.filter(item => {
                 let matchKeyword = item.hoTen.toLowerCase().includes(keyword) || item.cccd.includes(keyword);
+                let matchLoaiCuTru = (filterLoaiCuTru === 'all' || item.loaiCuTru === filterLoaiCuTru);
                 let matchTrangThai = (filterTrangThai === 'all' || item.trangThai === filterTrangThai);
-                return matchKeyword && matchTrangThai;
+                return matchKeyword && matchLoaiCuTru && matchTrangThai;
             });
 
             if(filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #888; padding: 25px;">Không tìm thấy dữ liệu phù hợp</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">Không tìm thấy dữ liệu phù hợp</td></tr>`;
                 capNhatTheThongKe();
                 return;
             }
 
             filteredData.forEach((item, index) => {
-                let badgeClass = "badge-success";
-                if(item.trangThai === "Bán nhà/Giải tỏa" || item.trangThai === "Đi nước ngoài/Bỏ địa phương") badgeClass = "badge-warning";
-                if(item.trangThai === "Chết") badgeClass = "badge-danger";
+                let badgeCuTru = item.loaiCuTru === "Thường trú" ? "badge-thuongtru" : "badge-tamtru";
+                
+                let badgeTrangThai = "badge-success";
+                if(item.trangThai === "Bán nhà/Giải tỏa" || item.trangThai === "Đi nước ngoài/Bỏ địa phương") badgeTrangThai = "badge-warning";
+                if(item.trangThai === "Chết") badgeTrangThai = "badge-danger";
 
                 let tr = `<tr>
                     <td>${index + 1}</td>
                     <td><b>${item.hoTen}</b></td>
+                    <td><span class="badge ${badgeCuTru}">${item.loaiCuTru}</span></td>
                     <td>${item.maHo}</td>
                     <td>${item.cccd}</td>
                     <td>${item.khuVuc}</td>
-                    <td><span class="badge ${badgeClass}">${item.trangThai}</span></td>
+                    <td><span class="badge ${badgeTrangThai}">${item.trangThai}</span></td>
                     <td style="text-align: center;">
-                        <button class="btn-sm" onclick="doiTrangThai(${item.id})"><i class="fa-solid fa-pen-to-square"></i> Sửa biến động</button>
+                        <button class="btn-sm" onclick="doiTrangThai(${item.id})"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
                         <button class="btn-sm btn-danger" onclick="xoaHoSo(${item.id})"><i class="fa-solid fa-trash"></i> Xóa</button>
                     </td>
                 </tr>`;
@@ -334,9 +347,10 @@
             capNhatTheThongKe();
         }
 
+        // Tự động đếm số liệu cho từng thẻ thống kê
         function capNhatTheThongKe() {
-            document.getElementById('lblTotalHo').innerText = danhSachNhanKhau.length;
-            document.getElementById('lblThuongTru').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Thường trú').length;
+            document.getElementById('lblThuongTru').innerText = danhSachNhanKhau.filter(i => i.loaiCuTru === 'Thường trú').length;
+            document.getElementById('lblTamTru').innerText = danhSachNhanKhau.filter(i => i.loaiCuTru === 'Tạm trú').length;
             document.getElementById('lblBanNha').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Bán nhà/Giải tỏa').length;
             document.getElementById('lblChet').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Chết').length;
             document.getElementById('lblBienDongKhac').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Đi nước ngoài/Bỏ địa phương').length;
@@ -344,8 +358,8 @@
 
         function doiTrangThai(id) {
             let item = danhSachNhanKhau.find(i => i.id === id);
-            let luaChon = prompt(`Cập nhật trạng thái biến động cho: ${item.hoTen}\nNhập số tương ứng:\n1. Thường trú ổn định\n2. Bán nhà/Giải tỏa\n3. Chết\n4. Đi nước ngoài/Bỏ địa phương`);
-            if(luaChon === "1") item.trangThai = "Thường trú";
+            let luaChon = prompt(`Cập nhật trạng thái biến động cho: ${item.hoTen}\nNhập số tương ứng:\n1. Ổn định\n2. Bán nhà/Giải tỏa\n3. Chết\n4. Đi nước ngoài/Bỏ địa phương`);
+            if(luaChon === "1") item.trangThai = "Ổn định";
             if(luaChon === "2") item.trangThai = "Bán nhà/Giải tỏa";
             if(luaChon === "3") item.trangThai = "Chết";
             if(luaChon === "4") item.trangThai = "Đi nước ngoài/Bỏ địa phương";
@@ -355,13 +369,15 @@
         function themHoSoMẫu() {
             let ten = prompt("Nhập họ tên nhân khẩu mới:");
             if(ten && ten.trim() !== "") {
+                let loai = confirm("Nhấn OK nếu là THƯỜNG TRÚ. Nhấn Cancel nếu là TẠM TRÚ.") ? "Thường trú" : "Tạm trú";
                 danhSachNhanKhau.push({
                     id: danhSachNhanKhau.length > 0 ? danhSachNhanKhau[danhSachNhanKhau.length - 1].id + 1 : 1,
                     hoTen: ten,
-                    maHo: "HK00" + (Math.floor(Math.random() * 90) + 10),
+                    loaiCuTru: loai,
+                    maHo: (loai === "Thường trú" ? "HK00" : "TT0") + (Math.floor(Math.random() * 90) + 10),
                     cccd: "0920" + Math.floor(10000000 + Math.random() * 90000000),
                     khuVuc: "KV" + (Math.floor(Math.random() * 3) + 1),
-                    trangThai: "Thường trú"
+                    trangThai: "Ổn định"
                 });
                 renderTable();
             }
