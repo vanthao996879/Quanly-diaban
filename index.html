@@ -1,46 +1,29 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        darker: '#0b0f19',
-                        dark: '#111827',
-                        card: '#161e2e',
-                    }
-                }
-            }
-        }
-    </script>
     <!-- SheetJS (XLSX) để đọc file Excel thông minh -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Leaflet CSS & JS cho bản đồ GPS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
-<body class="bg-darker text-white min-h-screen p-4">
-    <div class="container mx-auto space-y-6">
+<body class="bg-gray-900 text-white min-h-screen p-4">
+    <div class="container mx-auto space-y-6 max-w-7xl">
         
         <!-- Tiêu đề hệ thống -->
-        <header class="flex flex-col md:flex-row justify-between items-center bg-card p-4 rounded-xl shadow-lg border border-gray-800">
+        <header class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700">
             <div>
-                <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Gom Nhóm Hộ Khẩu</h1>
-                <p class="text-xs text-gray-400 mt-1">Tự động nhận diện chủ hộ, gom nhân khẩu, hỗ trợ xem chi tiết và gán ảnh hộ gia đình.</p>
+                <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
+                <p class="text-xs text-gray-300 mt-1">Tự động nhận diện chủ hộ, gom nhóm nhân khẩu, xem chi tiết, chỉnh sửa và gán ảnh hộ gia đình.</p>
             </div>
             <div class="mt-3 md:mt-0 flex gap-3">
-                <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                    <span>📂 Tải lên File Excel (thường trú)</span>
+                <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow">
+                    <span>📂 Tải lên File Excel</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
-                <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow">
                     <span>📊 Xuất Báo Cáo</span>
                 </button>
             </div>
@@ -48,74 +31,73 @@
 
         <!-- Thống kê nhanh -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
                 <p class="text-gray-400 text-sm">Tổng số Nhân khẩu</p>
                 <h3 id="statNhanKhau" class="text-3xl font-bold text-blue-400 mt-1">0</h3>
             </div>
-            <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
-                <p class="text-gray-400 text-sm">Tổng số Hộ gia đình (Gom nhóm)</p>
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
+                <p class="text-gray-400 text-sm">Tổng số Hộ gia đình (Đã gom nhóm)</p>
                 <h3 id="statHoGiaDinh" class="text-3xl font-bold text-emerald-400 mt-1">0</h3>
             </div>
-            <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
                 <p class="text-gray-400 text-sm">Trạng thái dữ liệu</p>
                 <h3 id="statTrangThai" class="text-3xl font-bold text-amber-400 mt-1">Chưa tải file</h3>
             </div>
         </div>
 
-        <!-- Khu vực chính: Bản đồ & Danh sách Hộ gia đình -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Bản đồ GPS -->
-            <div class="lg:col-span-1 bg-card p-4 rounded-xl border border-gray-800 shadow flex flex-col">
-                <h2 class="text-lg font-semibold mb-3">Bản Đồ Địa Bàn</h2>
-                <div id="map" class="h-80 w-full rounded-lg shadow-inner flex-grow"></div>
+        <!-- Bảng danh sách Hộ gia đình đã gom nhóm -->
+        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
+                <h2 class="text-lg font-semibold text-gray-200">Danh Sách Hộ Gia Đình (Gom nhóm thông minh)</h2>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo chủ hộ, HSCT, địa chỉ..." onkeyup="timKiemHoGiaDinh()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
             </div>
-
-            <!-- Bảng danh sách Hộ gia đình đã gom nhóm -->
-            <div class="lg:col-span-2 bg-card p-4 rounded-xl border border-gray-800 shadow flex flex-col">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="text-lg font-semibold">Danh Sách Hộ Gia Đình (Đã gom nhóm thông minh)</h2>
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm theo chủ hộ, HSCT, địa chỉ..." onkeyup="timKiemHoGiaDinh()" class="bg-darker border border-gray-700 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-blue-500 w-64">
-                </div>
-                <div class="overflow-x-auto flex-grow max-h-96">
-                    <table class="w-full text-left border-collapse text-sm">
-                        <thead>
-                            <tr class="bg-gray-800 text-gray-300 sticky top-0">
-                                <th class="p-2 border-b border-gray-700">STT</th>
-                                <th class="p-2 border-b border-gray-700">Số HSCT</th>
-                                <th class="p-2 border-b border-gray-700">Chủ Hộ</th>
-                                <th class="p-2 border-b border-gray-700">Địa Chỉ</th>
-                                <th class="p-2 border-b border-gray-700 text-center">Số Thành Viên</th>
-                                <th class="p-2 border-b border-gray-700 text-center">Thao Tác</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="divide-y divide-gray-800">
-                            <!-- Dữ liệu render động -->
-                        </tbody>
-                    </table>
-                </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-700 text-gray-200">
+                            <th class="p-3 border-b border-gray-600">STT</th>
+                            <th class="p-3 border-b border-gray-600">Số HSCT</th>
+                            <th class="p-3 border-b border-gray-600">Chủ Hộ</th>
+                            <th class="p-3 border-b border-gray-600">Địa Chỉ Thường Trú</th>
+                            <th class="p-3 border-b border-gray-600 text-center">Số Thành Viên</th>
+                            <th class="p-3 border-b border-gray-600 text-center">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-gray-700">
+                        <tr>
+                            <td colspan="6" class="text-center p-6 text-gray-400">Vui lòng bấm "Tải lên File Excel" để hiển thị dữ liệu.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- Modal Chi tiết Hộ Khẩu & Chỉnh sửa / Gán ảnh -->
-    <div id="detailModal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-card w-full max-w-3xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="p-4 bg-gray-800 flex justify-between items-center border-b border-gray-700">
-                <h3 id="modalTitle" class="text-lg font-bold text-blue-400">Chi Tiết Hộ Gia Đình</h3>
-                <button onclick="dongModal()" class="text-gray-400 hover:text-white font-bold text-lg">&times;</button>
+    <div id="detailModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 w-full max-w-4xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
+                <h3 class="text-lg font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu & Thành Viên</h3>
+                <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-xl px-2">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto space-y-6 flex-grow">
                 <!-- Thông tin chung & Ảnh hộ -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-darker p-4 rounded-lg border border-gray-800">
-                    <div class="md:col-span-2 space-y-2">
-                        <p><strong class="text-gray-400">Số HSCT:</strong> <span id="modalHsct"></span></p>
-                        <p><strong class="text-gray-400">Chủ hộ:</strong> <input type="text" id="editChuHo" class="bg-dark border border-gray-700 rounded px-2 py-1 text-sm text-white w-full mt-1"></p>
-                        <p><strong class="text-gray-400">Địa chỉ thường trú:</strong> <input type="text" id="editDiaChi" class="bg-dark border border-gray-700 rounded px-2 py-1 text-sm text-white w-full mt-1"></p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-900 p-4 rounded-lg border border-gray-700">
+                    <div class="md:col-span-2 space-y-3">
+                        <p><strong class="text-gray-400">Số HSCT:</strong> <span id="modalHsct" class="font-mono text-blue-300"></span></p>
+                        <div>
+                            <label class="text-gray-400 text-xs block mb-1">Chủ hộ:</label>
+                            <input type="text" id="editChuHo" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-sm text-white w-full focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="text-gray-400 text-xs block mb-1">Địa chỉ thường trú:</label>
+                            <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-sm text-white w-full focus:outline-none focus:border-blue-500">
+                        </div>
                     </div>
-                    <div class="flex flex-col items-center justify-center border border-gray-700 rounded-lg p-2 bg-dark relative">
-                        <img id="hoImg" src="" alt="Chưa có ảnh hộ" class="h-28 w-28 object-cover rounded mb-2 hidden">
-                        <span id="noImgText" class="text-xs text-gray-500 mb-2">Chưa có ảnh hộ</span>
-                        <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs transition">
+                    <div class="flex flex-col items-center justify-center border border-gray-700 rounded-lg p-2 bg-gray-800 relative">
+                        <img id="hoImg" src="" alt="Ảnh hộ gia đình" class="h-32 w-32 object-cover rounded mb-2 hidden shadow border border-gray-600">
+                        <span id="noImgText" class="text-xs text-gray-500 mb-2 text-center">Chưa có ảnh hộ</span>
+                        <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded text-xs transition font-medium shadow">
                             <span>📷 Gán/Đổi Ảnh</span>
                             <input type="file" accept="image/*" class="hidden" onchange="ganAnhHo(event)">
                         </label>
@@ -125,132 +107,126 @@
                 <!-- Danh sách nhân khẩu trong hộ -->
                 <div>
                     <h4 class="font-semibold text-sm text-gray-300 mb-2">Danh sách nhân khẩu trong hộ:</h4>
-                    <div class="overflow-x-auto border border-gray-800 rounded-lg">
+                    <div class="overflow-x-auto border border-gray-700 rounded-lg">
                         <table class="w-full text-left text-xs">
-                            <thead class="bg-gray-800 text-gray-400">
+                            <thead class="bg-gray-700 text-gray-300">
                                 <tr>
-                                    <th class="p-2">Họ và Tên</th>
-                                    <th class="p-2">Ngày Sinh</th>
-                                    <th class="p-2">Giới Tính</th>
-                                    <th class="p-2">Quan hệ với chủ hộ</th>
+                                    <th class="p-2.5">Họ và Tên</th>
+                                    <th class="p-2.5">Ngày Sinh</th>
+                                    <th class="p-2.5">Giới Tính</th>
+                                    <th class="p-2.5">Quan hệ với chủ hộ</th>
                                 </tr>
                             </thead>
-                            <tbody id="modalNhanKhauList" class="divide-y divide-gray-800">
-                                <!-- Nhân khẩu render động -->
+                            <tbody id="modalNhanKhauList" class="divide-y divide-gray-700">
+                                <!-- Render động -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            <div class="p-4 bg-gray-800 flex justify-end gap-3 border-t border-gray-700">
-                <button onclick="dongModal()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition">Đóng</button>
-                <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition">Lưu Thay Đổi</button>
+            <div class="p-4 bg-gray-700 flex justify-end gap-3 border-t border-gray-600">
+                <button onclick="dongModal()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded-lg text-sm transition">Đóng</button>
+                <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm transition font-medium shadow">Lưu Thay Đổi</button>
             </div>
         </div>
     </div>
 
-    <!-- Script xử lý thông minh -->
+    <!-- Script xử lý logic thông minh -->
     <script>
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
 
-        // Khởi tạo bản đồ Leaflet
-        const map = L.map('map').setView([10.0452, 105.7469], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Xử lý và đọc file Excel thông minh, tự động gom nhóm hộ
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                const excelJson = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                // Phân tích dữ liệu dòng tiêu đề và dữ liệu
-                let rows = excelJson;
-                let dataStartIndex = 0;
-
-                // Tự động tìm dòng header nếu file có tiêu đề ở dòng 0 hoặc 1
-                if (rows.length > 0) {
-                    // Kiểm tra xem dòng đầu tiên có chứa từ khóa 'HSCT' hoặc 'Họ và tên' không
-                    const headerRow = rows[0].map(cell => String(cell).toLowerCase());
-                    if (!headerRow.some(c => c.includes('hsct') || c.includes('họ và tên'))) {
-                        dataStartIndex = 1; // Bỏ qua dòng tiêu đề phụ nếu có
+                    let dataStartIndex = 0;
+                    if (rows.length > 0) {
+                        const headerRow = rows[0].map(cell => String(cell).toLowerCase());
+                        if (!headerRow.some(c => c.includes('hsct') || c.includes('họ và tên') || c.includes('họ tên'))) {
+                            dataStartIndex = 1;
+                        }
                     }
-                }
 
-                let rawNhanKhau = [];
-                for (let i = dataStartIndex; i < rows.length; i++) {
-                    const r = rows[i];
-                    if (!r || r.length === 0) continue;
+                    let rawNhanKhau = [];
+                    for (let i = dataStartIndex; i < rows.length; i++) {
+                        const r = rows[i];
+                        if (!r || r.length === 0) continue;
+                        
+                        let hsct = String(r[0] || '').trim();
+                        let hoTen = String(r[1] || '').trim();
+                        let ngaySinh = String(r[2] || '').trim();
+                        let quanHe = String(r[3] || '').trim();
+                        let gioiTinh = String(r[4] || '').trim();
+                        let diaChi = String(r[5] || '').trim();
+                        let chuHo = String(r[7] || r[6] || '').trim();
+
+                        if (hoTen && hoTen !== 'undefined' && !hoTen.toLowerCase().includes('họ và tên')) {
+                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi, chuHo });
+                        }
+                    }
+
+                    // TỰ ĐỘNG GOM NHÓM THÔNG MINH: Dựa vào Số HSCT hoặc Tên chủ hộ
+                    let mapHo = {};
+                    rawNhanKhau.forEach(nk => {
+                        let key = nk.hsct ? nk.hsct : (nk.chuHo ? nk.chuHo : nk.diaChi);
+                        if (!mapHo[key]) {
+                            mapHo[key] = {
+                                hsct: nk.hsct || 'Chưa có',
+                                chuHo: nk.chuHo || nk.hoTen,
+                                diaChi: nk.diaChi || 'Chưa cập nhật',
+                                hinhAnh: '',
+                                thanhVien: []
+                            };
+                        }
+                        mapHo[key].thanhVien.push(nk);
+                    });
+
+                    danhSachHoGiaDinh = Object.values(mapHo);
+
+                    document.getElementById('statNhanKhau').innerText = rawNhanKhau.length;
+                    document.getElementById('statHoGiaDinh').innerText = danhSachHoGiaDinh.length;
+                    document.getElementById('statTrangThai').innerText = "Đã tải thành công";
                     
-                    // Lọc các cột dựa trên cấu trúc file mẫu của bạn
-                    let hsct = String(r[0] || '').trim();
-                    let hoTen = String(r[1] || '').trim();
-                    let ngaySinh = String(r[2] || '').trim();
-                    let quanHe = String(r[3] || '').trim();
-                    let gioiTinh = String(r[4] || '').trim();
-                    let diaChi = String(r[5] || '').trim();
-                    let chuHo = String(r[7] || r[6] || '').trim();
-
-                    if (hoTen && hoTen !== 'undefined') {
-                        rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi, chuHo });
-                    }
+                    renderBangHo(danhSachHoGiaDinh);
+                    alert(`Đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình từ ${rawNhanKhau.length} nhân khẩu!`);
+                } catch (err) {
+                    console.error(err);
+                    alert("Lỗi đọc file Excel: " + err.message);
                 }
-
-                // THÔNG MINH: Tự động gom nhóm các nhân khẩu thành 1 hộ dựa vào HSCT hoặc tên Chủ hộ
-                let mapHo = {};
-                rawNhanKhau.forEach(nk => {
-                    let key = nk.hsct ? nk.hsct : (nk.chuHo ? nk.chuHo : nk.diaChi);
-                    if (!mapHo[key]) {
-                        mapHo[key] = {
-                            hsct: nk.hsct || 'Chưa có',
-                            chuHo: nk.chuHo || nk.hoTen,
-                            diaChi: nk.diaChi || 'Chưa cập nhật',
-                            hinhAnh: '',
-                            thanhVien: []
-                        };
-                    }
-                    mapHo[key].thanhVien.push(nk);
-                });
-
-                danhSachHoGiaDinh = Object.values(mapHo);
-
-                capNhatGiaoDienChung(rawNhanKhau.length, danhSachHoGiaDinh.length);
-                renderBangHo(danhSachHoGiaDinh);
-                document.getElementById('statTrangThai').innerText = "Đã tải thành công";
-                alert(`Đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình từ ${rawNhanKhau.length} nhân khẩu!`);
             };
             reader.readAsArrayBuffer(file);
-        }
-
-        function capNhatGiaoDienChung(soNhanKhau, soHo) {
-            document.getElementById('statNhanKhau').innerText = soNhanKhau;
-            document.getElementById('statHoGiaDinh').innerText = soHo;
         }
 
         function renderBangHo(data) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp.</td></tr>`;
+                return;
+            }
+
             data.forEach((ho, index) => {
                 const row = document.createElement('tr');
-                row.className = "hover:bg-gray-800 transition";
+                row.className = "hover:bg-gray-700/50 transition";
                 row.innerHTML = `
-                    <td class="p-2 border-b border-gray-800">${index + 1}</td>
-                    <td class="p-2 border-b border-gray-800 text-blue-300 font-mono">${ho.hsct}</td>
-                    <td class="p-2 border-b border-gray-800 font-semibold text-white">${ho.chuHo}</td>
-                    <td class="p-2 border-b border-gray-800 text-gray-300">${ho.diaChi}</td>
-                    <td class="p-2 border-b border-gray-800 text-center"><span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full text-xs font-bold">${ho.thanhVien.length} người</span></td>
-                    <td class="p-2 border-b border-gray-800 text-center">
-                        <button onclick="xemChiTiet(${index})" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs font-medium transition flex items-center gap-1 mx-auto">
+                    <td class="p-3 border-b border-gray-700">${index + 1}</td>
+                    <td class="p-3 border-b border-gray-700 text-blue-300 font-mono">${ho.hsct}</td>
+                    <td class="p-3 border-b border-gray-700 font-semibold text-white">${ho.chuHo}</td>
+                    <td class="p-3 border-b border-gray-700 text-gray-300">${ho.diaChi}</td>
+                    <td class="p-3 border-b border-gray-700 text-center"><span class="bg-blue-900/60 text-blue-300 px-2.5 py-1 rounded-full text-xs font-bold">${ho.thanhVien.length} người</span></td>
+                    <td class="p-3 border-b border-gray-700 text-center">
+                        <button onclick="xemChiTiet(${index})" class="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded text-xs font-medium transition flex items-center gap-1 mx-auto shadow">
                             <span>👁️ Xem / Sửa</span>
                         </button>
                     </td>
@@ -259,7 +235,6 @@
             });
         }
 
-        // Xem chi tiết hộ khẩu qua cửa sổ Modal
         function xemChiTiet(index) {
             currentSelectedHoIndex = index;
             const ho = danhSachHoGiaDinh[index];
@@ -268,7 +243,6 @@
             document.getElementById('editChuHo').value = ho.chuHo;
             document.getElementById('editDiaChi').value = ho.diaChi;
 
-            // Hiển thị ảnh hộ nếu có
             const imgEl = document.getElementById('hoImg');
             const noImgEl = document.getElementById('noImgText');
             if (ho.hinhAnh) {
@@ -280,16 +254,15 @@
                 noImgEl.classList.remove('hidden');
             }
 
-            // Render danh sách thành viên trong modal
             const nkList = document.getElementById('modalNhanKhauList');
             nkList.innerHTML = '';
             ho.thanhVien.forEach(tv => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="p-2 border-b border-gray-800 font-medium text-white">${tv.hoTen}</td>
-                    <td class="p-2 border-b border-gray-800 text-gray-300">${tv.ngaySinh}</td>
-                    <td class="p-2 border-b border-gray-800 text-gray-300">${tv.gioiTinh}</td>
-                    <td class="p-2 border-b border-gray-800 text-blue-400">${tv.quanHe || 'Chủ hộ'}</td>
+                    <td class="p-2.5 border-b border-gray-700 font-medium text-white">${tv.hoTen}</td>
+                    <td class="p-2.5 border-b border-gray-700 text-gray-300">${tv.ngaySinh}</td>
+                    <td class="p-2.5 border-b border-gray-700 text-gray-300">${tv.gioiTinh}</td>
+                    <td class="p-2.5 border-b border-gray-700 text-blue-400 font-medium">${tv.quanHe || 'Chủ hộ'}</td>
                 `;
                 nkList.appendChild(tr);
             });
@@ -302,7 +275,6 @@
             currentSelectedHoIndex = null;
         }
 
-        // Gán ảnh vào hộ gia đình
         function ganAnhHo(event) {
             const file = event.target.files[0];
             if (!file || currentSelectedHoIndex === null) return;
@@ -320,7 +292,6 @@
             reader.readAsDataURL(file);
         }
 
-        // Lưu thay đổi chỉnh sửa thông tin hộ
         function luuThongTinHo() {
             if (currentSelectedHoIndex === null) return;
             danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
@@ -331,7 +302,6 @@
             alert("Đã lưu thông tin hộ gia đình thành công!");
         }
 
-        // Tìm kiếm nhanh danh sách hộ
         function timKiemHoGiaDinh() {
             const keyword = document.getElementById('searchInput').value.toLowerCase();
             const filtered = danhSachHoGiaDinh.filter(ho => 
@@ -342,14 +312,13 @@
             renderBangHo(filtered);
         }
 
-        // Xuất báo cáo thống kê ra file Excel
-        function xuatBaoCaoThongKê() {
+        function xuatBaoCaoThongKe() {
             if (danhSachHoGiaDinh.length === 0) {
                 alert("Chưa có dữ liệu để xuất báo cáo!");
                 return;
             }
             let flatData = [];
-            danhSachHoGiaDinh.forEach((ho, idx) => {
+            danhSachHoGiaDinh.forEach((ho) => {
                 ho.thanhVien.forEach(tv => {
                     flatData.push({
                         STT: flatData.length + 1,
