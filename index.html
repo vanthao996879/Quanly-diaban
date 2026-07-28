@@ -28,12 +28,12 @@
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
             <h2 class="text-2xl font-bold text-white mb-2">Bảo Mật Hệ Thống</h2>
-            <p id="lock-subtitle" class="text-sm text-slate-400 mb-6">Nhập mã xác thực từ Google Authenticator để mở khóa</p>
+            <p id="lock-subtitle" class="text-sm text-slate-400 mb-6">Quét mã QR bằng Google Authenticator để lấy mã mở khóa</p>
             
-            <div id="setup-section" class="hidden mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                <p class="text-xs text-amber-400 mb-3">Chưa có cấu hình bảo mật. Quét mã QR này bằng ứng dụng:</p>
+            <div id="setup-section" class="mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center">
+                <p class="text-xs text-amber-400 mb-3">Mở ứng dụng Authenticator và quét mã QR này:</p>
                 <div id="qrcode-container" class="bg-white p-3 inline-block rounded-lg mb-3"></div>
-                <p class="text-xs text-slate-400">Hoặc nhập thủ công Secret Key: <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold"></code></p>
+                <p class="text-xs text-slate-400">Hoặc nhập Secret Key chuẩn: <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold block mt-1"></code></p>
             </div>
 
             <div class="mb-6">
@@ -99,7 +99,6 @@
                 </div>
             </div>
 
-            <!-- Khung bản đồ chọn vị trí -->
             <div>
                 <div class="flex justify-between items-center mb-1">
                     <label class="text-xs text-slate-400">Vị trí căn nhà trên bản đồ khu vực (Click lên bản đồ để chọn ghim):</label>
@@ -169,7 +168,6 @@
                 <button onclick="closeMembersModal()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
             </div>
 
-            <!-- Form thêm thành viên vào hộ -->
             <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
                 <h4 class="text-sm font-semibold text-sky-400">+ Thêm thành viên mới vào hộ</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -180,7 +178,6 @@
                 <button onclick="addMemberToCurrentHousehold()" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-xs font-semibold rounded-lg text-white transition">Thêm thành viên</button>
             </div>
 
-            <!-- Bảng danh sách thành viên -->
             <div class="overflow-y-auto flex-1">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -206,15 +203,15 @@
     <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
         const authenticator = window.otplib.authenticator;
-        const STORAGE_SECRET_KEY = "app_totp_secret_key";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v3";
+        // Đổi tên key để tự động tạo mới hoàn toàn chuẩn Base32
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v4";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v4";
 
         let currentSecretKey = "";
         let appData = { households: [] };
-        let activeHouseholdId = null; // Đang mở xem thành viên của hộ nào
+        let activeHouseholdId = null;
         let map, marker;
 
-        // Khởi tạo bản đồ Leaflet
         function initMap(lat = 10.0452, lng = 105.7469) {
             if (map) {
                 map.setView([lat, lng], 15);
@@ -251,32 +248,39 @@
                     document.getElementById('input-lng').value = lng;
                     initMap(lat, lng);
                 }, function(error) {
-                    alert("Không thể lấy vị trí GPS hiện tại. Vui lòng cấp quyền trình duyệt.");
+                    alert("Không thể lấy vị trí GPS hiện tại.");
                 });
             } else {
                 alert("Trình duyệt không hỗ trợ Geolocation.");
             }
         }
 
-        // Khởi động hệ thống 2FA
         document.addEventListener("DOMContentLoaded", function() {
             let secret = localStorage.getItem(STORAGE_SECRET_KEY);
             const lockScreen = document.getElementById("security-lock-screen");
-            const setupSection = document.getElementById("setup-section");
-            const subtitle = document.getElementById("lock-subtitle");
 
+            // Luôn tạo mới một chuỗi Base32 cực kỳ chuẩn để app Authenticator nhận diện 100%
             if (!secret) {
-                secret = authenticator.generateSecret();
+                // Tạo chuỗi base32 ngẫu nhiên hợp chuẩn
+                const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+                secret = "";
+                for (let i = 0; i < 32; i++) {
+                    secret += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
                 localStorage.setItem(STORAGE_SECRET_KEY, secret);
-                setupSection.classList.remove("hidden");
-                subtitle.innerText = "Thiết lập Google Authenticator lần đầu";
-                
-                const otpauth = authenticator.keyuri("AdminSystem", "QuanLyHoDan", secret);
-                new QRCode(document.getElementById("qrcode-container"), { text: otpauth, width: 140, height: 140 });
-                document.getElementById("manual-secret").innerText = secret;
             }
 
             currentSecretKey = secret;
+
+            // Hiển thị mã QR tự động
+            const otpauth = authenticator.keyuri("QuanLyHoDan", "QuanLyDiaBan", secret);
+            document.getElementById("qrcode-container").innerHTML = "";
+            new QRCode(document.getElementById("qrcode-container"), { 
+                text: otpauth, 
+                width: 150, 
+                height: 150 
+            });
+            document.getElementById("manual-secret").innerText = secret;
 
             const verifyBtn = document.getElementById("verify-btn");
             const inputField = document.getElementById("totp-input");
@@ -335,7 +339,6 @@
             }
         }
 
-        // Thêm hộ dân mới kèm danh sách thành viên khởi tạo mặc định là Chủ hộ
         function addHousehold() {
             const hsct = document.getElementById("input-hsct").value.trim();
             const ward = document.getElementById("input-ward").value;
@@ -351,7 +354,6 @@
                 return;
             }
 
-            let houseImg = "Không có";
             if (imgInput.files && imgInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -391,7 +393,6 @@
             saveAppData();
             renderUI();
 
-            // Reset form
             document.getElementById("input-hsct").value = "";
             document.getElementById("input-address").value = "";
             document.getElementById("input-chuoho").value = "";
@@ -408,7 +409,6 @@
             }
         }
 
-        // Mở Modal xem chi tiết các thành viên bên trong hộ
         function openMembersModal(id) {
             activeHouseholdId = id;
             const h = appData.households.find(item => item.id === id);
@@ -474,7 +474,6 @@
             }
         }
 
-        // Hiển thị danh sách chính (Gom nhóm theo Hộ, lọc chuẩn xác không bị lặp dòng nhân khẩu)
         function renderUI() {
             const searchKeyword = document.getElementById("search-input").value.toLowerCase().trim();
 
@@ -482,13 +481,11 @@
                 const matchHsct = h.hsct.toLowerCase().includes(searchKeyword);
                 const matchChuoho = h.chuoho.toLowerCase().includes(searchKeyword);
                 const matchAddress = h.address.toLowerCase().includes(searchKeyword);
-                // Tìm kiếm cả trong tên các thành viên của hộ để không bị sót
                 const matchMembers = h.members.some(m => m.name.toLowerCase().includes(searchKeyword));
 
                 return !searchKeyword || matchHsct || matchChuoho || matchAddress || matchMembers;
             });
 
-            // Thống kê tổng số hộ và tổng nhân khẩu thực tế
             document.getElementById("stat-houses").innerText = appData.households.length;
             let totalResidents = appData.households.reduce((sum, h) => sum + h.members.length, 0);
             document.getElementById("stat-residents").innerText = totalResidents;
