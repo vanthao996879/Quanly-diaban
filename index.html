@@ -3,63 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử - Phân Quyền Zalo</title>
+    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu - Bảo Mật Google Authenticator</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS (XLSX) để đọc/xuất file Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Thư viện QRCode để tạo mã QR cho Google Authenticator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Thư viện mã hóa OTP (jsOTP /otplib standalone) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-4">
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP (HỖ TRỢ ZALO & PHÂN QUYỀN) -->
+    <!-- MÀN HÌNH BƯỚC 1: ĐĂNG NHẬP GMAIL -->
     <div id="loginScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
-                <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🛡️</div>
-                <h2 class="text-xl font-bold text-white">Đăng Nhập Hệ Thống Dân Cư</h2>
-                <p class="text-xs text-gray-400">Chọn vai trò hoặc kết nối tài khoản Zalo chính chủ để xác thực:</p>
-            </div>
-
-            <!-- Nút Đăng nhập Zalo OAuth Mô Phỏng -->
-            <button onclick="dangNhapZalo()" class="w-full bg-blue-500 hover:bg-blue-600 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow text-sm">
-                <span class="bg-white text-blue-600 font-bold px-1.5 py-0.5 rounded text-xs">Zalo</span>
-                <span>Đăng nhập nhanh bằng Zalo ID</span>
-            </button>
-
-            <div class="relative flex py-2 items-center">
-                <div class="flex-grow border-t border-gray-700"></div>
-                <span class="flex-shrink mx-4 text-gray-500 text-xs">Hoặc chọn phân quyền thủ công</span>
-                <div class="flex-grow border-t border-gray-700"></div>
+                <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🔐</div>
+                <h2 class="text-xl font-bold text-white">Xác Thực Quản Lý Dân Cư</h2>
+                <p class="text-xs text-gray-400">Nhập Gmail để tiếp tục (Email chứa chữ <strong>admin</strong> sẽ kích hoạt 2FA Authenticator):</p>
             </div>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Chọn phân quyền hệ thống:</label>
-                    <select id="roleSelect" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="admin">Quản trị viên (Admin - Toàn quyền)</option>
-                        <option value="user">Cán bộ địa bàn (User - Gán GPS / Xem / Gán ảnh)</option>
-                    </select>
+                    <label class="block text-xs text-gray-400 mb-1">Địa chỉ Gmail:</label>
+                    <input type="email" id="gmailInput" placeholder="vd: admin.cantho@gmail.com" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
                 </div>
+                <button onclick="buoc1KiemTraGmail()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition shadow text-sm">Tiếp Tục</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH BƯỚC 2: NHẬP MÃ OTP TỪ GOOGLE AUTHENTICATOR (HOẶC THIẾT LẬP LẦN ĐẦU) -->
+    <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
+        <div class="bg-gray-800 border border-gray-700 w-full max-w-lg p-6 rounded-2xl shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+            <div class="text-center space-y-2">
+                <div class="bg-emerald-600/20 text-emerald-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-emerald-500/30">🛡️</div>
+                <h2 class="text-xl font-bold text-white">Bảo Mật Google Authenticator</h2>
+                <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span></p>
+            </div>
+
+            <!-- Phần hiển thị QR Code và Mã thiết lập cho lần đầu tiên cài đặt -->
+            <div id="setupAuthSection" class="bg-gray-900 p-4 rounded-xl border border-gray-700 space-y-3 hidden">
+                <p class="text-xs text-amber-400 font-semibold">⚠️ Thiết lập lần đầu cho Admin:</p>
+                <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> hoặc <strong>Microsoft Authenticator</strong> trên điện thoại, chọn <em>"Thêm tài khoản (+)"</em> và quét mã QR hoặc nhập mã thiết lập bên dưới:</p>
+                
+                <div class="flex flex-col md:flex-row items-center gap-4 bg-gray-800 p-3 rounded-lg border border-gray-700">
+                    <div id="qrcode" class="bg-white p-2 rounded"></div>
+                    <div class="space-y-2 w-full">
+                        <label class="block text-[10px] text-gray-400">Mã thiết lập (Copy dán vào Authenticator nếu không quét được QR):</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="secretKeyDisplay" readonly class="bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-xs font-mono text-emerald-300 w-full select-all">
+                            <button onclick="copySecretKey()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded text-xs whitespace-nowrap">📋 Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Mã xác thực Authenticator / PIN:</label>
-                    <input type="password" id="authCodeInput" placeholder="Nhập mã PIN (Mặc định: 888899)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-center tracking-widest text-sm font-mono text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP gồm 6 chữ số từ ứng dụng Authenticator:</label>
+                    <input type="text" id="otpCodeInput" maxlength="6" placeholder="VD: 482910" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
-                <button onclick="kiemTraDangNhap()" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-lg font-medium transition shadow text-sm">Xác Thực Đăng Nhập</button>
+                <div class="flex gap-3">
+                    <button onclick="quayLaiDangNhap()" class="w-1/3 bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-medium transition text-xs">Quay lại</button>
+                    <button onclick="xacThucOtp()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 py-3 rounded-lg font-medium transition shadow text-sm">Xác Thực Đăng Nhập</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- GIAO DIỆN CHÍNH -->
     <div id="mainApp" class="container mx-auto space-y-6 max-w-7xl hidden">
-        
-        <!-- Tiêu đề hệ thống & Thông tin tài khoản đăng nhập -->
         <header class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 gap-4">
             <div>
                 <div class="flex items-center gap-2">
                     <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Xin chào: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp 103 xã/phường & định vị GPS.</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp 103 xã/phường & định vị GPS.</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
@@ -184,81 +206,171 @@
         </div>
     </div>
 
-    <!-- Script xử lý toàn bộ logic hệ thống -->
+    <!-- Script xử lý toàn bộ logic hệ thống & TOTP Authenticator -->
     <script>
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
-        let currentUser = { name: "", role: "" };
+        let currentUser = { email: "", role: "" };
+        let tamEmailDangNhap = "";
 
         const danhSach103XaPhuongMau = [
             "Phường An Cư", "Phường An Bình", "Phường An Khánh", "Phường An Lạc", "Phường An Phú",
             "Phường Tân An", "Phường Tân Lập", "Phường Tân Hưng", "Phường Thới Bình", "Phường Trà Nóc"
         ];
 
+        // Hàm hỗ trợ mã hóa Base32 cho TOTP Authenticator chuẩn Google
+        const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        function base32ToBytes(base32) {
+            let bits = "";
+            let hex = "";
+            for (let i = 0; i < base32.length; i++) {
+                let val = BASE32_CHARS.indexOf(base32.charAt(i).toUpperCase());
+                if (val === -1) continue;
+                bits += val.toString(2).padStart(5, '0');
+            }
+            for (let i = 0; i + 8 <= bits.length; i += 8) {
+                let chunk = bits.substr(i, 8);
+                hex += parseInt(chunk, 2).toString(16).padStart(2, '0');
+            }
+            return CryptoJS.enc.Hex.parse(hex);
+        }
+
+        function taoMaOtpTotp(secretBase32, timeStep = 30) {
+            try {
+                let epoch = Math.floor(Date.now() / 1000);
+                let time = Math.floor(epoch / timeStep);
+                let timeHex = time.toString(16).padStart(16, '0');
+                let timeBytes = CryptoJS.enc.Hex.parse(timeHex);
+                let keyBytes = base32ToBytes(secretBase32);
+                let hmac = CryptoJS.HmacSHA1(timeBytes, keyBytes);
+                let hmacHex = hmac.toString(CryptoJS.enc.Hex);
+                let offset = parseInt(hmacHex.substr(hmacHex.length - 1, 1), 16);
+                let binary = ((parseInt(hmacHex.substr(offset * 2, 8), 16) & 0x7fffffff));
+                let otp = binary % 1000000;
+                return otp.toString().padStart(6, '0');
+            } catch (e) {
+                return null;
+            }
+        }
+
         window.onload = function() {
-            const savedUser = sessionStorage.getItem("currentUser");
+            const savedUser = sessionStorage.getItem("currentUserAuth");
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
                 kichHoatGiaoDienChinh();
             }
         };
 
-        function dangNhapZalo() {
-            // Mô phỏng xác thực qua Zalo OAuth thành công
-            let tenZalo = prompt("Nhập tên hiển thị Zalo của bạn:", "Cán Bộ Địa Bàn Zalo");
-            if (!tenZalo) return;
-            
-            let chonRole = confirm("Bấm [OK] để đăng nhập quyền QUẢN TRỊ (Admin).\nBấm [Cancel] để đăng nhập quyền CÁN BỘ (User).");
-            
-            currentUser = {
-                name: tenZalo + " (Zalo Verified)",
-                role: chonRole ? "admin" : "user"
-            };
-            sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-            kichHoatGiaoDienChinh();
-        }
+        function buoc1KiemTraGmail() {
+            const emailInput = document.getElementById('gmailInput').value.trim().toLowerCase();
+            if (!emailInput || !emailInput.endsWith('@gmail.com')) {
+                alert("Vui lòng nhập đúng địa chỉ Gmail (phải có đuôi @gmail.com)!");
+                return;
+            }
 
-        function kiemTraDangNhap() {
-            const role = document.getElementById('roleSelect').value;
-            const code = document.getElementById('authCodeInput').value.trim();
+            tamEmailDangNhap = emailInput;
+            let role = emailInput.includes('admin') ? 'admin' : 'user';
 
-            if (code === "888899" || code === "") {
-                currentUser = {
-                    name: role === 'admin' ? "Quản Trị Viên Hệ Thống" : "Cán Bộ Địa Bàn Xã",
-                    role: role
-                };
-                sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
-                kichHoatGiaoDienChinh();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('otpEmailDisplay').innerText = emailInput;
+            document.getElementById('otpScreen').classList.remove('hidden');
+
+            const setupSec = document.getElementById('setupAuthSection');
+            if (role === 'admin') {
+                setupSec.classList.remove('hidden');
+                
+                // Lấy hoặc khởi tạo Secret Key cố định cho Admin trong localStorage trình duyệt
+                let storedSecret = localStorage.getItem("adminSecretKey_" + emailInput);
+                if (!storedSecret) {
+                    // Tạo ngẫu nhiên chuỗi Base32 chuẩn 16 ký tự làm Secret Key
+                    storedSecret = "";
+                    for (let i = 0; i < 16; i++) {
+                        storedSecret += BASE32_CHARS.charAt(Math.floor(Math.random() * BASE32_CHARS.length));
+                    }
+                    localStorage.setItem("adminSecretKey_" + emailInput, storedSecret);
+                }
+
+                document.getElementById('secretKeyDisplay').value = storedSecret;
+
+                // Tạo mã QR Code cho Google Authenticator
+                document.getElementById('qrcode.innerHTML') = '';
+                let otpauthUrl = `otpauth://totp/QuanLyDanCu:${emailInput}?secret=${storedSecret}&issuer=HeThongDanCu`;
+                document.getElementById('qrcode').innerHTML = "";
+                new QRCode(document.getElementById("qrcode"), {
+                    text: otpauthUrl,
+                    width: 130,
+                    height: 130
+                });
             } else {
-                alert("Mã PIN hoặc mã xác thực không chính xác! (Mặc định: 888899)");
+                // User (Cán bộ) không bắt buộc quét Authenticator, có thể bấm xác thực ngay hoặc nhập mã bất kỳ
+                setupSec.classList.add('hidden');
             }
         }
 
+        function copySecretKey() {
+            const copyText = document.getElementById('secretKeyDisplay');
+            copyText.select();
+            navigator.clipboard.writeText(copyText.value);
+            alert("Đã copy mã thiết lập (Secret Key) vào bộ nhớ tạm!");
+        }
+
+        function quayLaiDangNhap() {
+            document.getElementById('otpScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function xacThucOtp() {
+            const otpInput = document.getElementById('otpCodeInput').value.trim();
+            let role = tamEmailDangNhap.includes('admin') ? 'admin' : 'user';
+
+            if (role === 'admin') {
+                let storedSecret = localStorage.getItem("adminSecretKey_" + tamEmailDangNhap);
+                let otpChuan = taoMaOtpTotp(storedSecret);
+                
+                // Cho phép kiểm tra với mã tính toán chuẩn TOTP hoặc mã dự phòng hệ thống "888899"
+                if (otpInput !== otpChuan && otpInput !== "888899") {
+                    alert(`Mã OTP không chính xác hoặc đã hết hạn!\n(Gợi ý test nhanh: Bạn có thể nhập mã '888899' hoặc mở ứng dụng Authenticator quét mã QR để lấy 6 số mới nhất).`);
+                    return;
+                }
+            } else {
+                if (otpInput.length !== 6 && otpInput !== "888899") {
+                    alert("Vui lòng nhập đủ 6 chữ số OTP hoặc mã xác thực!");
+                    return;
+                }
+            }
+
+            currentUser = {
+                email: tamEmailDangNhap,
+                role: role
+            };
+            sessionStorage.setItem("currentUserAuth", JSON.stringify(currentUser));
+            document.getElementById('otpScreen').classList.add('hidden');
+            kichHoatGiaoDienChinh();
+        }
+
         function kichHoatGiaoDienChinh() {
-            document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            
-            document.getElementById('userNameDisplay').innerText = currentUser.name;
+            document.getElementById('userNameDisplay').innerText = currentUser.email;
             const badge = document.getElementById('userBadgeRole');
             
             if (currentUser.role === 'admin') {
                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900/80 text-red-300 border border-red-700";
-                badge.innerText = "Quyền: Admin (Toàn quyền)";
+                badge.innerText = "Quyền: Admin (Toàn quyền 2FA)";
                 document.getElementById('btnUploadExcelContainer').style.display = 'flex';
             } else {
                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-900/80 text-blue-300 border border-blue-700";
-                badge.innerText = "Quyền: User (Cán bộ xem & Gán GPS)";
-                // User thông thường không được tải file Excel mới ghi đè hệ thống
+                badge.innerText = "Quyền: User (Cán bộ địa bàn)";
                 document.getElementById('btnUploadExcelContainer').style.display = 'none';
             }
             khoiTaoBoLocXa();
         }
 
         function dangXuat() {
-            sessionStorage.removeItem("currentUser");
+            sessionStorage.removeItem("currentUserAuth");
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('authCodeInput').value = '';
+            document.getElementById('gmailInput').value = '';
+            document.getElementById('otpCodeInput').value = '';
         }
 
         function khoiTaoBoLocXa() {
@@ -352,7 +464,7 @@
                     document.getElementById('statTrangThai').innerText = "Đã tải thành công";
                     
                     renderBangHo(danhSachHoGiaDinh);
-                    alert(`Admin đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
+                    alert(`Đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
                 } catch (err) {
                     console.error(err);
                     alert("Lỗi đọc file Excel: " + err.message);
@@ -366,7 +478,7 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp. Vui lòng tải dữ liệu lên.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp. Vui lòng tải file Excel lên.</td></tr>`;
                 return;
             }
 
@@ -466,7 +578,6 @@
 
         function luuThongTinHo() {
             if (currentSelectedHoIndex === null) return;
-            // Cả Admin lẫn User (Cán bộ đi thực tế) đều được phép gán/cập nhật GPS và ảnh của hộ dân mình phụ trách
             danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = document.getElementById('editDiaChi').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
@@ -486,7 +597,7 @@
             renderBangHo(filtered);
         }
 
-        function timKiemHoGiaDinh() {
+        function timKiemHoGiaDinj() {
             const keyword = document.getElementById('searchInput').value.toLowerCase();
             const filtered = danhSachHoGiaDinh.filter(ho => 
                 ho.chuHo.toLowerCase().includes(keyword) ||
@@ -496,6 +607,8 @@
             );
             renderBangHo(filtered);
         }
+        // Alias cho onkeyup
+        function timKiemHoGiaDinh() { timKiemHoGiaDinj(); }
 
         function xuatBaoCaoThongKe() {
             if (danhSachHoGiaDinh.length === 0) {
@@ -514,7 +627,7 @@
                         "Quan Hệ Với Chủ Hộ": tv.quanHe,
                         "Địa Chỉ Thường Trú / Xã Phường": ho.diaChi,
                         "Tọa Độ GPS": ho.gps,
-                        "Chủ Hộ": ho.chuHo
+                        "Chủ Hộc": ho.chuHo
                     });
                 });
             });
