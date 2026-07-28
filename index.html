@@ -3,38 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Địa Bàn Chuyên Sâu</title>
+    <title>Hệ Thống Quản Lý Địa Bàn & Bản Đồ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (xlsx) for Excel import/export -->
+    <!-- SheetJS cho Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- FontAwesome icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS cho Bản đồ -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        #map { height: 260px; width: 100%; border-radius: 0.75rem; z-index: 10; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-indigo-700 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center space-x-3">
-                <div class="bg-white/10 p-2.5 rounded-xl">
-                    <i class="fa-solid fa-map-location-dot text-2xl"></i>
+                <div class="bg-white/10 p-2 rounded-xl">
+                    <i class="fa-solid fa-map-location-dot text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">Hệ Thống Quản Lý Địa Bàn</h1>
-                    <p class="text-xs text-indigo-200">Quản lý Hộ dân, Phường xã & Khu vực thông minh</p>
+                    <h1 class="text-lg font-bold tracking-tight">Hệ Thống Quản Lý Địa Bàn</h1>
+                    <p class="text-xs text-indigo-200">Quản lý Hộ dân, Phường xã & Định vị bản đồ</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <label class="cursor-pointer bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 border border-white/20">
-                    <i class="fa-solid fa-file-excel text-emerald-400"></i> Nhập Excel Mới
+            <div class="flex items-center gap-2">
+                <label class="cursor-pointer bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 border border-white/20">
+                    <i class="fa-solid fa-file-excel text-emerald-400"></i> Nhập Excel
                     <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
                 </label>
-                <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                <button onclick="exportExcel()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-2 shadow-sm">
                     <i class="fa-solid fa-download"></i> Xuất Excel
                 </button>
             </div>
@@ -42,258 +45,276 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+    <main class="max-w-7xl mx-auto px-4 py-4 flex-grow w-full space-y-4">
+
+        <!-- Quản Lý Danh Mục Phường/Xã (Admin) -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-100 space-y-3">
+            <h2 class="text-sm font-bold text-indigo-900 flex items-center gap-2">
+                <i class="fa-solid fa-gear text-indigo-600"></i> Quản Lý Danh Mục Phường/Xã (Admin)
+            </h2>
+            <div class="flex gap-2">
+                <input type="text" id="newWardInput" placeholder="Nhập tên phường/xã mới..." class="flex-grow border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
+                <button onclick="addWard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> Thêm Phường
+                </button>
+            </div>
+            <div id="wardListContainer" class="flex flex-wrap gap-2 pt-1">
+                <!-- Danh sách phường -->
+            </div>
+        </div>
 
         <!-- Dashboard Stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tổng Số Hộ Dân</p>
-                    <h3 id="statTotalHouseholds" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tổng số nhà</p>
+                    <h3 id="statTotalHouseholds" class="text-xl font-bold text-slate-900 mt-0.5">0</h3>
                 </div>
-                <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl">
-                    <i class="fa-solid fa-house text-xl"></i>
+                <div class="bg-indigo-50 text-indigo-600 p-2.5 rounded-lg">
+                    <i class="fa-solid fa-house"></i>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tổng Nhân Khẩu</p>
-                    <h3 id="statTotalMembers" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Tổng nhân khẩu</p>
+                    <h3 id="statTotalMembers" class="text-xl font-bold text-slate-900 mt-0.5">0</h3>
                 </div>
-                <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl">
-                    <i class="fa-solid fa-users text-xl"></i>
+                <div class="bg-emerald-50 text-emerald-600 p-2.5 rounded-lg">
+                    <i class="fa-solid fa-users"></i>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Phường / Xã Quản Lý</p>
-                    <h3 id="statTotalWards" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">Đã chụp ảnh</p>
+                    <h3 id="statTotalPhoto" class="text-xl font-bold text-slate-900 mt-0.5">0</h3>
                 </div>
-                <div class="bg-amber-50 text-amber-600 p-3 rounded-xl">
-                    <i class="fa-solid fa-city text-xl"></i>
-                </div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Khu Vực (KV1 - KV12)</p>
-                    <h3 id="statTotalKV" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
-                </div>
-                <div class="bg-rose-50 text-rose-600 p-3 rounded-xl">
-                    <i class="fa-solid fa-map-pin text-xl"></i>
+                <div class="bg-amber-50 text-amber-600 p-2.5 rounded-lg">
+                    <i class="fa-solid fa-camera"></i>
                 </div>
             </div>
         </div>
 
-        <!-- Filters & Search Section -->
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-filter text-indigo-600"></i> Bộ Lọc Phân Cấp & Tìm Kiếm
-                </h2>
-                <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm">
-                    <i class="fa-solid fa-plus"></i> Thêm Hộ Dân Mới
-                </button>
+        <!-- Tìm kiếm nhanh -->
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">
+                    <i class="fa-solid fa-search"></i>
+                </span>
+                <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Tìm kiếm Số HSCT, Tên đường, Chủ hộ, Ghi chú..." class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+        </div>
+
+        <!-- Form Thêm Căn Nhà Mới & Định Vị Bản Đồ -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-house-chimney-user text-indigo-600"></i> Thêm Căn Nhà Mới & Định Vị Bản Đồ
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Số HSCT (Hồ sơ cư trú):</label>
+                    <input type="text" id="inputHsct" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: HSCT-9921">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Quận/Huyện - Phường/Xã:</label>
+                    <select id="inputPhuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">-- Chọn Phường/Xã --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Số nhà, Tên đường:</label>
+                    <input type="text" id="inputDuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 123 Nguyễn Văn Cừ">
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <!-- Filter Ward -->
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Phường / Xã</label>
-                    <select id="filterWard" onchange="filterData()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="">-- Tất cả Phường xã --</option>
-                    </select>
+            <!-- Bản đồ tương tác -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center">
+                    <label class="text-[11px] font-semibold text-slate-600">Chọn vị trí trên bản đồ (Click vào bản đồ hoặc dùng nút lấy vị trí):</label>
+                    <button type="button" onclick="getCurrentLocation()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-md text-[11px] font-medium transition flex items-center gap-1">
+                        <i class="fa-solid fa-location-crosshairs"></i> Lấy vị trí hiện tại của tôi
+                    </button>
                 </div>
-                <!-- Filter Khu Vực -->
+                <div id="map"></div>
+                <input type="hidden" id="inputLat" value="10.0452">
+                <input type="hidden" id="inputLng" value="105.7469">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Khu Vực (KV1 - KV12)</label>
-                    <select id="filterKV" onchange="filterData()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="">-- Tất cả Khu vực --</option>
-                        <option value="KV1">Khu vực 1</option>
-                        <option value="KV2">Khu vực 2</option>
-                        <option value="KV3">Khu vực 3</option>
-                        <option value="KV4">Khu vực 4</option>
-                        <option value="KV5">Khu vực 5</option>
-                        <option value="KV6">Khu vực 6</option>
-                        <option value="KV7">Khu vực 7</option>
-                        <option value="KV8">Khu vực 8</option>
-                        <option value="KV9">Khu vực 9</option>
-                        <option value="KV10">Khu vực 10</option>
-                        <option value="KV11">Khu vực 11</option>
-                        <option value="KV12">Khu vực 12</option>
-                    </select>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tên chủ hộ:</label>
+                    <input type="text" id="inputChuHo" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: Nguyễn Văn A">
                 </div>
-                <!-- Filter Street -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tuyến Đường / Tổ</label>
-                    <select id="filterStreet" onchange="filterData()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                        <option value="">-- Tất cả Tuyến đường --</option>
-                    </select>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Chụp ảnh nhà:</label>
+                    <input type="file" id="inputPhoto" accept="image/*" class="w-full border border-slate-300 rounded-lg px-2 py-1 text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                 </div>
-                <!-- Search Keyword -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tìm kiếm nhanh</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <i class="fa-solid fa-search"></i>
-                        </span>
-                        <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Nhập tên chủ hộ, số HSCT..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ghi chú:</label>
+                    <input type="text" id="inputGhiChu" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ghi chú thêm...">
                 </div>
+            </div>
+
+            <div class="flex justify-end pt-1">
+                <button onclick="saveHousehold()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-1.5 rounded-lg text-xs font-medium transition shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> Thêm Căn Nhà
+                </button>
             </div>
         </div>
 
         <!-- Data Table Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50">
-                <h3 class="font-bold text-slate-800 text-base">Danh Sách Hộ Dân (<span id="tableCount">0</span>)</h3>
-                <span class="text-xs text-slate-500">Hiển thị thông tin chi tiết từng hộ</span>
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-xs">Danh Sách Hộ Dân (<span id="tableCount">0</span>)</h3>
+                <span class="text-[11px] text-slate-500">Hiển thị chi tiết</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-100/70 text-slate-600 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
-                            <th class="py-3 px-4">STT</th>
-                            <th class="py-3 px-4">Số HSCT</th>
-                            <th class="py-3 px-4">Chủ Hộ</th>
-                            <th class="py-3 px-4">Địa Chỉ / Tuyến Đường</th>
-                            <th class="py-3 px-4">Phường Xã</th>
-                            <th class="py-3 px-4">Nhân Khẩu & Quan Hệ</th>
-                            <th class="py-3 px-4 text-center">Thao Tác</th>
+                        <tr class="bg-slate-100/70 text-slate-600 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-2.5 px-3">STT</th>
+                            <th class="py-2.5 px-3">Số HSCT</th>
+                            <th class="py-2.5 px-3">Chủ Hộ</th>
+                            <th class="py-2.5 px-3">Địa Chỉ / Tuyến Đường</th>
+                            <th class="py-2.5 px-3">Phường Xã</th>
+                            <th class="py-2.5 px-3 text-center">Ảnh Nhà</th>
+                            <th class="py-2.5 px-3 text-center">Thao Tác</th>
                         </tr>
                     </thead>
-                    <tbody id="dataTableBody" class="divide-y divide-slate-200 text-sm">
-                        <!-- Populated by JavaScript -->
+                    <tbody id="dataTableBody" class="divide-y divide-slate-200 text-xs">
+                        <!-- Populated by JS -->
                     </tbody>
                 </table>
-            </div>
-            <!-- Pagination or status -->
-            <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500">
-                <span id="paginationInfo">Đang hiển thị toàn bộ dữ liệu</span>
             </div>
         </div>
 
     </main>
 
-    <!-- Modal Add/Edit Household -->
-    <div id="householdModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
-            <div class="bg-indigo-700 text-white px-6 py-4 flex justify-between items-center">
-                <h3 id="modalTitle" class="font-bold text-lg">Thêm Hộ Dân Mới</h3>
-                <button onclick="closeModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                <input type="hidden" id="editIndex" value="-1">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Số HSCT</label>
-                    <input type="text" id="inputHsct" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 31147-001599">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Chủ Hộ</label>
-                    <input type="text" id="inputChuHo" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: NGUYỄN VĂN A">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tên Đường / Tổ / Khu Vực</label>
-                    <input type="text" id="inputDuong" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 365A/3 KV7">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Phường Xã</label>
-                    <input type="text" id="inputPhuong" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" value="phường Tân An, thành phố Cần Thơ">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nhân Khẩu Trong Hộ (Tên & Quan hệ)</label>
-                    <textarea id="inputNhanKhau" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: NGUYỄN THỊ B - Vợ, NGUYỄN VĂN C - Con"></textarea>
-                </div>
-            </div>
-            <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 flex justify-end gap-3">
-                <button onclick="closeModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition">Hủy</button>
-                <button onclick="saveHousehold()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-sm">Lưu Dữ Liệu</button>
-            </div>
+    <!-- Modal xem ảnh lớn -->
+    <div id="imageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
+        <div class="bg-white rounded-xl overflow-hidden max-w-lg w-full p-2 relative" onclick="event.stopPropagation()">
+            <button onclick="closeImageModal()" class="absolute top-3 right-3 bg-slate-800/70 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs hover:bg-slate-900"><i class="fa-solid fa-xmark"></i></button>
+            <img id="modalImagePreview" src="" alt="Ảnh nhà" class="w-full h-auto rounded-lg max-h-[80vh] object-contain">
         </div>
     </div>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let globalData = [];
+        let wardList = [
+            "phường An Bình, thành phố Cần Thơ",
+            "phường Cái Khế, thành phố Cần Thơ",
+            "phường Ninh Kiều, thành phố Cần Thơ",
+            "phường Tân An, thành phố Cần Thơ"
+        ];
+        
+        let map, marker;
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            const saved = localStorage.getItem('quanly_diaban_data');
-            if (saved) {
-                try {
-                    globalData = JSON.parse(saved);
-                    initApp();
-                    return;
-                } catch(e) {}
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedWards = localStorage.getItem('quanly_diaban_wards');
+            if (savedWards) {
+                try { wardList = JSON.parse(savedWards); } catch(e){}
             }
-            
-            try {
-                const response = await fetch('Nhập liệu Phần mềm_đã_cập_nật.xlsx');
-                const arrayBuffer = await response.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, {type: 'array'});
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                globalData = XLSX.utils.sheet_to_json(firstSheet);
-                saveToLocalStorage();
-                initApp();
-            } catch(e) {
-                console.log("Using default sample data");
-                globalData = [
-                    {"Số HSCT": "31147-001599", "Phường xã": "phường Tân An, thành phố Cần Thơ", "Chủ hộ": "LƯƠNG HIỀN THÀNH", "Tên đường": "365A/3 KV7", "Nhân khẩu trong hộ": "LƯƠNG NGỌC GIA NGHI", "Quan hệ chủ hộ": "Cháu"},
-                    {"Số HSCT": "31147-000746", "Phường xã": "phường Tân An, thành phố Cần Thơ", "Chủ hộ": "HOÀNG MINH CHÂU", "Tên đường": "57 A3 KDC 91B KV 7", "Nhân khẩu trong hộ": "DƯƠNG HOÀNG MINH TRIẾT", "Quan hệ chủ hộ": "Con"}
-                ];
-                initApp();
+
+            const savedData = localStorage.getItem('quanly_diaban_data');
+            if (savedData) {
+                try { globalData = JSON.parse(savedData); } catch(e){}
             }
+
+            initMap(10.0452, 105.7469);
+            renderWards();
+            populateWardDropdown();
+            filterData();
         });
+
+        function initMap(lat, lng) {
+            if (map) { map.remove(); }
+            map = L.map('map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+
+            marker.on('dragend', function(e) {
+                const pos = marker.getLatLng();
+                document.getElementById('inputLat').value = pos.lat;
+                document.getElementById('inputLng').value = pos.lng;
+            });
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                document.getElementById('inputLat').value = e.latlng.lat;
+                document.getElementById('inputLng').value = e.latlng.lng;
+            });
+        }
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 16);
+                    marker.setLatLng([lat, lng]);
+                    document.getElementById('inputLat').value = lat;
+                    document.getElementById('inputLng').value = lng;
+                }, function(error) {
+                    alert('Không thể lấy vị trí hiện tại của bạn. Vui lòng cấp quyền định vị!');
+                });
+            } else {
+                alert('Trình duyệt của bạn không hỗ trợ định vị.');
+            }
+        }
+
+        function renderWards() {
+            const container = document.getElementById('wardListContainer');
+            container.innerHTML = wardList.map((w, idx) => `
+                <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-2.5 py-1 rounded-lg text-xs flex items-center gap-2">
+                    <span><i class="fa-solid fa-map-pin text-indigo-600 mr-1"></i>${w}</span>
+                    <button onclick="deleteWard(${idx})" class="text-rose-600 hover:text-rose-800 font-bold ml-1"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `).join('');
+            localStorage.setItem('quanly_diaban_wards', JSON.stringify(wardList));
+            populateWardDropdown();
+        }
+
+        function addWard() {
+            const val = document.getElementById('newWardInput').value.trim();
+            if (!val) { alert('Vui lòng nhập tên phường/xã!'); return; }
+            if (!wardList.includes(val)) {
+                wardList.push(val);
+                document.getElementById('newWardInput').value = '';
+                renderWards();
+                filterData();
+            } else {
+                alert('Phường này đã có trong danh mục!');
+            }
+        }
+
+        function deleteWard(idx) {
+            wardList.splice(idx, 1);
+            renderWards();
+            filterData();
+        }
+
+        function populateWardDropdown() {
+            const select = document.getElementById('inputPhuong');
+            select.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>' + wardList.map(w => `<option value="${w}">${w}</option>`).join('');
+        }
 
         function saveToLocalStorage() {
             localStorage.setItem('quanly_diaban_data', JSON.stringify(globalData));
         }
 
-        function initApp() {
-            populateDropdowns();
-            filterData();
-        }
-
-        function populateDropdowns() {
-            const wards = [...new Set(globalData.map(item => item['Phường xã']).filter(Boolean))];
-            const streets = [...new Set(globalData.map(item => item['Tên đường']).filter(Boolean))].sort();
-
-            const wardSelect = document.getElementById('filterWard');
-            wardSelect.innerHTML = '<option value="">-- Tất cả Phường xã --</option>' + wards.map(w => `<option value="${w}">${w}</option>`).join('');
-
-            const streetSelect = document.getElementById('filterStreet');
-            streetSelect.innerHTML = '<option value="">-- Tất cả Tuyến đường --</option>' + streets.map(s => `<option value="${s}">${s}</option>`).join('');
-        }
-
         function filterData() {
-            const wardVal = document.getElementById('filterWard').value;
-            const kvVal = document.getElementById('filterKV').value;
-            const streetVal = document.getElementById('filterStreet').value;
             const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
-
             const filtered = globalData.filter(item => {
-                const ward = (item['Phường xã'] || '').toLowerCase();
-                const street = (item['Tên đường'] || '').toUpperCase();
-                const chuHo = (item['Chủ hộ'] || '').toLowerCase();
-                const hsct = (item['Số HSCT'] || '').toLowerCase();
-                const nhanKhau = (item['Nhân khẩu trong hộ'] || '').toLowerCase();
-
-                if (wardVal && item['Phường xã'] !== wardVal) return false;
-
-                if (kvVal) {
-                    const cleanStreet = street.replace(/\s+/g, '');
-                    const cleanKV = kvVal.replace(/\s+/g, '');
-                    if (!cleanStreet.includes(cleanKV)) return false;
-                }
-
-                if (streetVal && item['Tên đường'] !== streetVal) return false;
-
-                if (keyword) {
-                    const matchText = `${chuHo} ${hsct} ${street} ${nhanKhau}`;
-                    if (!matchText.includes(keyword)) return false;
-                }
-
-                return true;
+                if (!keyword) return true;
+                const matchText = `${item['Chủ hộ'] || ''} ${item['Số HSCT'] || ''} ${item['Tên đường'] || ''} ${item['Phường xã'] || ''} ${item['Ghi chú'] || ''}`.toLowerCase();
+                return matchText.includes(keyword);
             });
-
             renderTable(filtered);
             updateDashboard(filtered);
         }
@@ -303,28 +324,27 @@
             document.getElementById('tableCount').innerText = data.length;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 font-medium"><i class="fa-solid fa-folder-open text-3xl mb-2 block"></i> Không tìm thấy dữ liệu phù hợp</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400"><i class="fa-solid fa-folder-open text-2xl mb-1 block"></i> Chưa có dữ liệu căn nhà nào</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = data.map((item, index) => {
                 const realIndex = globalData.indexOf(item);
+                let photoHtml = '<span class="text-slate-400">Không có</span>';
+                if (item['Ảnh nhà']) {
+                    photoHtml = `<img src="${item['Ảnh nhà']}" alt="Ảnh nhà" class="w-10 h-10 object-cover rounded-lg mx-auto cursor-pointer border border-slate-200 hover:opacity-80 shadow-sm" onclick="openImageModal('${item['Ảnh nhà']}')" title="Bấm để xem ảnh lớn">`;
+                }
+
                 return `
                     <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        <td class="py-3 px-4 font-medium text-slate-500">${index + 1}</td>
-                        <td class="py-3 px-4 font-semibold text-indigo-600">${item['Số HSCT'] || ''}</td>
-                        <td class="py-3 px-4 font-bold text-slate-900">${item['Chủ hộ'] || ''}</td>
-                        <td class="py-3 px-4 text-slate-700">${item['Tên đường'] || ''}</td>
-                        <td class="py-3 px-4 text-slate-600 text-xs">${item['Phường xã'] || ''}</td>
-                        <td class="py-3 px-4 text-slate-700">
-                            <span class="inline-block bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-xs font-semibold mr-1">${item['Nhân khẩu trong hộ'] || 'Không có'}</span>
-                            <span class="text-xs text-slate-400">(${item['Quan hệ\n chủ hộ'] || item['Quan hệ chủ hộ'] || 'Chủ hộ'})</span>
-                        </td>
-                        <td class="py-3 px-4 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="openEditModal(${realIndex})" class="bg-amber-50 text-amber-600 hover:bg-amber-100 p-2 rounded-lg transition" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button onclick="deleteHousehold(${realIndex})" class="bg-rose-50 text-rose-600 hover:bg-rose-100 p-2 rounded-lg transition" title="Xóa"><i class="fa-solid fa-trash"></i></button>
-                            </div>
+                        <td class="py-2.5 px-3 font-medium text-slate-500">${index + 1}</td>
+                        <td class="py-2.5 px-3 font-semibold text-indigo-600">${item['Số HSCT'] || ''}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-900">${item['Chủ hộ'] || ''}</td>
+                        <td class="py-2.5 px-3 text-slate-700">${item['Tên đường'] || ''}</td>
+                        <td class="py-2.5 px-3 text-slate-600">${item['Phường xã'] || ''}</td>
+                        <td class="py-2.5 px-3 text-center">${photoHtml}</td>
+                        <td class="py-2.5 px-3 text-center">
+                            <button onclick="deleteHousehold(${realIndex})" class="bg-rose-50 text-rose-600 hover:bg-rose-100 p-1.5 rounded-md transition" title="Xóa"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -332,91 +352,72 @@
         }
 
         function updateDashboard(currentData) {
-            const totalHh = currentData.length;
-            const totalMembers = currentData.filter(i => i['Nhân khẩu trong hộ']).length;
-            const wards = new Set(currentData.map(i => i['Phường xã']).filter(Boolean)).size;
-            
-            const kvSet = new Set();
-            currentData.forEach(i => {
-                const street = (i['Tên đường'] || '').toUpperCase();
-                for (let k = 1; k <= 12; k++) {
-                    if (street.includes(`KV${k}`) || street.includes(`KV ${k}`)) {
-                        kvSet.add(`KV${k}`);
-                    }
-                }
-            });
-
-            document.getElementById('statTotalHouseholds').innerText = totalHh.toLocaleString();
-            document.getElementById('statTotalMembers').innerText = totalMembers.toLocaleString();
-            document.getElementById('statTotalWards').innerText = wards;
-            document.getElementById('statTotalKV').innerText = kvSet.size || '0';
+            document.getElementById('statTotalHouseholds').innerText = currentData.length.toLocaleString();
+            document.getElementById('statTotalMembers').innerText = currentData.length.toLocaleString();
+            const photoCount = currentData.filter(i => i['Ảnh nhà']).length;
+            document.getElementById('statTotalPhoto').innerText = photoCount.toLocaleString();
         }
 
-        function openAddModal() {
-            document.getElementById('modalTitle').innerText = 'Thêm Hộ Dân Mới';
-            document.getElementById('editIndex').value = '-1';
-            document.getElementById('inputHsct').value = '';
-            document.getElementById('inputChuHo').value = '';
-            document.getElementById('inputDuong').value = '';
-            document.getElementById('inputNhanKhau').value = '';
-            document.getElementById('householdModal').classList.remove('hidden');
+        function openImageModal(imgSrc) {
+            document.getElementById('modalImagePreview').src = imgSrc;
+            document.getElementById('imageModal').classList.remove('hidden');
         }
 
-        function openEditModal(index) {
-            const item = globalData[index];
-            document.getElementById('modalTitle').innerText = 'Chỉnh Sửa Thông Tin Hộ Dân';
-            document.getElementById('editIndex').value = index;
-            document.getElementById('inputHsct').value = item['Số HSCT'] || '';
-            document.getElementById('inputChuHo').value = item['Chủ hộ'] || '';
-            document.getElementById('inputDuong').value = item['Tên đường'] || '';
-            document.getElementById('inputPhuong').value = item['Phường xã'] || '';
-            document.getElementById('inputNhanKhau').value = item['Nhân khẩu trong hộ'] || '';
-            document.getElementById('householdModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('householdModal').classList.add('hidden');
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
         }
 
         function saveHousehold() {
-            const index = parseInt(document.getElementById('editIndex').value);
             const hsct = document.getElementById('inputHsct').value.trim();
-            const chuHo = document.getElementById('inputChuHo').value.trim();
+            const phuong = document.getElementById('inputPhuong').value;
             const duong = document.getElementById('inputDuong').value.trim();
-            const phuong = document.getElementById('inputPhuong').value.trim();
-            const nhanKhau = document.getElementById('inputNhanKhau').value.trim();
+            const chuHo = document.getElementById('inputChuHo').value.trim();
+            const ghiChu = document.getElementById('inputGhiChu').value.trim();
+            const lat = document.getElementById('inputLat').value;
+            const lng = document.getElementById('inputLng').value;
+            const photoInput = document.getElementById('inputPhoto');
 
-            if (!chuHo) {
-                alert('Vui lòng nhập tên chủ hộ!');
-                return;
+            if (!chuHo) { alert('Vui lòng nhập tên chủ hộ!'); return; }
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, e.target.result);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, '');
             }
+        }
 
+        function finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, photoData) {
             const newItem = {
                 "Số HSCT": hsct,
                 "Phường xã": phuong,
-                "Chủ hộ": chuHo,
                 "Tên đường": duong,
-                "Nhân khẩu trong hộ": nhanKhau,
-                "Quan hệ chủ hộ": "Thành viên"
+                "Chủ hộ": chuHo,
+                "Ghi chú": ghiChu,
+                "Latitude": lat,
+                "Longitude": lng,
+                "Ảnh nhà": photoData
             };
 
-            if (index === -1) {
-                globalData.unshift(newItem);
-            } else {
-                globalData[index] = newItem;
-            }
-
+            globalData.unshift(newItem);
             saveToLocalStorage();
-            populateDropdowns();
             filterData();
-            closeModal();
+
+            document.getElementById('inputHsct').value = '';
+            document.getElementById('inputDuong').value = '';
+            document.getElementById('inputChuHo').value = '';
+            document.getElementById('inputGhiChu').value = '';
+            document.getElementById('inputPhoto').value = '';
+            alert('Đã thêm căn nhà mới thành công!');
         }
 
         function deleteHousehold(index) {
-            if (confirm('Bạn có chắc chắn muốn xóa hộ dân này khỏi danh sách không?')) {
+            if (confirm('Bạn có chắc muốn xóa hộ dân này không?')) {
                 globalData.splice(index, 1);
                 saveToLocalStorage();
-                populateDropdowns();
                 filterData();
             }
         }
@@ -424,7 +425,6 @@
         function handleExcelUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -432,15 +432,11 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const json = XLSX.utils.sheet_to_json(firstSheet);
-                    
                     if (json && json.length > 0) {
                         globalData = json;
                         saveToLocalStorage();
-                        populateDropdowns();
                         filterData();
-                        alert(`Đã tải lên thành công ${json.length} bản ghi vào hệ thống!`);
-                    } else {
-                        alert('File Excel trống hoặc sai định dạng!');
+                        alert(`Đã tải lên thành công ${json.length} bản ghi!`);
                     }
                 } catch(err) {
                     alert('Lỗi đọc file Excel: ' + err.message);
@@ -450,14 +446,11 @@
         }
 
         function exportExcel() {
-            if (globalData.length === 0) {
-                alert('Không có dữ liệu để xuất!');
-                return;
-            }
+            if (globalData.length === 0) { alert('Không có dữ liệu để xuất!'); return; }
             const worksheet = XLSX.utils.json_to_sheet(globalData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Danh_sach_ho_dan");
-            XLSX.writeFile(workbook, "QuanLyDiaBan_CapNhat.xlsx");
+            XLSX.writeFile(workbook, "QuanLyDiaBan_BanDo.xlsx");
         }
     </script>
 </body>
