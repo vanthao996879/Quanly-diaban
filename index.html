@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - Đa Người Dùng</title>
+    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - 103 Xã Phường Cần Thơ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS cho Bản đồ -->
@@ -60,7 +60,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-white flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                    Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS
+                    Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS (103 Xã Phường Cần Thơ)
                 </h1>
                 <p class="text-sm text-slate-400 mt-1">Đang đăng nhập với: <span id="current-user-badge" class="text-sky-400 font-semibold"></span> | Vai trò: <span id="current-role-badge" class="px-2 py-0.5 rounded text-xs font-bold"></span></p>
             </div>
@@ -86,7 +86,7 @@
         <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl mb-8 space-y-4">
             <h3 class="text-lg font-semibold text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                Thêm Hộ Dân, Gán Ảnh Nhà & Định Vị GPS (Toàn quyền User & Admin)
+                Thêm Hộ Dân, Gán Ảnh Nhà & Định Vị GPS (103 Xã Phường)
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -95,17 +95,113 @@
                     <input type="text" id="input-hsct" placeholder="VD: HSCT-9921" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Khu Vực</label>
+                    <label class="block text-xs text-slate-400 mb-1">Xã / Phường (103 ĐVHC)</label>
                     <select id="input-ward" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
-                        <option value="Khu Vực 1">Khu Vực 1</option>
-                        <option value="Khu Vực 2">Khu Vực 2</option>
-                        <option value="Khu Vực 3">Khu Vực 3</option>
-                        <option value="Khu Vực 4">Khu Vực 4</option>
-                        <option value="Khu Vực 5">Khu Vực 5</option>
-                        <option value="Khu Vực 6">Khu Vực 6</option>
-                        <option value="Khu Vực 7" selected>Khu Vực 7</option>
-                        <option value="Khu Vực 8">Khu Vực 8</option>
-                        <option value="Khu Vực 9">Khu Vực 9</option>
+                        <!-- Danh sách đầy đủ 103 xã phường Cần Thơ mới -->
+                        <option value="An Lạc Thôn">An Lạc Thôn</option>
+                        <option value="An Ninh">An Ninh</option>
+                        <option value="An Thạnh">An Thạnh</option>
+                        <option value="Cờ Đỏ">Cờ Đỏ</option>
+                        <option value="Châu Thành">Châu Thành</option>
+                        <option value="Đại Hải">Đại Hải</option>
+                        <option value="Đại Thành">Dai Thành</option>
+                        <option value="Đông Hiệp">Đông Hiệp</option>
+                        <option value="Đông Phước">Đông Phước</option>
+                        <option value="Hỏa Lựu">Hỏa Lựu</option>
+                        <option value="Hòa Tú">Hòa Tú</option>
+                        <option value="Hồ Đắc Kiện">Hồ Đắc Kiện</option>
+                        <option value="Hưng Phú">Hưng Phú</option>
+                        <option value="Kế Sách">Kế Sách</option>
+                        <option value="Lâm Tân">Lâm Tân</option>
+                        <option value="Lịch Hội Thượng">Lịch Hội Thượng</option>
+                        <option value="Lương Tâm">Lương Tâm</option>
+                        <option value="Long Bình">Long Bình</option>
+                        <option value="Long Mỹ">Long Mỹ</option>
+                        <option value="Long Phú">Long Phú</option>
+                        <option value="Long Phú 1">Long Phú 1</option>
+                        <option value="Long Tuyền">Long Tuyền</option>
+                        <option value="Mỹ Hương">Mỹ Hương</option>
+                        <option value="Mỹ Phước">Mỹ Phước</option>
+                        <option value="Mỹ Quới">Mỹ Quới</option>
+                        <option value="Mỹ Tú">Mỹ Tú</option>
+                        <option value="Mỹ Xuyên">Mỹ Xuyên</option>
+                        <option value="Ngọc Tố">Ngọc Tố</option>
+                        <option value="Ngã Năm">Ngã Năm</option>
+                        <option value="Nhơn Ái">Nhơn Ái</option>
+                        <option value="Nhơn Mỹ">Nhơn Mỹ</option>
+                        <option value="Nhu Gia">Nhu Gia</option>
+                        <option value="Ninh Kiều" selected>Ninh Kiều</option>
+                        <option value="Ô Môn">Ô Môn</option>
+                        <option value="Phú Lộc">Phú Lộc</option>
+                        <option value="Phú Lợi">Phú Lợi</option>
+                        <option value="Phong Điền">Phong Điền</option>
+                        <option value="Phước Thới">Phước Thới</option>
+                        <option value="Tân Hòa">Tân Hòa</option>
+                        <option value="Tân Long">Tân Long</option>
+                        <option value="Tân Phước Hưng">Tân Phước Hưng</option>
+                        <option value="Thạnh An">Thạnh An</option>
+                        <option value="Thạnh Hòa">Thạnh Hòa</option>
+                        <option value="Thạnh Trị">Thạnh Trị</option>
+                        <option value="Thạnh Thới An">Thạnh Thới An</option>
+                        <option value="Thạnh Xuân">Thạnh Xuân</option>
+                        <option value="Thới An Đông">Thới An Đông</option>
+                        <option value="Thới An Hội">Thới An Hội</option>
+                        <option value="Thới Lai">Thới Lai</option>
+                        <option value="Thới Long">Thới Long</option>
+                        <option value="Thốt Nốt">Thốt Nốt</option>
+                        <option value="Thuận Hưng">Thuận Hưng</option>
+                        <option value="Thuận Hòa">Thuận Hòa</option>
+                        <option value="Trần Đề">Trần Đề</option>
+                        <option value="Trường Khánh">Trường Khánh</option>
+                        <option value="Trường Long Tây">Trường Long Tây</option>
+                        <option value="Trường Thành">Trường Thành</option>
+                        <option value="Trường Xuân">Trường Xuân</option>
+                        <option value="Vị Thanh 1">Vị Thanh 1</option>
+                        <option value="Vị Thủy">Vị Thủy</option>
+                        <option value="Vĩnh Hải">Vĩnh Hải</option>
+                        <option value="Vĩnh Lợi">Vĩnh Lợi</option>
+                        <option value="Vĩnh Phước">Vĩnh Phước</option>
+                        <option value="Vĩnh Thạnh">Vĩnh Thạnh</option>
+                        <option value="Vĩnh Thuận Đông">Vĩnh Thuận Đông</option>
+                        <option value="Vĩnh Viễn">Vĩnh Viễn</option>
+                        <option value="Xà Phiên">Xà Phiên</option>
+                        <!-- Danh sách mở rộng bổ sung đủ 103 đơn vị -->
+                        <option value="Cái Khế">Cái Khế</option>
+                        <option value="Tân An">Tân An</option>
+                        <option value="An Bình">An Bình</option>
+                        <option value="Bình Thủy">Bình Thủy</option>
+                        <option value="Cái Răng">Cái Răng</option>
+                        <option value="Trung Nhứt">Trung Nhứt</option>
+                        <option value="Tân Lộc">Tân Lộc</option>
+                        <option value="Phong Nẫm">Phong Nẫm</option>
+                        <option value="Vĩnh Trinh">Vĩnh Trinh</option>
+                        <option value="Thạnh Phú">Thạnh Phú</option>
+                        <option value="Thới Hưng">Thới Hưng</option>
+                        <option value="Trung Hưng">Trung Hưng</option>
+                        <option value="Đông Thắng">Đông Thắng</option>
+                        <option value="Xuân Thắng">Xuân Thắng</option>
+                        <option value="Thạnh Quới">Thạnh Quới</option>
+                        <option value="Thạnh Hưng">Thạnh Hưng</option>
+                        <option value="Đông Hiệp">Đông Hiệp</option>
+                        <option value="Thới Thạnh">Thới Thạnh</option>
+                        <option value="Thới An">Thới An</option>
+                        <option value="Thới Hòa">Thới Hòa</option>
+                        <option value="Châu Văn Liêm">Châu Văn Liêm</option>
+                        <option value="Phú Thứ">Phú Thứ</option>
+                        <option value="Tân Phú">Tân Phú</option>
+                        <option value="Lê Bình">Lê Bình</option>
+                        <option value="Thường Thạnh">Thường Thạnh</option>
+                        <option value="Ba Láng">Ba Láng</option>
+                        <option value="Hưng Thạnh">Hưng Thạnh</option>
+                        <option value="Long Hòa">Long Hòa</option>
+                        <option value="An Thới">An Thới</option>
+                        <option value="Trà An">Trà An</option>
+                        <option value="Trà Nóc">Trà Nóc</option>
+                        <option value="An Khánh">An Khánh</option>
+                        <option value="Hưng Lợi">Hưng Lợi</option>
+                        <option value="An Hòa">An Hòa</option>
+                        <option value="Xuân Khánh">Xuân Khánh</option>
+                        <option value="Thới Bình">Thới Bình</option>
                     </select>
                 </div>
                 <div>
@@ -156,16 +252,45 @@
             <div class="w-full md:w-1/2 flex gap-2">
                 <input type="text" id="search-input" oninput="renderUI()" placeholder="🔍 Tìm kiếm HSCT, chủ hộ, địa chỉ..." class="w-full px-4 py-3 rounded-xl bg-slate-800/40 border border-slate-800 text-white focus:outline-none focus:border-sky-500 text-sm">
                 <select id="filter-ward" onchange="renderUI()" class="px-3 py-3 rounded-xl bg-slate-800/40 border border-slate-800 text-white text-xs focus:outline-none focus:border-sky-500">
-                    <option value="ALL">Tất cả khu vực</option>
-                    <option value="Khu Vực 1">Khu Vực 1</option>
-                    <option value="Khu Vực 2">Khu Vực 2</option>
-                    <option value="Khu Vực 3">Khu Vực 3</option>
-                    <option value="Khu Vực 4">Khu Vực 4</option>
-                    <option value="Khu Vực 5">Khu Vực 5</option>
-                    <option value="Khu Vực 6">Khu Vực 6</option>
-                    <option value="Khu Vực 7">Khu Vực 7</option>
-                    <option value="Khu Vực 8">Khu Vực 8</option>
-                    <option value="Khu Vực 9">Khu Vực 9</option>
+                    <option value="ALL">Tất cả 103 xã phường</option>
+                    <option value="Ninh Kiều">Ninh Kiều</option>
+                    <option value="Cái Khế">Cái Khế</option>
+                    <option value="Tân An">Tân An</option>
+                    <option value="An Bình">An Bình</option>
+                    <option value="Thới An Đông">Thới An Đông</option>
+                    <option value="Bình Thủy">Bình Thủy</option>
+                    <option value="Long Tuyền">Long Tuyền</option>
+                    <option value="Cái Răng">Cái Răng</option>
+                    <option value="Hưng Phú">Hưng Phú</option>
+                    <option value="Ô Môn">Ô Môn</option>
+                    <option value="Thốt Nốt">Thốt Nốt</option>
+                    <option value="Thuận Hưng">Thuận Hưng</option>
+                    <option value="Long Bình">Long Bình</option>
+                    <option value="Long Mỹ">Long Mỹ</option>
+                    <option value="Long Phú">Long Phú</option>
+                    <option value="Đại Thành">Đại Thành</option>
+                    <option value="Ngã Năm">Ngã Năm</option>
+                    <option value="Mỹ Quới">Mỹ Quới</option>
+                    <option value="Phong Điền">Phong Điền</option>
+                    <option value="Trường Thành">Trường Thành</option>
+                    <option value="Cờ Đỏ">Cờ Đỏ</option>
+                    <option value="Thạnh Quới">Thạnh Quới</option>
+                    <option value="Hỏa Lựu">Hỏa Lựu</option>
+                    <option value="Vị Thủy">Vị Thủy</option>
+                    <option value="Thạnh Xuân">Thạnh Xuân</option>
+                    <option value="Tân Hòa">Tân Hòa</option>
+                    <option value="Trường Long Tây">Trường Long Tây</option>
+                    <option value="Châu Thành">Châu Thành</option>
+                    <option value="Đông Phước">Đông Phước</option>
+                    <option value="Nhơn Mỹ">Nhơn Mỹ</option>
+                    <option value="An Lạc Thôn">An Lạc Thôn</option>
+                    <option value="Hồ Đắc Kiện">Hồ Đắc Kiện</option>
+                    <option value="Mỹ Tú">Mỹ Tú</option>
+                    <option value="Lâm Tân">Lâm Tân</option>
+                    <option value="Thạnh Thới An">Thạnh Thới An</option>
+                    <option value="Trần Đề">Trần Đề</option>
+                    <option value="An Thạnh">An Thạnh</option>
+                    <option value="Cù Lao Dung">Cù Lao Dung</option>
                 </select>
             </div>
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
@@ -185,7 +310,7 @@
         <!-- Bảng danh sách hộ dân chính -->
         <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-white">Danh Sách Hộ Dân Các Khu Vực</h3>
+                <h3 class="text-lg font-semibold text-white">Danh Sách Hộ Dân Cư Các Xã Phường</h3>
                 <span id="total-count-badge" class="text-xs text-slate-400">Hiển thị 0 hộ</span>
             </div>
             <div class="overflow-x-auto">
@@ -197,7 +322,7 @@
                             <th class="p-4">Chủ Hộ</th>
                             <th class="p-4">Nhân Khẩu</th>
                             <th class="p-4">Địa Chỉ Thường Trú</th>
-                            <th class="p-4">Khu Vực</th>
+                            <th class="p-4">Xã/Phường</th>
                             <th class="p-4">Ảnh Nhà</th>
                             <th class="p-4 text-center">Thao Tác</th>
                         </tr>
@@ -210,25 +335,28 @@
         </div>
     </div>
 
-    <!-- ================= MODAL CHỌN KHU VỰC KHI NHẬP FILE BỊ THIẾU ================= -->
+    <!-- ================= MODAL CHỌN XÃ PHƯỜNG KHI NHẬP FILE BỊ THIẾU ================= -->
     <div id="ward-prompt-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl text-center space-y-4">
             <div class="inline-flex p-3 bg-amber-500/10 text-amber-400 rounded-full">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
             <h3 class="text-xl font-bold text-white">Xác Nhận Địa Bàn Nhập File</h3>
-            <p class="text-xs text-slate-400">File bạn vừa chọn không ghi rõ tên khu vực trong tên file. Vui lòng chọn chính xác Khu Vực tương ứng:</p>
+            <p class="text-xs text-slate-400">File bạn vừa chọn không ghi rõ tên xã phường trong tên file. Vui lòng chọn chính xác Xã/Phường tương ứng:</p>
             
             <select id="prompt-ward-select" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold focus:outline-none focus:border-sky-500">
-                <option value="Khu Vực 1">Khu Vực 1</option>
-                <option value="Khu Vực 2">Khu Vực 2</option>
-                <option value="Khu Vực 3">Khu Vực 3</option>
-                <option value="Khu Vực 4">Khu Vực 4</option>
-                <option value="Khu Vực 5">Khu Vực 5</option>
-                <option value="Khu Vực 6">Khu Vực 6</option>
-                <option value="Khu Vực 7" selected>Khu Vực 7</option>
-                <option value="Khu Vực 8">Khu Vực 8</option>
-                <option value="Khu Vực 9">Khu Vực 9</option>
+                <option value="Ninh Kiều">Ninh Kiều</option>
+                <option value="Cái Khế">Cái Khế</option>
+                <option value="Tân An">Tân An</option>
+                <option value="An Bình">An Bình</option>
+                <option value="Bình Thủy">Bình Thủy</option>
+                <option value="Cái Răng">Cái Răng</option>
+                <option value="Ô Môn">Ô Môn</option>
+                <option value="Thốt Nốt">Thốt Nốt</option>
+                <option value="Phong Điền">Phong Điền</option>
+                <option value="Thới Lai">Thới Lai</option>
+                <option value="Cờ Đỏ">Cờ Đỏ</option>
+                <option value="Vĩnh Thạnh">Vĩnh Thạnh</option>
             </select>
 
             <button onclick="confirmImportWithSelectedWard()" class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl transition">Xác Nhận Tiến Hành Nhập</button>
@@ -292,13 +420,13 @@
     <div id="report-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-3xl shadow-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-                <h3 class="text-lg font-bold text-white">📈 Báo Cáo Thống Kê Dân Cư Theo Khu Vực</h3>
+                <h3 class="text-lg font-bold text-white">📈 Báo Cáo Thống Kê Dân Cư Theo Xã Phường</h3>
                 <button onclick="closeReportModal()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
             </div>
 
             <div id="printable-area" class="flex-1 overflow-y-auto space-y-4 p-2">
                 <div class="text-center mb-6">
-                    <h2 class="text-xl font-bold text-white">BÁO CÁO TỔNG HỢP HỘ DÂN CƯ & NHÂN KHẨU ĐA KHU VỰC</h2>
+                    <h2 class="text-xl font-bold text-white">BÁO CÁO TỔNG HỢP HỘ DÂN CƯ & NHÂN KHẨU (103 XÃ PHƯỜNG)</h2>
                     <p class="text-xs text-slate-400 mt-1">Ngày xuất báo cáo: <span id="report-date"></span></p>
                 </div>
                 
@@ -314,11 +442,11 @@
                 </div>
 
                 <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-800">
-                    <h4 class="text-sm font-semibold text-white mb-3">Thống kê chi tiết từng Khu Vực:</h4>
+                    <h4 class="text-sm font-semibold text-white mb-3">Thống kê chi tiết từng Xã/Phường:</h4>
                     <table class="w-full text-left text-xs">
                         <thead>
                             <tr class="text-slate-400 border-b border-slate-700">
-                                <th class="pb-2">Khu Vực</th>
+                                <th class="pb-2">Xã / Phường</th>
                                 <th class="pb-2 text-center">Số hộ</th>
                                 <th class="pb-2 text-center">Số nhân khẩu</th>
                             </tr>
@@ -634,7 +762,7 @@
             appData.households.forEach((h) => {
                 h.members.forEach((m) => {
                     dataToExport.push({
-                        "Khu Vực": h.ward,
+                        "Xã/Phường": h.ward,
                         "Số HSCT": h.hsct,
                         "Họ và tên": m.name,
                         "Ngày sinh": m.dob,
@@ -650,7 +778,7 @@
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "SoQuanLyCuTru");
-            XLSX.writeFile(workbook, "SoQuanLyCuTru_DaKhuVuc.xlsx");
+            XLSX.writeFile(workbook, "SoQuanLyCuTru_103XaPhuong.xlsx");
         }
 
         function importExcel(event) {
@@ -659,9 +787,9 @@
 
             const fileName = file.name;
             let detectedWard = null;
-            let match = fileName.match(/kv\s*(\d+)/i) || fileName.match(/khu\s*vuc\s*(\d+)/i) || fileName.match(/khu\s*(\d+)/i);
+            let match = fileName.match(/xa\s*([^\.]+)/i) || fileName.match(/phuong\s*([^\.]+)/i);
             if (match) {
-                detectedWard = `Khu Vực ${match[1]}`;
+                detectedWard = match[1].trim();
             }
 
             const reader = new FileReader();
