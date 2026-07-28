@@ -80,6 +80,9 @@
                     <span>+ Tải Excel Lên</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
+                <button onclick="xuatBaoCaoKV2()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
+                    <span>📊 Xuất Mẫu KV2</span>
+                </button>
                 <button onclick="xoaDuLieuExcel()" class="bg-rose-600 hover:bg-rose-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
                     <span>🗑️ Xóa DL Toàn Cục</span>
                 </button>
@@ -299,7 +302,6 @@
             document.getElementById('systemGeneratedOtpNote').innerText = `[Mã OTP mô phỏng: ${generatedOtpCode}]`;
             document.getElementById('otpScreen').classList.remove('hidden');
 
-            // Tạo mã QR Code cho Google Authenticator với kích thước lớn (160x160) để quét cực nhạy
             document.getElementById('qrcodeCanvas').innerHTML = "";
             let otpAuthUrl = `otpauth://totp/GIS_CSKV:${emailInput}?secret=JBSWY3DPEHPK3PXP&issuer=QuanLyDiaBan`;
             new QRCode(document.getElementById('qrcodeCanvas'), {
@@ -460,7 +462,7 @@
                         
                         let hsct = mapCol.hsct !== -1 ? String(r[mapCol.hsct] || '').trim() : '';
                         let hoTen = String(r[mapCol.hoTen] || '').trim();
-                        let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : 'Thành viên';
+                        let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : '';
                         let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
 
                         if (hoTen.toLowerCase() === 'họ và tên' || hsct.toLowerCase() === 'số hsct') continue;
@@ -485,14 +487,25 @@
                         tempHoMap[key].danhSachThanhVien.push({ hoTen: hoTen, quanHe: quanHe });
                     }
 
+                    // TỐI ƯU QUAN HỆ THEO YÊU CẦU:
+                    // - Nếu hộ chỉ có 1 người duy nhất -> tự động ép quan hệ là "Chủ hộ".
+                    // - Nếu có từ 2 người trở lên mà không tìm thấy từ khóa "Chủ hộ" rõ ràng -> để trống (hoặc giữ nguyên nếu file có sẵn).
                     Object.keys(tempHoMap).forEach(key => {
                         let item = tempHoMap[key];
-                        let tenChuHo = item.chuHoChinhXac;
-                        if (!tenChuHo && item.danhSachThanhVien.length > 0) {
-                            tenChuHo = item.danhSachThanhVien[0].hoTen;
+                        if (item.danhSachThanhVien.length === 1) {
+                            item.chuHoChinhXac = item.danhSachThanhVien[0].hoTen;
+                            item.danhSachThanhVien[0].quanHe = 'Chủ hộ';
+                        } else {
+                            if (!item.chuHoChinhXac && item.danhSachThanhVien.length >  0) {
+                                // Lấy người đầu tiên làm chủ hộ tạm nếu không có chỉ định, hoặc để trống quan hệ
+                                item.chuHoChinhXac = item.danhSachThanhVien[0].hoTen;
+                                if (!item.danhSachThanhVien[0].quanHe) {
+                                    item.danhSachThanhVien[0].quanHe = '';
+                                }
+                            }
                         }
-                        if (!tenChuHo) tenChuHo = "Chưa xác định";
 
+                        let tenChuHo = item.chuHoChinhXac || "Chưa xác định";
                         let finalKey = item.hsct !== 'Chưa có' ? item.hsct : (tenChuHo + "_" + item.diaChi);
 
                         mapHo[finalKey] = {
@@ -515,6 +528,31 @@
             };
             reader.readAsArrayBuffer(file);
             event.target.value = null;
+        }
+
+        function xuatBaoCaoKV2() {
+            if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu để xuất báo cáo!");
+            
+            let exportData = [];
+            let stt = 1;
+            danhSachHoGiaDinh.forEach(ho => {
+                ho.thanhVien.forEach(tv => {
+                    exportData.push({
+                        "STT": stt++,
+                        "Số HSCT": ho.hsct,
+                        "Họ và tên": tv.hoTen,
+                        "Quan hệ với chủ hộ": tv.quanHe,
+                        "Địa chỉ cư trú": ho.diaChi,
+                        "Cán bộ quản lý": ho.canBoPhuTrach,
+                        "Biến động": ho.bienDong
+                    });
+                });
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachKV2");
+            XLSX.writeFile(workbook, "BaoCao_MauKV2_QuanLyDiaBan.xlsx");
         }
 
         function phanTichDuLieuPhanCap() {
