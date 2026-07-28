@@ -117,12 +117,12 @@
             </div>
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow md:col-span-2 flex flex-col justify-between space-y-2">
                 <div class="flex justify-between items-center">
-                    <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Phân Cấp & Bản Đồ</p>
+                    <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Địa Bàn & Bản Đồ</p>
                     <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <select id="filterXaPhuong" onchange="chonPhuongXa()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="Phường Tân An">Phường Tân An</option>
+                    <select id="filterXaPhuong" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" disabled>
+                        <option value="Phường Tân An">Phường Tân An (Cần Thơ)</option>
                     </select>
                     <select id="filterKhuVuc" onchange="chonKhuVuc()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                         <option value="">-- Chọn Khu vực / Khu phố --</option>
@@ -135,7 +135,7 @@
         <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
                 <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Gia Đình & Bản Đồ Địa Bàn</h2>
-                <input type="text" id="searchInput" placeholder="3. Tìm tên chủ hộ, số nhà, SĐT..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
+                <input type="text" id="searchInput" placeholder="Tìm tên chủ hộ, số nhà, SĐT..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
@@ -212,7 +212,7 @@
                             <input type="text" id="editSdt" placeholder="VD: 0912345678" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full font-mono focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-1">Địa chỉ thường trú / Khu vực:</label>
+                            <label class="text-gray-400 block mb-1">Địa chỉ thường trú & Khu vực:</label>
                             <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
@@ -295,7 +295,7 @@
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "admin", scope: "all" };
         let tamEmailDangNhap = "";
-        let duLieuPhanCap = {}; 
+        let danhSachKhuVuc = new Set(); 
         let mapInstance = null;
         let markerInstance = null;
 
@@ -348,7 +348,7 @@
             if (savedData) {
                 danhSachHoGiaDinh = JSON.parse(savedData);
                 if (danhSachHoGiaDinh.length > 0) {
-                    phanTichDuLieuPhanCap();
+                    phanTichKhuVuc();
                     capNhatGiaoDienSauKhiTai();
                 }
             }
@@ -477,51 +477,40 @@
             moModalQuanLyUser();
         }
 
-        // HÀM CHUẨN HÓA ĐỊA CHỈ & BẮT BUỘC GẮN VÀO PHƯỜNG TÂN AN
-        function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr) {
+        // HÀM CHUẨN HÓA ĐỊA CHỈ TRỰC THUỘC PHƯỜNG TÂN AN
+        function chuanHoaDiaChi(diaChiGoc) {
             let full = diaChiGoc || "";
-            // Luôn đảm bảo có chữ Phường Tân An
             if (!full.toLowerCase().includes("tân an")) {
-                full = full ? `${full}, Phường Tân An` : "Phường Tân An";
+                full = full ? `${full}, Phường Tân An, Thành phố Cần Thơ` : "Phường Tân An, Thành phố Cần Thơ";
             }
-            full = full.replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*(vii|VII|7)\b/gi, "Khu Vực 7");
             return full;
         }
 
-        function phanTichDuLieuPhanCap() {
-            duLieuPhanCap = {"Phường Tân An": new Set()};
+        function phanTichKhuVuc() {
+            danhSachKhuVuc = new Set();
             danhSachHoGiaDinh.forEach(ho => {
                 let diaChi = ho.diaChi || "";
                 let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Ấp\s*[\w\s\d]+)/gi);
-                
                 if (kvMatches) {
-                    kvMatches.forEach(kv => duLieuPhanCap["Phường Tân An"].add(kv.trim().replace(/\s+/g, ' ')));
+                    kvMatches.forEach(kv => danhSachKhuVuc.add(kv.trim().replace(/\s+/g, ' ')));
                 } else {
-                    duLieuPhanCap["Phường Tân An"].add("Khu Vực 7");
+                    danhSachKhuVuc.add("Khu Vực 1");
                 }
             });
-
-            const selectXa = document.getElementById('filterXaPhuong');
-            selectXa.innerHTML = '<option value="Phường Tân An">Phường Tân An</option>';
-            selectXa.value = "Phường Tân An";
 
             const selectKv = document.getElementById('filterKhuVuc');
             if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
                 selectKv.innerHTML = `<option value="${currentUser.scope}">${currentUser.scope}</option>`;
                 selectKv.disabled = true;
             } else {
-                selectKv.innerHTML = '<option value="">-- Chọn Khu vực / Khu phố --</option>';
-                Array.from(duLieuPhanCap["Phường Tân An"]).sort().forEach(kv => {
+                selectKv.innerHTML = '<option value="">-- Tất cả các Khu vực --</option>';
+                Array.from(danhSachKhuVuc).sort().forEach(kv => {
                     let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
                 });
-                if (selectKv.options.length > 1) {
-                    selectKv.selectedIndex = 1;
-                }
             }
             thucHienLocVaTimKiem();
         }
 
-        function chonPhuongXa() { thucHienLocVaTimKiem(); }
         function chonKhuVuc() { thucHienLocVaTimKiem(); }
         function timKiemNha() { thucHienLocVaTimKiem(); }
 
@@ -532,7 +521,6 @@
 
             const filtered = danhSachHoGiaDinh.filter(ho => {
                 let diaChiLower = ho.diaChi.toLowerCase();
-                
                 let matchKhuVuc = true;
                 if (khuVucVal) {
                     let cleanKv = khuVucVal.replace('khu vực', '').replace('kv', '').trim();
@@ -558,7 +546,7 @@
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
                     let headerRowIndex = 0;
-                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, sdt: -1, diaChi: 5, phuongXa: -1, chuHo: 7, gps: -1, ghiChu: -1 };
+                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, sdt: -1, diaChi: 5, chuHo: 7, gps: -1, ghiChu: -1 };
                     
                     for (let i = 0; i < Math.min(5, rows.length); i++) {
                         let r = rows[i];
@@ -571,8 +559,7 @@
                             if (text.includes('quan hệ')) { mapping.quanHe = j; headerRowIndex = i; }
                             if (text.includes('giới tính')) { mapping.gioiTinh = j; headerRowIndex = i; }
                             if (text.includes('sđt') || text.includes('điện thoại') || text.includes('so dien thoai')) { mapping.sdt = j; headerRowIndex = i; }
-                            if (text.includes('địa chỉ') && !text.includes('phường')) { mapping.diaChi = j; headerRowIndex = i; }
-                            if (text.includes('phường')) { mapping.phuongXa = j; headerRowIndex = i; }
+                            if (text.includes('địa chỉ')) { mapping.diaChi = j; headerRowIndex = i; }
                             if (text.includes('chủ hộ')) { mapping.chuHo = j; headerRowIndex = i; }
                             if (text.includes('gps') || text.includes('tọa độ')) { mapping.gps = j; headerRowIndex = i; }
                             if (text.includes('ghi chú')) { mapping.ghiChu = j; headerRowIndex = i; }
@@ -590,12 +577,11 @@
                         let gioiTinh = String(r[mapping.gioiTinh] || '').trim();
                         let sdt = mapping.sdt !== -1 ? String(r[mapping.sdt] || '').trim() : '';
                         let diaChiGoc = String(r[mapping.diaChi] || '').trim();
-                        let phuongStr = mapping.phuongXa !== -1 ? String(r[mapping.phuongXa] || '').trim() : '';
                         let chuHo = String(r[mapping.chuHo] || '').trim();
                         let gpsExcel = mapping.gps !== -1 ? String(r[mapping.gps] || '').trim() : '';
                         let ghiChuExcel = mapping.ghiChu !== -1 ? String(r[mapping.ghiChu] || '').trim() : '';
                         
-                        let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr);
+                        let diaChiFull = chuanHoaDiaChi(diaChiGoc);
 
                         if (hoTen && !hoTen.toLowerCase().includes('họ và tên')) {
                             rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, sdt, diaChi: diaChiFull, chuHo, gpsExcel, ghiChuExcel });
@@ -616,7 +602,7 @@
 
                     danhSachHoGiaDinh = Object.values(mapHo);
                     localStorage.setItem("danhSachHoGiaDinhCacheGIS", JSON.stringify(danhSachHoGiaDinh));
-                    phanTichDuLieuPhanCap();
+                    phanTichKhuVuc();
                     capNhatGiaoDienSauKhiTai();
                     ghiNhatKy(`Nhập file Excel (${danhSachHoGiaDinh.length} hộ)`);
                     alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình thuộc Phường Tân An!`);
@@ -714,7 +700,7 @@
 
         function khoiTaoBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
-            let coords = [10.033198, 105.782806]; // Tâm cơ bản Phường Tân An
+            let coords = [10.033198, 105.782806]; 
             if (gpsVal.includes(',')) {
                 let parts = gpsVal.split(',');
                 let lat = parseFloat(parts[0]);
@@ -799,12 +785,12 @@
             let diaChiMoi = document.getElementById('editDiaChi').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].sdt = document.getElementById('editSdt').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = chuanHoaDiaChiVaKhuVuc(diaChiMoi, "");
+            danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = chuanHoaDiaChi(diaChiMoi);
             danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].ghiChu = document.getElementById('editGhiChu').value;
 
             localStorage.setItem("danhSachHoGiaDinhCacheGIS", JSON.stringify(danhSachHoGiaDinh));
-            phanTichDuLieuPhanCap();
+            phanTichKhuVuc();
             thucHienLocVaTimKiem();
             ghiNhatKy(`Cập nhật hộ và SĐT: ${danhSachHoGiaDinh[currentSelectedHoIndex].chuHo}`);
             dongModal();
