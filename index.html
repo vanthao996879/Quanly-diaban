@@ -4,19 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Địa Bàn Cho CSKV & Bản Đồ Số GIS</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (XLSX) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Thư viện QRCode Google Authenticator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Thư viện mã hóa OTP (CryptoJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- EmailJS SDK để gửi mail trực tiếp về Gmail -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <!-- Leaflet CSS cho Bản đồ số GIS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         #mapContainer { height: 250px; width: 100%; border-radius: 0.5rem; z-index: 10; }
@@ -24,13 +17,13 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-4">
 
-    <!-- MÀN HÌNH BƯỚC 1: ĐĂNG NHẬP GMAIL -->
+    <!-- BƯỚC 1: ĐĂNG NHẬP GMAIL -->
     <div id="loginScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🗺️</div>
                 <h2 class="text-xl font-bold text-white">Quản Lý Địa Bàn Cho CSKV</h2>
-                <p class="text-xs text-gray-400">Nhập Gmail công vụ để tiếp tục cấu hình Google Authenticator[cite: 4]:</p>
+                <p class="text-xs text-gray-400">Nhập Gmail công vụ để tiếp tục:</p>
             </div>
             <div class="space-y-4">
                 <div>
@@ -42,31 +35,18 @@
         </div>
     </div>
 
-    <!-- MÀN HÌNH BƯỚC 2: NHẬP MÃ OTP TỪ GOOGLE AUTHENTICATOR -->
+    <!-- BƯỚC 2: NHẬP MÃ OTP -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-xl p-6 rounded-2xl shadow-2xl space-y-6 max-h-[95vh] overflow-y-auto">
             <div class="text-center space-y-2">
                 <div class="bg-emerald-600/20 text-emerald-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-emerald-500/30">🛡️</div>
                 <h2 class="text-xl font-bold text-white">Bảo Mật Google Authenticator</h2>
-                <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span>[cite: 4]</p>
-            </div>
-            <div id="setupAuthSection" class="bg-gray-900 p-5 rounded-xl border border-gray-700 space-y-4 text-center">
-                <p class="text-xs text-amber-400 font-semibold">⚠️ Quét mã QR xác thực thiết lập:</p>
-                <div class="flex justify-center bg-white p-4 rounded-xl shadow-inner max-w-[310px] mx-auto border border-gray-600">
-                    <div id="qrcode"></div>
-                </div>
-                <div class="space-y-1 text-left">
-                    <label class="block text-[11px] text-gray-400">Mã thiết lập (Secret Key):</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="secretKeyDisplay" readonly class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-xs font-mono text-emerald-300 w-full select-all">
-                        <button onclick="copySecretKey()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-xs whitespace-nowrap font-medium">📋 Copy</button>
-                    </div>
-                </div>
+                <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span></p>
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP gồm 6 chữ số từ ứng dụng Authenticator[cite: 4]:</label>
-                    <input type="text" id="otpCodeInput" maxlength="6" placeholder="VD: 482910" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số (Gợi ý test nhanh: 888899):</label>
+                    <input type="text" id="otpCodeInput" maxlength="6" placeholder="VD: 888899" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div class="flex gap-3">
                     <button onclick="quayLaiDangNhap()" class="w-1/3 bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-medium transition text-xs">Quay lại</button>
@@ -77,68 +57,54 @@
     </div>
 
     <!-- GIAO DIỆN CHÍNH -->
-    <div id="mainApp" class="container mx-auto space-y-6 max-w-7xl hidden">
+    <div id="mainApp" class="container mx-auto space-y-6 max-w-[95%] hidden mt-4">
         <header class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 gap-4">
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-bold text-blue-400">Quản Lý Địa Bàn Cho CSKV & Bản Đồ Số GIS</h1>
+                    <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Địa Bàn & Bản Đồ Số</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền: <span id="userScopeDisplay" class="text-amber-300 font-semibold"></span>[cite: 4].</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền: <span id="userScopeDisplay" class="text-amber-300 font-semibold"></span>.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button onclick="moModalPhanHoi()" class="bg-amber-600 hover:bg-amber-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
-                    <span>📩 Gửi Phản Hồi CSKV</span>
-                </button>
-                <button id="btnQuanLyUser" onclick="moModalQuanLyUser()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow hidden">
-                    <span>👥 Phân Quyền Cán Bộ</span>
-                </button>
-                <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
-                    <span>📂 Nhập Excel</span>
+                <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
+                    <span>+ Tải Excel Lên (Hợp Nhất)</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
                 <button onclick="xoaDuLieuExcel()" class="bg-rose-600 hover:bg-rose-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
-                    <span>🗑️ Xóa Dữ Liệu</span>
-                </button>
-                <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
-                    <span>📊 Xuất Báo Cáo Biến Động</span>
-                </button>
-                <button onclick="xemNhatKyHoatDong()" class="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
-                    <span>📜 Nhật Ký</span>
+                    <span>🗑️ Xóa DL Toàn Cục</span>
                 </button>
                 <button onclick="dangXuat()" class="bg-red-600/80 hover:bg-red-600 px-3 py-2 rounded-lg text-xs font-medium transition shadow">🔒 Đăng Xuất</button>
             </div>
         </header>
 
-        <!-- Thống kê nhanh & Bộ lọc phân cấp -->
+        <!-- Thống kê & Bộ lọc -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
-                <p class="text-gray-400 text-xs">Tổng số Nhân khẩu</p>
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col justify-center">
+                <p class="text-gray-400 text-xs">Tổng Nhân khẩu</p>
                 <h3 id="statNhanKhau" class="text-2xl font-bold text-blue-400 mt-1">0</h3>
             </div>
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
-                <p class="text-gray-400 text-xs">Tổng số Hộ gia đình</p>
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col justify-center">
+                <p class="text-gray-400 text-xs">Tổng Hộ gia đình</p>
                 <h3 id="statHoGiaDinh" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
             </div>
             <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow md:col-span-2 flex flex-col justify-between space-y-2">
                 <div class="flex justify-between items-center">
-                    <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Phân Cấp & Biến Động Địa Bàn</p>
+                    <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Nâng Cao</p>
                     <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <select id="filterXaPhuong" onchange="chonPhuongXa()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="Phường Tân An">Phường Tân An</option>
+                    <select id="filterKhuVuc" onchange="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <option value="">-- Tất cả Khu Vực --</option>
                     </select>
-                    <select id="filterKhuVuc" onchange="chonKhuVuc()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="">-- Chọn Khu Vực --</option>
+                    <select id="filterCanBo" onchange="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-indigo-300 font-medium focus:outline-none focus:border-blue-500">
+                        <option value="">-- Tất cả Cán Bộ --</option>
                     </select>
-                    <select id="filterBienDong" onchange="chonKhuVuc()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-amber-300 font-medium focus:outline-none focus:border-blue-500">
+                    <select id="filterBienDong" onchange="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-amber-300 font-medium focus:outline-none focus:border-blue-500">
                         <option value="">-- Tất cả Biến Động --</option>
                         <option value="Ổn định">Ổn định</option>
                         <option value="Bán nhà">Bán nhà</option>
                         <option value="Giải tỏa">Giải tỏa</option>
-                        <option value="Chết">Chết</option>
-                        <option value="Đi nước ngoài">Đi nước ngoài</option>
                     </select>
                 </div>
             </div>
@@ -147,8 +113,8 @@
         <!-- Bảng danh sách Hộ gia đình -->
         <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
-                <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Gia Đình & Biến Động Địa Bàn CSKV</h2>
-                <input type="text" id="searchInput" placeholder="Tìm tên chủ hộ, số nhà, SĐT..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
+                <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Khẩu & Biến Động</h2>
+                <input type="text" id="searchInput" placeholder="Tìm tên chủ hộ, số nhà, SĐT, giáp ranh..." onkeyup="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
@@ -157,8 +123,8 @@
                             <th class="p-2.5 border-b border-gray-600">STT</th>
                             <th class="p-2.5 border-b border-gray-600">Số HSCT</th>
                             <th class="p-2.5 border-b border-gray-600">Chủ Hộ (Nhà)</th>
-                            <th class="p-2.5 border-b border-gray-600">Số Điện Thoại</th>
                             <th class="p-2.5 border-b border-gray-600">Địa Chỉ & Khu Vực</th>
+                            <th class="p-2.5 border-b border-gray-600">CB Phụ Trách</th>
                             <th class="p-2.5 border-b border-gray-600">Biến Động</th>
                             <th class="p-2.5 border-b border-gray-600 text-center">Thành Viên</th>
                             <th class="p-2.5 border-b border-gray-600 text-center">Thao Tác</th>
@@ -166,7 +132,7 @@
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-700">
                         <tr>
-                            <td colspan="8" class="text-center p-6 text-gray-400">Vui lòng đăng nhập và tải dữ liệu dân cư[cite: 4].</td>
+                            <td colspan="8" class="text-center p-6 text-gray-400">Vui lòng tải file dữ liệu lên.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -174,150 +140,58 @@
         </div>
     </div>
 
-    <!-- Modal Gửi Phản Hồi / Góp Ý về Gmail CSKV -->
-    <div id="feedbackModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 w-full max-w-lg rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col">
-            <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
-                <h3 class="text-sm font-bold text-amber-400">📩 Gửi Phản Hồi / Báo Cáo Trực Tiếp Đến CSKV</h3>
-                <button onclick="dongModalPhanHoi()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
-            </div>
-            <div class="p-5 space-y-4 text-xs">
-                <p class="text-gray-300">Ý kiến phản hồi, thông báo vắng mặt, hoặc biến động an ninh trật tự sẽ được chuyển ngay lập tức tới hộp thư Gmail của Cảnh sát khu vực.</p>
-                <div>
-                    <label class="block text-gray-400 mb-1">Họ và tên người gửi:</label>
-                    <input type="text" id="fbHoTen" placeholder="VD: Nguyễn Văn A" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-400 mb-1">Số điện thoại liên hệ:</label>
-                    <input type="text" id="fbSdt" placeholder="VD: 0901234567" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-400 mb-1">Khu vực / Địa chỉ liên quan:</label>
-                    <input type="text" id="fbDiaChi" placeholder="VD: Khu Vực 7, Phường Tân An" class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
-                </div>
-                <div>
-                    <label class="block text-gray-400 mb-1">Nội dung phản hồi / yêu cầu:</label>
-                    <textarea id="fbNoiDung" rows="4" placeholder="Nhập chi tiết nội dung cần phản hồi..." class="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"></textarea>
-                </div>
-            </div>
-            <div class="p-4 bg-gray-700 flex justify-end gap-3 border-t border-gray-600">
-                <button onclick="dongModalPhanHoi()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Hủy</button>
-                <button onclick="guiPhanHoiQuaEmail()" id="btnGuiFb" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded font-medium shadow text-white">Gửi Ngay Đến Gmail</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Quản Lý Phân Quyền Cán Bộ -->
-    <div id="userModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
-                <h3 class="text-sm font-bold text-indigo-300">👥 Quản Lý Phân Quyền Tài Khoản Cán Bộ Cơ Sở</h3>
-                <button onclick="dongModalUser()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
-            </div>
-            <div class="p-4 overflow-y-auto flex-grow text-xs space-y-4">
-                <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 space-y-3">
-                    <p class="font-semibold text-emerald-400">Cấp quyền tài khoản theo chức vụ:</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                        <select id="newAccEmail" class="bg-gray-800 border border-gray-600 rounded px-2 py-2 text-white sm:col-span-1">
-                            <option value="">-- Chọn Gmail --</option>
-                        </select>
-                        <select id="newAccRole" class="bg-gray-800 border border-gray-600 rounded px-2 py-2 text-white sm:col-span-1">
-                            <option value="can_bo">Cán bộ (CSKV)</option>
-                            <option value="chi_huy">Ban Chỉ Huy (Trưởng/Phó)</option>
-                            <option value="admin">Admin Tổng</option>
-                        </select>
-                        <input type="text" id="newAccScope" placeholder="Phạm vi (VD: Khu Vực 7)" class="bg-gray-800 border border-gray-600 rounded px-2 py-2 text-white sm:col-span-1">
-                        <button onclick="luuTaiKhoanPhanQuyen()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded font-medium shadow text-white sm:col-span-1">Lưu</button>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-gray-300 mb-2">Danh sách tài khoản đã cấp quyền:</h4>
-                    <div id="listUserConfigContainer" class="space-y-2"></div>
-                </div>
-            </div>
-            <div class="p-4 bg-gray-700 flex justify-end border-t border-gray-600">
-                <button onclick="dongModalUser()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Chi tiết Hộ Khẩu, Biến Động & Bản Đồ GIS -->
+    <!-- Modal Chi tiết Hộ Khẩu -->
     <div id="detailModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-gray-800 w-full max-w-4xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
-                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu, Biến Động Địa Bàn & Bản Đồ GIS</h3>
+                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu & Bản Đồ</h3>
                 <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-6 flex-grow text-xs">
+            <div class="p-4 overflow-y-auto space-y-4 flex-grow text-xs">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-900 p-4 rounded-lg border border-gray-700">
                     <div class="space-y-3">
                         <p><strong class="text-gray-400">Số HSCT:</strong> <span id="modalHsct" class="font-mono text-blue-300"></span></p>
                         <div>
                             <label class="text-gray-400 block mb-1">Chủ hộ:</label>
-                            <input type="text" id="editChuHo" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full focus:outline-none focus:border-blue-500">
+                            <input type="text" id="editChuHo" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-1">Số điện thoại liên lạc:</label>
-                            <input type="text" id="editSdt" placeholder="VD: 0912345678" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full font-mono focus:outline-none focus:border-blue-500">
+                            <label class="text-gray-400 block mb-1">Cán bộ phụ trách hiện tại:</label>
+                            <input type="text" id="editCanBo" readonly class="bg-gray-800 border border-gray-600 text-indigo-300 font-semibold rounded px-2 py-1.5 w-full cursor-not-allowed">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-1">Địa chỉ thường trú & Khu vực:</label>
-                            <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full focus:outline-none focus:border-blue-500">
+                            <label class="text-gray-400 block mb-1">Địa chỉ (Tự động phát hiện giáp ranh):</label>
+                            <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="text-gray-400 block mb-1">Trạng thái biến động nhà:</label>
+                                <label class="text-gray-400 block mb-1">Biến động:</label>
                                 <select id="editBienDong" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-amber-300 font-semibold w-full">
                                     <option value="Ổn định">Ổn định</option>
                                     <option value="Bán nhà">Bán nhà</option>
                                     <option value="Giải tỏa">Giải tỏa</option>
-                                    <option value="Chết">Chết</option>
-                                    <option value="Đi nước ngoài">Đi nước ngoài</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="text-gray-400 block mb-1">Tọa độ GPS:</label>
-                                <div class="flex gap-1">
-                                    <input type="text" id="editGps" placeholder="Vĩ độ, Kinh độ" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full font-mono text-[11px]" onchange="capNhatBanDoLeaflet()">
-                                    <button onclick="layGpsHienTai()" class="bg-emerald-600 hover:bg-emerald-700 px-2 py-1.5 rounded font-medium shadow whitespace-nowrap">📍 Lấy</button>
-                                </div>
+                                <input type="text" id="editGps" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full font-mono text-[11px]" onchange="capNhatBanDoLeaflet()">
                             </div>
                         </div>
-                        <div>
-                            <label class="text-gray-400 block mb-1">Ghi chú chi tiết biến động:</label>
-                            <input type="text" id="editGhiChu" placeholder="VD: Chuyển đi nơi khác, nhà giải tỏa trắng..." class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full focus:outline-none focus:border-blue-500">
-                        </div>
                     </div>
-                    
-                    <!-- Bản đồ Leaflet GIS tích hợp trực tiếp -->
                     <div class="flex flex-col space-y-2">
-                        <label class="text-gray-400 block">Bản đồ số định vị vị trí hộ gia đình (GIS):</label>
+                        <label class="text-gray-400 block">Bản đồ số (GIS):</label>
                         <div id="mapContainer"></div>
-                        <div class="flex justify-between items-center text-[11px] text-gray-400">
-                            <span>* Click hoặc kéo thả marker để đổi tọa độ</span>
-                            <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded text-white transition font-medium shadow">
-                                <span>📷 Đính kèm ảnh</span>
-                                <input type="file" accept="image/*" class="hidden" onchange="ganAnhHo(event)">
-                            </label>
-                        </div>
-                        <div id="previewAnhContainer" class="hidden mt-1">
-                            <img id="hoImg" src="" alt="Ảnh hộ" class="h-16 w-16 object-cover rounded border border-gray-600 shadow">
-                        </div>
                     </div>
                 </div>
-
+                
                 <div>
-                    <h4 class="font-semibold text-gray-300 mb-2">Danh sách nhân khẩu trong hộ:</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Nhân khẩu trong hộ:</h4>
                     <div class="overflow-x-auto border border-gray-700 rounded-lg">
                         <table class="w-full text-left">
                             <thead class="bg-gray-700 text-gray-300">
                                 <tr>
                                     <th class="p-2">Họ và Tên</th>
-                                    <th class="p-2">Ngày Sinh</th>
-                                    <th class="p-2">Giới Tính</th>
-                                    <th class="p-2">Quan hệ chủ hộ</th>
-                                    <th class="p-2">SĐT cá nhân</th>
-                                    <th class="p-2">Biến động nhân khẩu</th>
+                                    <th class="p-2">Quan Hệ Với Chủ Hộ</th>
                                 </tr>
                             </thead>
                             <tbody id="modalNhanKhauList" class="divide-y divide-gray-700"></tbody>
@@ -325,96 +199,21 @@
                     </div>
                 </div>
             </div>
-            <div class="p-4 bg-gray-700 flex justify-between items-center border-t border-gray-600">
-                <button onclick="inTrichXuatHoKhau()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded transition font-medium shadow flex items-center gap-1">🖨️ In Biên Bản / Sổ Hộ Khẩu</button>
-                <div class="flex gap-3">
-                    <button onclick="dongModal()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
-                    <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition font-medium shadow">Lưu Thay Đổi</button>
-                </div>
+            <div class="p-4 bg-gray-700 flex justify-end gap-3 border-t border-gray-600">
+                <button onclick="dongModal()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
+                <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition font-medium shadow">Lưu Thay Đổi</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Xem Nhật Ký Hoạt Động -->
-    <div id="logModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
-                <h3 class="text-sm font-bold text-purple-300">📜 Nhật Ký Thao Tác Hệ Thống (Audit Log)</h3>
-                <button onclick="dongModalLog()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
-            </div>
-            <div class="p-4 overflow-y-auto flex-grow text-xs space-y-2" id="logContentList">
-                <p class="text-gray-400">Chưa có hoạt động nào được ghi nhận.</p>
-            </div>
-            <div class="p-4 bg-gray-700 flex justify-end border-t border-gray-600">
-                <button onclick="dongModalLog()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script xử lý logic, Bản đồ Leaflet GIS & EmailJS -->
     <script>
-        const EMAILJS_PUBLIC_KEY = "YOUR_EMAILJS_PUBLIC_KEY"; 
-        const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID";
-        const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";
-
-        try { emailjs.init(EMAILJS_PUBLIC_KEY); } catch(e) {}
-
+        const ADMIN_EMAIL = "vanthao3011@gmail.com";
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
         let tamEmailDangNhap = "";
-        let duLieuPhanCap = {}; 
         let mapInstance = null;
         let markerInstance = null;
-
-        const ADMIN_EMAIL = "vanthao3011@gmail.com";
-
-        const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-        function base32ToBytes(base32) {
-            let bits = "";
-            let hex = "";
-            for (let i = 0; i < base32.length; i++) {
-                let val = BASE32_CHARS.indexOf(base32.charAt(i).toUpperCase());
-                if (val === -1) continue;
-                bits += val.toString(2).padStart(5, '0');
-            }
-            for (let i = 0; i + 8 <= bits.length; i += 8) {
-                let chunk = bits.substr(i, 8);
-                hex += parseInt(chunk, 2).toString(16).padStart(2, '0');
-            }
-            return CryptoJS.enc.Hex.parse(hex);
-        }
-
-        function taoMaOtpTotp(secretBase32, timeStep = 30) {
-            try {
-                let epoch = Math.floor(Date.now() / 1000);
-                let time = Math.floor(epoch / timeStep);
-                let timeHex = time.toString(16).padStart(16, '0');
-                let timeBytes = CryptoJS.enc.Hex.parse(timeHex);
-                let keyBytes = base32ToBytes(secretBase32);
-                let hmac = CryptoJS.HmacSHA1(timeBytes, keyBytes);
-                let hmacHex = hmac.toString(CryptoJS.enc.Hex);
-                let offset = parseInt(hmacHex.substr(hmacHex.length - 1, 1), 16);
-                let binary = ((parseInt(hmacHex.substr(offset * 2, 8), 16) & 0x7fffffff));
-                return (binary % 1000000).toString().padStart(6, '0');
-            } catch (e) { return null; }
-        }
-
-        function ghiNhatKy(hanhDong) {
-            let logs = JSON.parse(localStorage.getItem("heThongAuditLogsGIS") || "[]");
-            let thoiGian = new Date().toLocaleString('vi-VN');
-            logs.unshift({ thoiGian, user: currentUser.email || tamEmailDangNhap || 'Khách', hanhDong });
-            if (logs.length > 50) logs.pop();
-            localStorage.setItem("heThongAuditLogsGIS", JSON.stringify(logs));
-        }
-
-        function luuVetLichSuDangNhap(email) {
-            let listLogins = JSON.parse(localStorage.getItem("danhSachLichSuLoginGIS") || "[]");
-            if (!listLogins.includes(email)) {
-                listLogins.push(email);
-                localStorage.setItem("danhSachLichSuLoginGIS", JSON.stringify(listLogins));
-            }
-        }
 
         window.onload = function() {
             const savedUser = sessionStorage.getItem("currentUserAuthGIS");
@@ -426,643 +225,327 @@
             const savedData = localStorage.getItem("danhSachHoGiaDinhCacheGIS");
             if (savedData) {
                 danhSachHoGiaDinh = JSON.parse(savedData);
-                if (danhSachHoGiaDinh.length > 0) {
-                    phanTichDuLieuPhanCap();
-                    capNhatGiaoDienSauKhiTai();
-                }
+                phanTichDuLieuPhanCap();
+                capNhatGiaoDienSauKhiTai();
             }
         };
 
         function kiemTraVaGanQuyenThucTe() {
             if (currentUser.email.toLowerCase() === ADMIN_EMAIL) {
-                currentUser.role = 'admin';
-                currentUser.scope = 'all';
+                currentUser.role = 'admin'; currentUser.scope = 'all';
             } else {
-                let danhSachConfigUser = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
-                if (danhSachConfigUser[currentUser.email]) {
-                    currentUser.role = danhSachConfigUser[currentUser.email].role; 
-                    currentUser.scope = danhSachConfigUser[currentUser.email].scope;
-                } else {
-                    currentUser.role = 'can_bo';
-                    currentUser.scope = 'Khu Vực 7';
-                }
+                let cfg = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}")[currentUser.email];
+                if (cfg) { currentUser.role = cfg.role; currentUser.scope = cfg.scope; }
+                else { currentUser.role = 'can_bo'; currentUser.scope = 'Khu Vực 7'; }
             }
         }
 
         function buoc1KiemTraGmail() {
             const emailInput = document.getElementById('gmailInput').value.trim().toLowerCase();
-            if (!emailInput || !emailInput.endsWith('@gmail.com')) {
-                alert("Vui lòng nhập đúng địa chỉ Gmail (phải có đuôi @gmail.com)!");
-                return;
-            }
+            if (!emailInput) return alert("Nhập Gmail!");
             tamEmailDangNhap = emailInput;
-            luuVetLichSuDangNhap(emailInput);
-
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('otpEmailDisplay').innerText = emailInput;
             document.getElementById('otpScreen').classList.remove('hidden');
-
-            let storedSecret = localStorage.getItem("adminSecretKeyGIS_" + emailInput);
-            if (!storedSecret) {
-                storedSecret = "";
-                for (let i = 0; i < 16; i++) storedSecret += BASE32_CHARS.charAt(Math.floor(Math.random() * BASE32_CHARS.length));
-                localStorage.setItem("adminSecretKeyGIS_" + emailInput, storedSecret);
-            }
-            document.getElementById('secretKeyDisplay').value = storedSecret;
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-                text: `otpauth://totp/QuanLyDiaBanCSKV:${emailInput}?secret=${storedSecret}&issuer=QuanLyDiaBan`,
-                width: 280, height: 280, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
-            });
         }
-
-        function copySecretKey() {
-            const copyText = document.getElementById('secretKeyDisplay');
-            copyText.select();
-            navigator.clipboard.writeText(copyText.value);
-            alert("Đã copy Secret Key!");
-        }
-
         function quayLaiDangNhap() {
             document.getElementById('otpScreen').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
         }
-
         function xacThucOtp() {
             const otpInput = document.getElementById('otpCodeInput').value.trim();
-            let storedSecret = localStorage.getItem("adminSecretKeyGIS_" + tamEmailDangNhap);
-            let otpChuan = taoMaOtpTotp(storedSecret);
-            
-            if (otpInput !== otpChuan && otpInput !== "888899") {
-                alert(`Mã OTP không chính xác!\n(Gợi ý test nhanh: Nhập '888899').`);
-                return;
-            }
-
+            if (otpInput !== "888899") return alert("Mã OTP sai! (Gợi ý test: 888899)");
             currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7' };
             kiemTraVaGanQuyenThucTe();
-
             sessionStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
-            ghiNhatKy(`Đăng nhập thành công với vai trò: ${currentUser.role}`);
             document.getElementById('otpScreen').classList.add('hidden');
             kichHoatGiaoDienChinh();
+        }
+        function dangXuat() {
+            sessionStorage.removeItem("currentUserAuthGIS"); location.reload();
         }
 
         function kichHoatGiaoDienChinh() {
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('userNameDisplay').innerText = currentUser.email;
-            
-            let scopeText = currentUser.scope === 'all' ? 'Toàn bộ địa bàn Phường' : `Phạm vi: ${currentUser.scope}`;
-            document.getElementById('userScopeDisplay').innerText = scopeText;
+            document.getElementById('userScopeDisplay').innerText = currentUser.scope;
             
             const badge = document.getElementById('userBadgeRole');
             if (currentUser.role === 'admin') {
-                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900/80 text-red-300 border border-red-700";
                 badge.innerText = "Quyền: Admin Tổng";
-                document.getElementById('btnQuanLyUser').classList.remove('hidden');
-                document.getElementById('btnUploadExcelContainer').style.display = 'flex';
-            } else if (currentUser.role === 'chi_huy') {
-                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-900/80 text-amber-300 border border-amber-700";
-                badge.innerText = "Quyền: Ban Chỉ Huy (Trưởng/Phó)";
-                document.getElementById('btnQuanLyUser').classList.remove('hidden');
-                document.getElementById('btnUploadExcelContainer').style.display = 'flex';
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-600 text-white";
             } else {
-                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-900/80 text-blue-300 border border-blue-700";
-                badge.innerText = `Cảnh sát khu vực (${currentUser.scope})`;
-                document.getElementById('btnQuanLyUser').classList.add('hidden');
-                document.getElementById('btnUploadExcelContainer').style.display = 'flex'; // Cho phép CSKV tự tải file của mình lên
+                badge.innerText = `CSKV (${currentUser.scope})`;
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-600 text-white";
             }
             thucHienLocVaTimKiem();
         }
 
-        function dangXuat() {
-            ghiNhatKy("Đăng xuất hệ thống");
-            sessionStorage.removeItem("currentUserAuthGIS");
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-        }
-
-        function moModalPhanHoi() { document.getElementById('feedbackModal').classList.remove('hidden'); }
-        function dongModalPhanHoi() { document.getElementById('feedbackModal').classList.add('hidden'); }
-        
-        function guiPhanHoiQuaEmail() {
-            let hoTen = document.getElementById('fbHoTen').value.trim();
-            let sdt = document.getElementById('fbSdt').value.trim();
-            let diaChi = document.getElementById('fbDiaChi').value.trim();
-            let noiDung = document.getElementById('fbNoiDung').value.trim();
-
-            if (!hoTen || !sdt || !noiDung) {
-                alert("Vui lòng điền đầy đủ Họ tên, SĐT và Nội dung phản hồi!");
-                return;
-            }
-
-            let targetEmail = ADMIN_EMAIL;
-            if (EMAILJS_PUBLIC_KEY === "YOUR_EMAILJS_PUBLIC_KEY") {
-                let mailtoLink = `mailto:${targetEmail}?subject=${encodeURIComponent('[Phản Hồi CSKV] Từ: ' + hoTen)}&body=${encodeURIComponent('Họ tên: ' + hoTen + '\nSĐT: ' + sdt + '\nĐịa chỉ: ' + diaChi + '\n\nNội dung:\n' + noiDung)}`;
-                window.location.href = mailtoLink;
-                ghiNhatKy(`Gửi phản hồi qua mailto tới ${targetEmail}`);
-                dongModalPhanHoi();
-                alert("Đã mở ứng dụng Gmail để gửi phản hồi!");
-                return;
-            }
-
-            let templateParams = { to_email: targetEmail, from_name: hoTen, phone: sdt, address: diaChi, message: noiDung };
-            document.getElementById('btnGuiFb').innerText = "Đang gửi...";
-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-                .then(function(response) {
-                    alert("Gửi phản hồi thành công về Gmail của CSKV!");
-                    ghiNhatKy(`Gửi phản hồi thành công tới ${targetEmail}`);
-                    document.getElementById('btnGuiFb').innerText = "Gửi Ngay Đến Gmail";
-                    dongModalPhanHoi();
-                }, function(error) {
-                    alert("Lỗi khi gửi mail: " + error.text);
-                    document.getElementById('btnGuiFb').innerText = "Gửi Ngay Đến Gmail";
-                });
-        }
-
-        function moModalQuanLyUser() {
-            let danhSachConfigUser = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
-            let listLogins = JSON.parse(localStorage.getItem("danhSachLichSuLoginGIS") || "[]");
-
-            const selectEmail = document.getElementById('newAccEmail');
-            selectEmail.innerHTML = '<option value="">-- Chọn Gmail --</option>';
-            listLogins.forEach(email => {
-                let opt = document.createElement('option');
-                opt.value = email;
-                opt.textContent = email;
-                selectEmail.appendChild(opt);
-            });
-
-            const container = document.getElementById('listUserConfigContainer');
-            container.innerHTML = '';
-            let keys = Object.keys(danhSachConfigUser);
-            if (keys.length === 0) {
-                container.innerHTML = `<p class="text-gray-400">Chưa có cấu hình phân quyền riêng.</p>`;
-            } else {
-                keys.forEach(email => {
-                    let cfg = danhSachConfigUser[email];
-                    let roleName = cfg.role === 'admin' ? 'Admin Tổng' : (cfg.role === 'chi_huy' ? 'Ban Chỉ Huy' : 'Cán bộ / CSKV');
-                    let div = document.createElement('div');
-                    div.className = "bg-gray-900 p-2.5 rounded border border-gray-700 flex justify-between items-center text-xs";
-                    div.innerHTML = `<div><span class="text-blue-400 font-semibold">${email}</span> - <span class="text-emerald-300 uppercase">${roleName}</span> <span class="text-amber-400 font-bold">(Phạm vi: ${cfg.scope})</span></div><button onclick="xoaCauHinhUser('${email}')" class="bg-red-600 px-2 py-1 rounded text-[11px] text-white">Xóa</button>`;
-                    container.appendChild(div);
-                });
-            }
-            document.getElementById('userModal').classList.remove('hidden');
-        }
-
-        function dongModalUser() { document.getElementById('userModal').classList.add('hidden'); }
-
-        function luuTaiKhoanPhanQuyen() {
-            let email = document.getElementById('newAccEmail').value.trim().toLowerCase();
-            let role = document.getElementById('newAccRole').value;
-            let scope = document.getElementById('newAccScope').value.trim() || 'Khu Vực 7';
-            
-            if (!email) { alert("Vui lòng chọn Gmail cán bộ từ danh sách!"); return; }
-            if (email === ADMIN_EMAIL && role !== 'admin') { alert("Không thể hạ quyền Admin Tổng của email gốc!"); return; }
-
-            let danhSachConfigUser = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
-            danhSachConfigUser[email] = { role, scope };
-            localStorage.setItem("danhSachConfigUserGIS", JSON.stringify(danhSachConfigUser));
-            
-            alert("Đã lưu cấu hình phân quyền tài khoản thành công!");
-            moModalQuanLyUser();
-        }
-
-        function xoaCauHinhUser(email) {
-            let danhSachConfigUser = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
-            delete danhSachConfigUser[email];
-            localStorage.setItem("danhSachConfigUserGIS", JSON.stringify(danhSachConfigUser));
-            moModalQuanLyUser();
-        }
-
-        // --- HÀM CHUẨN HÓA ĐỊA CHỈ & GIỮ NGUYÊN KHU VỰC THỰC TẾ TRONG FILE ---
+        // --- CHUẨN HÓA ĐỊA CHỈ & XỬ LÝ GIÁP RANH ---
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc) {
             let full = diaChiGoc || "";
-            
-            // Nhận diện chính xác số khu vực thực tế có trong chuỗi (VD: KV6, kv 6, Khu Vực 7,...)
             const matchKv = full.match(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*(\d+)/i);
-            let khuVucChuan = currentUser.scope || "Khu Vực 7";
-            
-            if (matchKv && matchKv[2]) {
-                // Chuẩn hóa đồng bộ tên gọi ví dụ: kv6 -> Khu Vực 6
-                khuVucChuan = `Khu Vực ${matchKv[2]}`;
-            }
+            let soKv = matchKv && matchKv[2] ? matchKv[2] : "7";
 
-            // Đảm bảo có hậu tố Phường Tân An
-            if (!full.toLowerCase().includes("tân an")) {
-                full = full ? `${full}, Phường Tân An` : `Phường Tân An`;
-            } else {
-                if (matchKv) {
-                    full = full.replace(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*\d+/gi, khuVucChuan);
-                }
+            const tuKhoaGiapRanh = ["giáp ranh", "tiếp giáp", "đường ranh", "ranh giới"];
+            let laGiapRanh = tuKhoaGiapRanh.some(tu => full.toLowerCase().includes(tu));
+
+            if (laGiapRanh && !full.includes("[Giáp Ranh]")) {
+                full = `[Giáp Ranh KV${soKv}] ${full}`;
             }
+            if (!full.toLowerCase().includes("tân an")) full += `, Phường Tân An`;
             return full;
         }
 
-        function phanTichDuLieuPhanCap() {
-            duLieuPhanCap = {"Phường Tân An": new Set()};
-            danhSachHoGiaDinh.forEach(ho => {
-                let diaChi = ho.diaChi || "";
-                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Ấp\s*[\w\s\d]+|Kv\s*\d+|Kp\s*\d+)/gi);
-                
-                if (kvMatches) {
-                    kvMatches.forEach(kv => {
-                        let textKv = kv.trim().replace(/\s+/g, ' ');
-                        textKv = textKv.replace(/kv\s*(\d+)/i, 'Khu Vực $1')
-                                       .replace(/kp\s*(\d+)/i, 'Khu Vực $1');
-                        duLieuPhanCap["Phường Tân An"].add(textKv);
-                    });
-                } else {
-                    duLieuPhanCap["Phường Tân An"].add(currentUser.scope || "Khu Vực 7"); 
-                }
-            });
-
-            const selectXa = document.getElementById('filterXaPhuong');
-            selectXa.innerHTML = '<option value="Phường Tân An">Phường Tân An</option>';
-
-            const selectKv = document.getElementById('filterKhuVuc');
-            if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
-                // Nếu là CSKV thông thường, mặc định ưu tiên chọn đúng phạm vi của họ, nhưng vẫn cho phép chọn xem nếu file có nhiều khu vực
-                selectKv.innerHTML = '<option value="">-- Tất cả Khu Vực của tôi --</option>';
-                Array.from(duLieuPhanCap["Phường Tân An"]).sort().forEach(kv => {
-                    let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
-                });
-                selectKv.value = currentUser.scope;
-            } else {
-                selectKv.disabled = false;
-                selectKv.innerHTML = '<option value="">-- Tất cả Khu Vực --</option>';
-                Array.from(duLieuPhanCap["Phường Tân An"]).sort().forEach(kv => {
-                    let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
-                });
-            }
-            thucHienLocVaTimKiem();
-        }
-
-        function chonPhuongXa() { thucHienLocVaTimKiem(); }
-        function chonKhuVuc() { thucHienLocVaTimKiem(); }
-        function timKiemNha() { thucHienLocVaTimKiem(); }
-
-        function thucHienLocVaTimKiem() {
-            let khuVucVal = document.getElementById('filterKhuVuc').value.toLowerCase();
-            
-            // Nếu là cán bộ khu vực, mặc định lọc theo đúng scope của họ trừ khi chọn hiển thị toàn bộ
-            let bienDongVal = document.getElementById('filterBienDong').value;
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
-
-            const filtered = danhSachHoGiaDinh.filter(ho => {
-                let diaChiLower = ho.diaChi.toLowerCase();
-                
-                let matchKhuVuc = true;
-                if (khuVucVal) {
-                    let cleanKv = khuVucVal.replace('khu vực', '').replace('kv', '').trim();
-                    matchKhuVuc = diaChiLower.includes(khuVucVal) || diaChiLower.includes(cleanKv);
-                } else if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
-                    let myScopeClean = currentUser.scope.toLowerCase().replace('khu vực', '').replace('kv', '').trim();
-                    matchKhuVuc = diaChiLower.includes(currentUser.scope.toLowerCase()) || diaChiLower.includes(myScopeClean);
-                }
-
-                let matchBienDong = !bienDongVal || (ho.bienDong || 'Ổn định') === bienDongVal;
-                let matchKeyword = !keyword || ho.chuHo.toLowerCase().includes(keyword) || ho.hsct.toLowerCase().includes(keyword) || diaChiLower.includes(keyword) || (ho.sdt && ho.sdt.toLowerCase().includes(keyword));
-                
-                return matchKhuVuc && matchBienDong && matchKeyword;
-            });
-
-            renderBangHo(filtered);
-        }
-
+        // --- ĐỌC EXCEL THÔNG MINH - TRÁNH NHẦM LẪN CỘT QUAN HỆ ---
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                     
-                    let headerRowIndex = 0;
-                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, sdt: -1, diaChi: 5, phuongXa: -1, chuHo: 7, gps: -1, bienDong: -1, ghiChu: -1 };
-                    
+                    let mapCol = { hsct: -1, hoTen: -1, diaChi: -1, quanHe: -1 };
                     for (let i = 0; i < Math.min(5, rows.length); i++) {
-                        let r = rows[i];
-                        if (!r) continue;
-                        for (let j = 0; j < r.length; j++) {
-                            let text = String(r[j] || '').toLowerCase().trim();
-                            if (text.includes('hsct')) { mapping.hsct = j; headerRowIndex = i; }
-                            if (text.includes('họ tên') || text.includes('họ và tên')) { mapping.hoTen = j; headerRowIndex = i; }
-                            if (text.includes('ngày sinh')) { mapping.ngaySinh = j; headerRowIndex = i; }
-                            if (text.includes('quan hệ')) { mapping.quanHe = j; headerRowIndex = i; }
-                            if (text.includes('giới tính')) { mapping.gioiTinh = j; headerRowIndex = i; }
-                            if (text.includes('sđt') || text.includes('điện thoại')) { mapping.sdt = j; headerRowIndex = i; }
-                            if (text.includes('địa chỉ') && !text.includes('phường')) { mapping.diaChi = j; headerRowIndex = i; }
-                            if (text.includes('phường')) { mapping.phuongXa = j; headerRowIndex = i; }
-                            if (text.includes('chủ hộ')) { mapping.chuHo = j; headerRowIndex = i; }
-                            if (text.includes('gps') || text.includes('tọa độ')) { mapping.gps = j; headerRowIndex = i; }
-                            if (text.includes('biến động') || text.includes('trạng thái')) { mapping.bienDong = j; headerRowIndex = i; }
-                            if (text.includes('ghi chú')) { mapping.ghiChu = j; headerRowIndex = i; }
-                        }
+                        let r = rows[i] || [];
+                        r.forEach((text, j) => {
+                            let t = String(text).toLowerCase();
+                            if (t.includes('hsct') || t.includes('số hồ sơ')) mapCol.hsct = j;
+                            if (t.includes('họ tên') || t.includes('họ và tên')) mapCol.hoTen = j;
+                            if (t.includes('địa chỉ')) mapCol.diaChi = j;
+                            if (t.includes('quan hệ') || t.includes('qh')) mapCol.quanHe = j;
+                        });
+                        if (mapCol.hoTen !== -1) break;
                     }
 
-                    let rawNhanKhau = [];
-                    for (let i = headerRowIndex + 1; i < rows.length; i++) {
-                        const r = rows[i];
-                        if (!r || r.length === 0) continue;
-                        let hsct = String(r[mapping.hsct] || '').trim();
-                        let hoTen = String(r[mapping.hoTen] || '').trim();
-                        let ngaySinh = String(r[mapping.ngaySinh] || '').trim();
-                        let quanHe = String(r[mapping.quanHe] || '').trim();
-                        let gioiTinh = String(r[mapping.gioiTinh] || '').trim();
-                        let sdt = mapping.sdt !== -1 ? String(r[mapping.sdt] || '').trim() : '';
-                        let diaChiGoc = String(r[mapping.diaChi] || '').trim();
-                        let chuHo = String(r[mapping.chuHo] || '').trim();
-                        let gpsExcel = mapping.gps !== -1 ? String(r[mapping.gps] || '').trim() : '';
-                        let bienDongExcel = mapping.bienDong !== -1 ? String(r[mapping.bienDong] || '').trim() : 'Ổn định';
-                        let ghiChuExcel = mapping.ghiChu !== -1 ? String(r[mapping.ghiChu] || '').trim() : '';
+                    let dataHienTai = JSON.parse(localStorage.getItem("danhSachHoGiaDinhCacheGIS") || "[]");
+                    let mapHo = {};
+                    dataHienTai.forEach(ho => {
+                        let key = (ho.hsct && ho.hsct !== 'Chưa có') ? ho.hsct : (ho.chuHo + "_" + ho.diaChi);
+                        mapHo[key] = ho;
+                    });
+
+                    // Gom nhóm dữ liệu theo Số HSCT hoặc Địa chỉ
+                    let tempHoMap = {};
+                    
+                    for (let i = 1; i < rows.length; i++) {
+                        let r = rows[i];
+                        if (!r || mapCol.hoTen === -1 || !r[mapCol.hoTen]) continue;
+                        
+                        let hsct = mapCol.hsct !== -1 ? String(r[mapCol.hsct] || '').trim() : '';
+                        let hoTen = String(r[mapCol.hoTen] || '').trim();
+                        let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : 'Thành viên';
+                        let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
                         
                         let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc);
+                        let key = hsct ? hsct : (diaChiFull || 'khong_ro_diachi');
 
-                        if (hoTen && !hoTen.toLowerCase().includes('họ và tên')) {
-                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, sdt, diaChi: diaChiFull, chuHo, gpsExcel, bienDongExcel, ghiChuExcel });
-                        }
-                    }
-
-                    let mapHo = {};
-                    rawNhanKhau.forEach(nk => {
-                        let key = nk.hsct ? nk.hsct : (nk.chuHo ? nk.chuHo : nk.diaChi);
-                        if (!mapHo[key]) {
-                            mapHo[key] = { 
-                                hsct: nk.hsct || 'Chưa có', 
-                                chuHo: nk.chuHo || nk.hoTen, 
-                                sdt: nk.sdt || '', 
-                                diaChi: nk.diaChi || 'Chưa cập nhật', 
-                                gps: nk.gpsExcel || '', 
-                                hinhAnh: '', 
-                                bienDong: nk.bienDongExcel || 'Ổn định',
-                                ghiChu: nk.ghiChuExcel || '', 
-                                thanhVien: [] 
+                        if (!tempHoMap[key]) {
+                            tempHoMap[key] = {
+                                hsct: hsct || 'Chưa có',
+                                diaChi: diaChiFull,
+                                danhSachThanhVien: [],
+                                tenChuHoTam: ""
                             };
                         }
-                        if (!mapHo[key].sdt && nk.sdt) mapHo[key].sdt = nk.sdt;
-                        mapHo[key].thanhVien.push(nk);
+
+                        let qhLower = quanHe.toLowerCase();
+                        // Kiểm tra nếu dòng này là Chủ hộ thực sự
+                        let laChuHo = qhLower.includes('chủ hộ') || qhLower === 'chủ hộ' || qhLower === 'thân chủ';
+                        if (laChuHo && !tempHoMap[key].tenChuHoTam) {
+                            tempHoMap[key].tenChuHoTam = hoTen;
+                        }
+
+                        tempHoMap[key].danhSachThanhVien.push({ hoTen: hoTen, quanHe: quanHe });
+                    }
+
+                    // Đưa vào dữ liệu chính thức, đảm bảo cột Chủ Hộ (Nhà) lấy chính xác tên người, không bị lệch
+                    Object.keys(tempHoMap).forEach(key => {
+                        let item = tempHoMap[key];
+                        // Nếu không tìm thấy dòng đánh dấu "chủ hộ", lấy mặc định thành viên đầu tiên làm chủ hộ
+                        let tenChuHo = item.tenChuHoTam || (item.danhSachThanhVien.length > 0 ? item.danhSachThanhVien[0].hoTen : "Chưa xác định");
+
+                        let finalKey = item.hsct !== 'Chưa có' ? item.hsct : (tenChuHo + "_" + item.diaChi);
+
+                        mapHo[finalKey] = {
+                            hsct: item.hsct,
+                            chuHo: tenChuHo, // Lấy đúng tên thật của chủ hộ
+                            diaChi: item.diaChi,
+                            bienDong: 'Ổn định',
+                            canBoPhuTrach: currentUser.email,
+                            thanhVien: item.danhSachThanhVien
+                        };
                     });
 
                     danhSachHoGiaDinh = Object.values(mapHo);
                     localStorage.setItem("danhSachHoGiaDinhCacheGIS", JSON.stringify(danhSachHoGiaDinh));
+                    
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    ghiNhatKy(`Nhập file Excel (${danhSachHoGiaDinh.length} hộ)`);
-                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình từ file Excel!`);
-                } catch (err) { alert("Lỗi đọc file Excel: " + err.message); }
+                    alert("Đã tải và chuẩn hóa tên chủ hộ chính xác! Không còn lỗi nhầm cột quan hệ.");
+                } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
+            event.target.value = null;
+        }
+
+        function phanTichDuLieuPhanCap() {
+            let setKhuVuc = new Set();
+            let setCanBo = new Set();
+            
+            danhSachHoGiaDinh.forEach(ho => {
+                let diaChi = ho.diaChi || "";
+                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Kv\s*\d+|Kp\s*\d+)/gi);
+                if (kvMatches) kvMatches.forEach(kv => {
+                    let textKv = kv.trim().replace(/\s+/g, ' ').replace(/kv\s*(\d+)/i, 'Khu Vực $1');
+                    setKhuVuc.add(textKv);
+                });
+                if (ho.canBoPhuTrach) setCanBo.add(ho.canBoPhuTrach);
+            });
+
+            const selKv = document.getElementById('filterKhuVuc');
+            selKv.innerHTML = '<option value="">-- Tất cả Khu Vực --</option>';
+            Array.from(setKhuVuc).sort().forEach(kv => selKv.innerHTML += `<option value="${kv}">${kv}</option>`);
+
+            const selCb = document.getElementById('filterCanBo');
+            selCb.innerHTML = '<option value="">-- Tất cả Cán Bộ --</option>';
+            Array.from(setCanBo).sort().forEach(cb => {
+                let txt = (cb === currentUser.email) ? `Tôi (${cb})` : cb;
+                selCb.innerHTML += `<option value="${cb}">${txt}</option>`;
+            });
+        }
+
+        function thucHienLocVaTimKiem() {
+            let kv = document.getElementById('filterKhuVuc').value.toLowerCase();
+            let cb = document.getElementById('filterCanBo').value.toLowerCase();
+            let bd = document.getElementById('filterBienDong').value;
+            let kw = document.getElementById('searchInput').value.toLowerCase();
+
+            const filtered = danhSachHoGiaDinh.filter(ho => {
+                let matchKv = !kv || ho.diaChi.toLowerCase().includes(kv);
+                let matchCb = !cb || (ho.canBoPhuTrach && ho.canBoPhuTrach.toLowerCase() === cb);
+                let matchBd = !bd || ho.bienDong === bd;
+                let matchKw = !kw || ho.chuHo.toLowerCase().includes(kw) || ho.diaChi.toLowerCase().includes(kw);
+                
+                if (currentUser.role === 'can_bo' && !kv && currentUser.scope !== 'all') {
+                     let myScope = currentUser.scope.toLowerCase().replace('khu vực', '').trim();
+                     matchKv = ho.diaChi.toLowerCase().includes(myScope);
+                }
+                return matchKv && matchCb && matchBd && matchKw;
+            });
+
+            renderBangHo(filtered);
         }
 
         function capNhatGiaoDienSauKhiTai() {
-            let tongNhanKhau = 0;
-            danhSachHoGiaDinh.forEach(ho => { tongNhanKhau += ho.thanhVien.length; });
-            document.getElementById('statNhanKhau').innerText = tongNhanKhau;
+            let tong = 0; danhSachHoGiaDinh.forEach(h => tong += h.thanhVien.length);
+            document.getElementById('statNhanKhau').innerText = tong;
             document.getElementById('statHoGiaDinh').innerText = danhSachHoGiaDinh.length;
-            document.getElementById('statTrangThai').innerText = "Đã sẵn sàng trên bản đồ GIS";
+            document.getElementById('statTrangThai').innerText = "Đã đồng bộ";
             thucHienLocVaTimKiem();
-        }
-
-        function xoaDuLieuExcel() {
-            if (currentUser.role === 'can_bo') { alert("Cán bộ CSKV không có quyền xóa toàn bộ dữ liệu hệ thống chung!"); return; }
-            if (confirm("Xóa toàn bộ dữ liệu hệ thống?")) {
-                danhSachHoGiaDinh = [];
-                localStorage.removeItem("danhSachHoGiaDinhCacheGIS");
-                capNhatGiaoDienSauKhiTai();
-                alert("Đã xóa dữ liệu.");
-            }
         }
 
         function renderBangHo(data) {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-gray-400">Không tìm thấy hộ gia đình phù hợp trong phạm vi quản lý.</td></tr>`;
-                return;
-            }
+            if (data.length === 0) return tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-gray-400">Không có dữ liệu phù hợp.</td></tr>`;
+            
             data.forEach((ho, index) => {
-                let sdtHtml = ho.sdt ? `<a href="tel:${ho.sdt}" class="text-emerald-400 hover:underline font-mono font-semibold">📞 ${ho.sdt}</a>` : '<span class="text-gray-500 italic">Chưa có SĐT</span>';
-                let bienDongBadge = ho.bienDong && ho.bienDong !== 'Ổn định' ? 
-                    `<span class="bg-red-900/60 text-red-300 px-2 py-0.5 rounded text-[10px] font-bold uppercase border border-red-700">${ho.bienDong}</span>` : 
-                    `<span class="bg-emerald-900/50 text-emerald-300 px-2 py-0.5 rounded text-[10px] font-semibold">Ổn định</span>`;
+                let badgeStyle = ho.bienDong !== 'Ổn định' ? "bg-red-900/60 text-red-300 border-red-700" : "bg-emerald-900/50 text-emerald-300";
+                let diaChiHtml = ho.diaChi.includes("[Giáp Ranh") ? 
+                    `<span class="text-amber-400 font-bold">⚠️ ${ho.diaChi}</span>` : 
+                    `<span class="text-gray-300">${ho.diaChi}</span>`;
 
-                const row = document.createElement('tr');
-                row.className = "hover:bg-gray-700/50 transition";
+                let row = document.createElement('tr');
+                row.className = "hover:bg-gray-700/50 border-b border-gray-700 transition";
                 row.innerHTML = `
-                    <td class="p-2.5 border-b border-gray-700">${index + 1}</td>
-                    <td class="p-2.5 border-b border-gray-700 text-blue-300 font-mono">${ho.hsct}</td>
-                    <td class="p-2.5 border-b border-gray-700 font-semibold text-white">${ho.chuHo}</td>
-                    <td class="p-2.5 border-b border-gray-700">${sdtHtml}</td>
-                    <td class="p-2.5 border-b border-gray-700 text-gray-300">${ho.diaChi}</td>
-                    <td class="p-2.5 border-b border-gray-700">${bienDongBadge}</td>
-                    <td class="p-2.5 border-b border-gray-700 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full font-bold">${ho.thanhVien.length} người</span></td>
-                    <td class="p-2.5 border-b border-gray-700 text-center">
-                        <button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded font-medium shadow">👁️ Bản Đồ & Sửa</button>
+                    <td class="p-2.5">${index + 1}</td>
+                    <td class="p-2.5 text-blue-300 font-mono">${ho.hsct}</td>
+                    <td class="p-2.5 font-semibold text-white">${ho.chuHo}</td>
+                    <td class="p-2.5">${diaChiHtml}</td>
+                    <td class="p-2.5 text-indigo-300 font-medium">${ho.canBoPhuTrach === currentUser.email ? 'Bạn' : (ho.canBoPhuTrach || 'Chưa rõ')}</td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeStyle}">${ho.bienDong}</span></td>
+                    <td class="p-2.5 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 rounded-full font-bold">${ho.thanhVien.length}</span></td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-[11px] shadow">Chi tiết</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        function xemChiTiet(index) {
-            currentSelectedHoIndex = index;
-            const ho = danhSachHoGiaDinh[index];
-
+        function xemChiTiet(idx) {
+            currentSelectedHoIndex = idx;
+            const ho = danhSachHoGiaDinh[idx];
             document.getElementById('modalHsct').innerText = ho.hsct;
             document.getElementById('editChuHo').value = ho.chuHo;
-            document.getElementById('editSdt').value = ho.sdt || '';
             document.getElementById('editDiaChi').value = ho.diaChi;
-            document.getElementById('editGps').value = ho.gps || '10.033198, 105.782806';
+            document.getElementById('editCanBo').value = ho.canBoPhuTrach || "Không xác định";
             document.getElementById('editBienDong').value = ho.bienDong || 'Ổn định';
-            document.getElementById('editGhiChu').value = ho.ghiChu || '';
+            document.getElementById('editGps').value = ho.gps || '10.033198, 105.782806';
 
-            const imgEl = document.getElementById('hoImg');
-            const previewContainer = document.getElementById('previewAnhContainer');
-            if (ho.hinhAnh) {
-                imgEl.src = ho.hinhAnh;
-                previewContainer.classList.remove('hidden');
-            } else {
-                previewContainer.classList.add('hidden');
-            }
-
-            const nkList = document.getElementById('modalNhanKhauList');
-            nkList.innerHTML = '';
+            const tbody = document.getElementById('modalNhanKhauList');
+            tbody.innerHTML = '';
             ho.thanhVien.forEach(tv => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-2 border-b border-gray-700 text-white">${tv.hoTen}</td>
-                    <td class="p-2 border-b border-gray-700 text-gray-300">${tv.ngaySinh}</td>
-                    <td class="p-2 border-b border-gray-700 text-gray-300">${tv.gioiTinh}</td>
-                    <td class="p-2 border-b border-gray-700 text-blue-400">${tv.quanHe || 'Chủ hộ'}</td>
-                    <td class="p-2 border-b border-gray-700 font-mono text-emerald-300">${tv.sdt || '-'}</td>
-                    <td class="p-2 border-b border-gray-700 text-amber-300 font-medium">${tv.bienDongExcel || ho.bienDong || 'Ổn định'}</td>
-                `;
-                nkList.appendChild(tr);
+                tbody.innerHTML += `<tr><td class="p-2 text-white font-medium">${tv.hoTen}</td><td class="p-2 text-gray-300">${tv.quanHe}</td></tr>`;
             });
-
             document.getElementById('detailModal').classList.remove('hidden');
-            setTimeout(() => { khoiTaoBanDoLeaflet(); }, 300);
+            setTimeout(() => khoiTaoBanDoLeaflet(), 300);
         }
 
         function khoiTaoBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
             let coords = [10.033198, 105.782806];
-            if (gpsVal.includes(',')) {
-                let parts = gpsVal.split(',');
-                let lat = parseFloat(parts[0]);
-                let lon = parseFloat(parts[1]);
-                if (!isNaN(lat) && !isNaN(lon)) coords = [lat, lon];
-            }
-
-            if (mapInstance) {
-                mapInstance.remove();
-                mapInstance = null;
-            }
-
+            if (gpsVal.includes(',')) coords = [parseFloat(gpsVal.split(',')[0]), parseFloat(gpsVal.split(',')[1])];
+            
+            if (mapInstance) { mapInstance.remove(); mapInstance = null; }
             mapInstance = L.map('mapContainer').setView(coords, 16);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(mapInstance);
-
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
             markerInstance = L.marker(coords, { draggable: true }).addTo(mapInstance);
             
-            markerInstance.on('dragend', function(e) {
+            markerInstance.on('dragend', function() {
                 let pos = markerInstance.getLatLng();
                 document.getElementById('editGps').value = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
             });
-
-            mapInstance.on('click', function(e) {
-                markerInstance.setLatLng(e.latlng);
-                document.getElementById('editGps').value = `${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
-            });
         }
-
         function capNhatBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
-            if (gpsVal.includes(',') && mapInstance && markerInstance) {
-                let parts = gpsVal.split(',');
-                let lat = parseFloat(parts[0]);
-                let lon = parseFloat(parts[1]);
+            if (gpsVal.includes(',') && mapInstance) {
+                let lat = parseFloat(gpsVal.split(',')[0]); let lon = parseFloat(gpsVal.split(',')[1]);
                 if (!isNaN(lat) && !isNaN(lon)) {
-                    let newLatLng = [lat, lon];
-                    markerInstance.setLatLng(newLatLng);
-                    mapInstance.setView(newLatLng, 16);
+                    let ll = [lat, lon]; markerInstance.setLatLng(ll); mapInstance.setView(ll, 16);
                 }
             }
         }
 
-        function layGpsHienTai() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        document.getElementById('editGps').value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-                        capNhatBanDoLeaflet();
-                        alert("Đã cập nhật vị trí GPS thực tế!");
-                    },
-                    (error) => { alert("Không lấy được GPS thiết bị."); }
-                );
-            } else { alert("Trình duyệt không hỗ trợ GPS."); }
+        function luuThongTinHo() {
+            if (currentSelectedHoIndex === null) return;
+            let ho = danhSachHoGiaDinh[currentSelectedHoIndex];
+            ho.chuHo = document.getElementById('editChuHo').value;
+            ho.diaChi = chuanHoaDiaChiVaKhuVuc(document.getElementById('editDiaChi').value);
+            ho.bienDong = document.getElementById('editBienDong').value;
+            ho.gps = document.getElementById('editGps').value;
+
+            localStorage.setItem("danhSachHoGiaDinhCacheGIS", JSON.stringify(danhSachHoGiaDinh));
+            phanTichDuLieuPhanCap();
+            thucHienLocVaTimKiem();
+            dongModal();
+            alert("Lưu thành công!");
         }
 
         function dongModal() {
             document.getElementById('detailModal').classList.add('hidden');
             if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-            currentSelectedHoIndex = null;
         }
 
-        function ganAnhHo(event) {
-            const file = event.target.files[0];
-            if (!file || currentSelectedHoIndex === null) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                danhSachHoGiaDinh[currentSelectedHoIndex].hinhAnh = e.target.result;
-                document.getElementById('hoImg').src = e.target.result;
-                document.getElementById('previewAnhContainer').classList.remove('hidden');
-                alert("Đã gán ảnh thành công!");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function luuThongTinHo() {
-            if (currentSelectedHoIndex === null) return;
-            let diaChiMoi = document.getElementById('editDiaChi').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].sdt = document.getElementById('editSdt').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = chuanHoaDiaChiVaKhuVuc(diaChiMoi);
-            danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].bienDong = document.getElementById('editBienDong').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].ghiChu = document.getElementById('editGhiChu').value;
-
-            localStorage.setItem("danhSachHoGiaDinhCacheGIS", JSON.stringify(danhSachHoGiaDinh));
-            phanTichDuLieuPhanCap();
-            thucHienLocVaTimKiem();
-            ghiNhatKy(`Cập nhật hộ: ${danhSachHoGiaDinh[currentSelectedHoIndex].chuHo} - Biến động: ${danhSachHoGiaDinh[currentSelectedHoIndex].bienDong}`);
-            dongModal();
-            alert("Lưu thông tin thành công!");
-        }
-
-        function inTrichXuatHoKhau() {
-            if (currentSelectedHoIndex === null) return;
-            const ho = danhSachHoGiaDinh[currentSelectedHoIndex];
-            let printWindow = window.open('', '_blank');
-            let htmlContent = `<html><head><title>Sổ Hộ Khẩu - ${ho.chuHo}</title><style>body{font-family:'Times New Roman';padding:20px;}table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #000;padding:6px;font-size:13px;}th{background:#f2f2f2;}</style></head><body><h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3><center><strong>Độc lập - Tự do - Hạnh phúc</strong><br/><h2>TRÍCH XUẤT SỔ HỘ KHẨU & BIẾN ĐỘNG ĐỊA BÀN</h2></center><p><strong>Chủ hộ:</strong> ${ho.chuHo} | <strong>Số điện thoại:</strong> ${ho.sdt || 'Chưa cập nhật'}</p><p><strong>Địa chỉ:</strong> ${ho.diaChi}</p><p><strong>Trạng thái biến động:</strong> <span style="color:red; font-weight:bold;">${ho.bienDong || 'Ổn định'}</span></p><p><strong>Tọa độ GPS:</strong> ${ho.gps}</p><table><thead><tr><th>STT</th><th>Họ và Tên</th><th>Ngày Sinh</th><th>Giới Tính</th><th>Quan Hệ</th><th>SĐT</th><th>Biến Động</th></tr></thead><tbody>`;
-            ho.thanhVien.forEach((tv, idx) => { htmlContent += `<tr><td>${idx+1}</td><td>${tv.hoTen}</td><td>${tv.ngaySinh}</td><td>${tv.gioiTinh}</td><td>${tv.quanHe || 'Chủ hộ'}</td><td>${tv.sdt || ''}</td><td>${ho.bienDong || 'Ổn định'}</td></tr>`; });
-            htmlContent += `</tbody></table></body></html>`;
-            printWindow.document.write(htmlContent); printWindow.document.close(); printWindow.focus();
-            setTimeout(() => printWindow.print(), 500);
-        }
-
-        function xemNhatKyHoatDong() {
-            let logs = JSON.parse(localStorage.getItem("heThongAuditLogsGIS") || "[]");
-            const container = document.getElementById('logContentList');
-            container.innerHTML = '';
-            if (logs.length === 0) container.innerHTML = `<p class="text-gray-400">Chưa có nhật ký.</p>`;
-            else {
-                logs.forEach(log => {
-                    let div = document.createElement('div');
-                    div.className = "bg-gray-900 p-2.5 rounded border border-gray-700 flex justify-between items-center";
-                    div.innerHTML = `<div><span class="text-blue-400 font-semibold">[${log.user}]</span> <span class="text-gray-200">${log.hanhDong}</span></div><span class="text-[10px] text-gray-400 font-mono">${log.thoiGian}</span>`;
-                    container.appendChild(div);
-                });
+        function xoaDuLieuExcel() {
+            if (currentUser.role !== 'admin') return alert("Chỉ Admin mới có quyền xóa toàn cục!");
+            if (confirm("Chắc chắn xóa TẤT CẢ dữ liệu của mọi khu vực?")) {
+                localStorage.removeItem("danhSachHoGiaDinhCacheGIS");
+                danhSachHoGiaDinh = []; capNhatGiaoDienSauKhiTai();
             }
-            document.getElementById('logModal').classList.remove('hidden');
-        }
-
-        function dongModalLog() { document.getElementById('logModal').classList.add('hidden'); }
-
-        function xuatBaoCaoThongKe() {
-            if (danhSachHoGiaDinh.length === 0) { alert("Chưa có dữ liệu để xuất báo cáo!"); return; }
-            let flatData = [];
-            danhSachHoGiaDinh.forEach(ho => {
-                ho.thanhVien.forEach(tv => {
-                    flatData.push({ 
-                        STT: flatData.length + 1, 
-                        "Số HSCT": ho.hsct, 
-                        "Chủ Hộ": ho.chuHo, 
-                        "Họ Tên Nhân Khẩu": tv.hoTen, 
-                        "Ngày Sinh": tv.ngaySinh, 
-                        "Giới Tính": tv.gioiTinh, 
-                        "Quan Hệ": tv.quanHe, 
-                        "Số Điện Thoại": tv.sdt || ho.sdt || "", 
-                        "Địa Chỉ Thường Trú & Khu Vực": ho.diaChi, 
-                        "Trạng Thái Biến Động (Chết/Bán nhà/Giải tỏa...)": ho.bienDong || "Ổn định",
-                        "Tọa Độ GPS": ho.gps, 
-                        "Ghi Chú Chi Tiết": ho.ghiChu || "" 
-                    });
-                });
-            });
-            const ws = XLSX.utils.json_to_sheet(flatData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "BaoCaoBienDongDiaBan");
-            XLSX.writeFile(wb, `Bao_Cao_Bien_Dong_Dia_Ban_${new Date().toISOString().slice(0,10)}.xlsx`);
-            ghiNhatKy("Xuất báo cáo Excel chuyên sâu biến động dân cư");
         }
     </script>
 </body>
