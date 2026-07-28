@@ -472,16 +472,15 @@
             moModalQuanLyUser();
         }
 
-        // HÀM TINH CHỈNH CHUẨN HÓA ĐỊA CHỈ VÀ KHU VỰC ĐA DẠNG (KV, KP, SỐ LA MÃ...)
+        // HÀM CHUẨN HÓA ĐỊA CHỈ & GOM GỌN MỌI BIẾN THỂ VỀ CHUNG "Khu Vực 7"
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr) {
             let full = diaChiGoc || "";
             if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) {
                 full = full ? `${full}, ${phuongStr}` : phuongStr;
             }
 
-            // Tự động quy đổi các biến thể La Mã hoặc Viết tắt sang chuẩn thống nhất (Ví dụ: KV 7, Khu phố 7, Kp7, KvVII -> Khu Vực 7)
-            full = full.replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*(vii|VII)\b/gi, "Khu Vực 7")
-                       .replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*7\b/gi, "Khu Vực 7");
+            // Quy đổi tất cả các biến thể KV7, KV 7, Kp7, Khu phố 7, Khu Vực VII... về đúng 1 chuẩn duy nhất là "Khu Vực 7"
+            full = full.replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*(vii|VII|7)\b/gi, "Khu Vực 7");
 
             return full;
         }
@@ -494,8 +493,8 @@
                 let phuongMatch = diaChi.match(/(Phường\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+|Xã\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+)/i);
                 if (phuongMatch) phuong = phuongMatch[0].split(',')[0].trim();
                 
-                // Trích xuất linh hoạt mọi dạng khu vực / khu phố / ấp
-                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|KV\s*\d+|Khu Phố\s*\d+|KP\s*\d+|Ấp\s*[\w\s\d]+)/gi);
+                // Trích xuất các khu vực đã chuẩn hóa
+                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Ấp\s*[\w\s\d]+)/gi);
                 if (!duLieuPhanCap[phuong]) duLieuPhanCap[phuong] = new Set();
                 
                 if (kvMatches) {
@@ -789,8 +788,10 @@
 
         function luuThongTinHo() {
             if (currentSelectedHoIndex === null) return;
+            let diaChiMoi = document.getElementById('editDiaChi').value;
+            // Áp dụng chuẩn hóa ngay khi lưu thủ công
             danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
-            danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = document.getElementById('editDiaChi').value;
+            danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = chuanHoaDiaChiVaKhuVuc(diaChiMoi, "");
             danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].ghiChu = document.getElementById('editGhiChu').value;
 
