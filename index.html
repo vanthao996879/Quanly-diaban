@@ -224,7 +224,7 @@
         let tamEmailDangNhap = "";
 
         // Dữ liệu phân cấp ánh xạ tự động từ địa chỉ
-        let duLieuPhanCap = {}; // { phuong: Set([khuVuc1, khuVuc2]) }
+        let duLieuPhanCap = {}; 
 
         const BASE32_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         function base32ToBytes(base32) {
@@ -357,7 +357,6 @@
             document.getElementById('otpCodeInput').value = '';
         }
 
-        // TỰ ĐỘNG CHUẨN HÓA KV6 THÀNH KV7 HOẶC BỔ SUNG ĐƯỜNG TRẦN HOÀNG NA
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr) {
             let full = diaChiGoc;
             if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) {
@@ -365,8 +364,6 @@
             }
 
             let lower = full.toLowerCase();
-
-            // Ánh xạ thông minh KV6 -> KV7 hoặc gán Trần Hoàng Na vào KV7 / KDC 91B
             if (lower.includes("trần hoàng na") || lower.includes("tran hoang na")) {
                 if (lower.includes("kv 6") || lower.includes("kv6")) {
                     full = full.replace(/kv\s*6/gi, "KV7").replace(/khu vực\s*6/gi, "Khu vực 7");
@@ -378,16 +375,12 @@
             return full;
         }
 
-        // PHÂN TÍCH DỮ LIỆU ĐỂ TẠO CẤP 1 (PHƯỜNG) VÀ CẤP 2 (KHU VỰC / ẤP / KHÓM)
         function phanTichDuLieuPhanCap() {
             duLieuPhanCap = {};
             danhSachHoGiaDinh.forEach(ho => {
                 let diaChi = ho.diaChi;
-                // Nhận diện phường
                 let phuongMatch = diaChi.match(/(Phường\s+[\w\s]+|Xã\s+[\w\s]+|Thị trấn\s+[\w\s]+)/gi);
                 let phuong = phuongMatch ? phuongMatch[phuongMatch.length - 1].trim() : "Khu vực chung";
-
-                // Nhận diện khu vực / ấp / khóm / KDC
                 let kvMatches = diaChi.match(/(KV\s*\d+|Khu vực\s*\d+|Ấp\s*[\w\s\d]+|Khóm\s*[\w\s\d]+|KDC\s*[\w\s\d]+)/gi);
                 
                 if (!duLieuPhanCap[phuong]) {
@@ -401,7 +394,6 @@
                 }
             });
 
-            // Đổ dữ liệu vào ô chọn Cấp 1 (Phường/Xã)
             const selectXa = document.getElementById('filterXaPhuong');
             selectXa.innerHTML = '<option value="">-- 1. Chọn Phường / Xã --</option>';
             Object.keys(duLieuPhanCap).sort().forEach(p => {
@@ -411,11 +403,9 @@
                 selectXa.appendChild(opt);
             });
 
-            // Reset ô Cấp 2
             document.getElementById('filterKhuVuc').innerHTML = '<option value="">-- 2. Chọn Khu vực / Ấp / Khóm --</option>';
         }
 
-        // Khi người dùng chọn Cấp 1 (Phường/Xã) -> Tự động cập nhật danh sách Cấp 2 (Khu vực/Ấp/Khóm)
         function chonPhuongXa() {
             const phuongChon = document.getElementById('filterXaPhuong').value;
             const selectKv = document.getElementById('filterKhuVuc');
@@ -434,17 +424,14 @@
             thucHienLocVaTimKiem();
         }
 
-        // Khi người dùng chọn Cấp 2 (Khu vực/Ấp/Khóm)
         function chonKhuVuc() {
             thucHienLocVaTimKiem();
         }
 
-        // Cấp 3: Tìm kiếm nhà / chủ hộ
         function timKiemNha() {
             thucHienLocVaTimKiem();
         }
 
-        // HÀM LỌC TỔNG HỢP CẢ 3 CẤP (Phường -> Khu vực -> Nhà/Chủ hộ)
         function thucHienLocVaTimKiem() {
             const phuongVal = document.getElementById('filterXaPhuong').value.toLowerCase();
             const khuVucVal = document.getElementById('filterKhuVuc').value.toLowerCase();
@@ -455,13 +442,8 @@
                 let chuHoLower = ho.chuHo.toLowerCase();
                 let hsctLower = ho.hsct.toLowerCase();
 
-                // Điều kiện Cấp 1: Phường
                 let matchPhuong = !phuongVal || diaChiLower.includes(phuongVal);
-                
-                // Điều kiện Cấp 2: Khu vực / Ấp / Khóm
                 let matchKhuVuc = !khuVucVal || diaChiLower.includes(khuVucVal);
-
-                // Điều kiện Cấp 3: Tìm nhà / chủ hộ / từ khóa
                 let matchKeyword = !keyword || 
                     chuHoLower.includes(keyword) || 
                     hsctLower.includes(keyword) || 
@@ -474,7 +456,6 @@
             renderBangHo(filtered);
         }
 
-        // NHẬP FILE EXCEL & TỰ ĐỘNG XỬ LÝ
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -529,7 +510,6 @@
                         let chuHo = String(r[mapping.chuHo] || '').trim();
                         let gpsExcel = mapping.gps !== -1 ? String(r[mapping.gps] || '').trim() : '';
 
-                        // Gọi hàm chuẩn hóa tự động KV6 -> KV7 hoặc thêm Trần Hoàng Na
                         let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr);
 
                         if (hoTen && hoTen !== 'undefined' && !hoTen.toLowerCase().includes('họ và tên')) {
@@ -562,7 +542,7 @@
 
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert(`Đã chuẩn hóa thông tin (KV7/Trần Hoàng Na) và tải thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
+                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
                 } catch (err) {
                     console.error(err);
                     alert("Lỗi đọc file Excel: " + err.message);
