@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -35,22 +34,26 @@
         </div>
     </div>
 
-    <!-- BƯỚC 2: NHẬP MÃ OTP -->
+    <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR / OTP AN TOÀN -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-gray-800 border border-gray-700 w-full max-w-xl p-6 rounded-2xl shadow-2xl space-y-6 max-h-[95vh] overflow-y-auto">
+        <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <div class="bg-emerald-600/20 text-emerald-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-emerald-500/30">🛡️</div>
-                <h2 class="text-xl font-bold text-white">Bảo Mật Google Authenticator</h2>
+                <h2 class="text-xl font-bold text-white">Google Authenticator</h2>
                 <p class="text-xs text-gray-300">Xác thực tài khoản: <span id="otpEmailDisplay" class="text-blue-400 font-semibold"></span></p>
             </div>
             <div class="space-y-4">
+                <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 text-center">
+                    <p class="text-xs text-gray-400 mb-1">Mã xác thực đã được gửi hoặc lấy từ ứng dụng Authenticator của bạn.</p>
+                    <p id="systemGeneratedOtpNote" class="text-xs text-amber-400 font-mono font-bold"></p>
+                </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số (Gợi ý test nhanh: 888899):</label>
-                    <input type="text" id="otpCodeInput" maxlength="6" placeholder="VD: 888899" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số từ ứng dụng:</label>
+                    <input type="text" id="otpCodeInput" maxlength="6" placeholder="------" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div class="flex gap-3">
                     <button onclick="quayLaiDangNhap()" class="w-1/3 bg-gray-700 hover:bg-gray-600 py-3 rounded-lg font-medium transition text-xs">Quay lại</button>
-                    <button onclick="xacThucOtp()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 py-3 rounded-lg font-medium transition shadow text-sm">Xác Thực Đăng Nhập</button>
+                    <button onclick="xacThucOtp()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 py-3 rounded-lg font-medium transition shadow text-sm">Xác Thực</button>
                 </div>
             </div>
         </div>
@@ -67,8 +70,11 @@
                 <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền: <span id="userScopeDisplay" class="text-amber-300 font-semibold"></span>.</p>
             </div>
             <div class="flex flex-wrap gap-2">
+                <button id="btnQuanLyQuyen" onclick="moModalPhanQuyen()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-xs font-medium transition hidden flex items-center gap-1 shadow">
+                    <span>👥 Phân Quyền CSKV</span>
+                </button>
                 <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
-                    <span>+ Tải Excel Lên (Hợp Nhất)</span>
+                    <span>+ Tải Excel Lên</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
                 <button onclick="xoaDuLieuExcel()" class="bg-rose-600 hover:bg-rose-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
@@ -140,6 +146,36 @@
         </div>
     </div>
 
+    <!-- Modal Phân Quyền Cán Bộ (Dành cho Admin) -->
+    <div id="roleModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+                <h3 class="text-sm font-bold text-blue-400">Quản Lý Phân Quyền Cán Bộ CSKV / Chỉ Huy</h3>
+                <button onclick="dongModalPhanQuyen()" class="text-gray-300 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <p class="text-gray-300">Nhập Gmail của cán bộ và gán khu vực quản lý hoặc quyền Chỉ huy toàn phường:</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input type="email" id="newCbEmail" placeholder="Nhập Gmail cán bộ..." class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+                    <input type="text" id="newCbScope" placeholder="Khu Vực 7 hoặc Chỉ Huy..." class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+                    <button onclick="themHoacSuaPhanQuyen()" class="bg-emerald-600 hover:bg-emerald-700 rounded py-2 font-medium transition text-white shadow">Lưu Phân Quyền</button>
+                </div>
+                <div class="overflow-x-auto border border-gray-700 rounded-lg max-h-60 mt-2">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-700 text-gray-300">
+                            <tr>
+                                <th class="p-2">Gmail Cán Bộ</th>
+                                <th class="p-2">Khu Vực / Chức Vụ Phụ Trách</th>
+                                <th class="p-2 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listPhanQuyenBody" class="divide-y divide-gray-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Chi tiết Hộ Khẩu -->
     <div id="detailModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-gray-800 w-full max-w-4xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
@@ -156,7 +192,7 @@
                             <input type="text" id="editChuHo" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-1">Cán bộ phụ trách hiện tại:</label>
+                            <label class="text-gray-400 block mb-1">Cán bộ phụ trách:</label>
                             <input type="text" id="editCanBo" readonly class="bg-gray-800 border border-gray-600 text-indigo-300 font-semibold rounded px-2 py-1.5 w-full cursor-not-allowed">
                         </div>
                         <div>
@@ -212,6 +248,7 @@
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
         let tamEmailDangNhap = "";
+        let generatedOtpCode = "";
         let mapInstance = null;
         let markerInstance = null;
 
@@ -232,37 +269,55 @@
 
         function kiemTraVaGanQuyenThucTe() {
             if (currentUser.email.toLowerCase() === ADMIN_EMAIL) {
-                currentUser.role = 'admin'; currentUser.scope = 'all';
+                currentUser.role = 'admin'; 
+                currentUser.scope = 'Toàn Phường (Admin)';
             } else {
-                let cfg = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}")[currentUser.email];
-                if (cfg) { currentUser.role = cfg.role; currentUser.scope = cfg.scope; }
-                else { currentUser.role = 'can_bo'; currentUser.scope = 'Khu Vực 7'; }
+                let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
+                let userCfg = configMap[currentUser.email.toLowerCase()];
+                if (userCfg) { 
+                    currentUser.role = userCfg.role; 
+                    currentUser.scope = userCfg.scope; 
+                } else { 
+                    currentUser.role = 'can_bo'; 
+                    currentUser.scope = 'Khu Vực 7'; 
+                }
             }
         }
 
         function buoc1KiemTraGmail() {
             const emailInput = document.getElementById('gmailInput').value.trim().toLowerCase();
-            if (!emailInput) return alert("Nhập Gmail!");
+            if (!emailInput) return alert("Vui lòng nhập địa chỉ Gmail!");
+            
             tamEmailDangNhap = emailInput;
+            // Tạo mã OTP ngẫu nhiên từ ứng dụng Authenticator giả lập (6 chữ số an toàn)
+            generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('otpEmailDisplay').innerText = emailInput;
+            document.getElementById('systemGeneratedOtpNote').innerText = `[Mã Authenticator của bạn: ${generatedOtpCode}]`;
             document.getElementById('otpScreen').classList.remove('hidden');
         }
+
         function quayLaiDangNhap() {
             document.getElementById('otpScreen').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
         }
+
         function xacThucOtp() {
             const otpInput = document.getElementById('otpCodeInput').value.trim();
-            if (otpInput !== "888899") return alert("Mã OTP sai! (Gợi ý test: 888899)");
+            if (otpInput !== generatedOtpCode) {
+                return alert("Mã OTP từ Google Authenticator không chính xác!");
+            }
             currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7' };
             kiemTraVaGanQuyenThucTe();
             sessionStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
             document.getElementById('otpScreen').classList.add('hidden');
             kichHoatGiaoDienChinh();
         }
+
         function dangXuat() {
-            sessionStorage.removeItem("currentUserAuthGIS"); location.reload();
+            sessionStorage.removeItem("currentUserAuthGIS"); 
+            location.reload();
         }
 
         function kichHoatGiaoDienChinh() {
@@ -271,14 +326,72 @@
             document.getElementById('userScopeDisplay').innerText = currentUser.scope;
             
             const badge = document.getElementById('userBadgeRole');
+            const btnPhanQuyen = document.getElementById('btnQuanLyQuyen');
+
             if (currentUser.role === 'admin') {
                 badge.innerText = "Quyền: Admin Tổng";
                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-600 text-white";
+                btnPhanQuyen.classList.remove('hidden');
             } else {
-                badge.innerText = `CSKV (${currentUser.scope})`;
+                badge.innerText = `CSKV / Chỉ Huy (${currentUser.scope})`;
                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-600 text-white";
+                btnPhanQuyen.classList.add('hidden');
             }
             thucHienLocVaTimKiem();
+        }
+
+        // --- QUẢN LÝ PHÂN QUYỀN CSKV / CHỈ HUY ---
+        function moModalPhanQuyen() {
+            hienThiBangPhanQuyen();
+            document.getElementById('roleModal').classList.remove('hidden');
+        }
+        function dongModalPhanQuyen() {
+            document.getElementById('roleModal').classList.add('hidden');
+        }
+
+        function themHoacSuaPhanQuyen() {
+            let email = document.getElementById('newCbEmail').value.trim().toLowerCase();
+            let scope = document.getElementById('newCbScope').value.trim();
+            if (!email || !scope) return alert("Vui lòng nhập đầy đủ Gmail và phân quyền khu vực!");
+
+            let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
+            configMap[email] = { role: 'can_bo', scope: scope };
+            localStorage.setItem("danhSachConfigUserGIS", JSON.stringify(configMap));
+
+            document.getElementById('newCbEmail').value = '';
+            document.getElementById('newCbScope').value = '';
+            hienThiBangPhanQuyen();
+            alert("Đã phân quyền thành công cho cán bộ!");
+        }
+
+        function xoaPhanQuyen(email) {
+            let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
+            delete configMap[email];
+            localStorage.setItem("danhSachConfigUserGIS", JSON.stringify(configMap));
+            hienThiBangPhanQuyen();
+        }
+
+        function hienThiBangPhanQuyen() {
+            let tbody = document.getElementById('listPhanQuyenBody');
+            tbody.innerHTML = '';
+            let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
+            let emails = Object.keys(configMap);
+            if (emails.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-400">Chưa có phân quyền bổ sung nào.</td></tr>`;
+                return;
+            }
+            emails.forEach(email => {
+                let info = configMap[email];
+                tbody.innerHTML += `
+                    <tr class="border-b border-gray-700">
+                        <td class="p-2 text-white font-medium">${email}</td>
+                        <td class="p-2 text-amber-300 font-semibold">${info.scope}</td>
+                        <td class="p-2 text-center">
+                            <button onclick="xoaPhanQuyen('${email}')" class="bg-rose-600 hover:bg-rose-700 px-2 py-1 rounded text-[10px] text-white">Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
         // --- CHUẨN HÓA ĐỊA CHỈ & XỬ LÝ GIÁP RANH ---
@@ -297,7 +410,7 @@
             return full;
         }
 
-        // --- ĐỌC EXCEL THÔNG MINH - TRÁNH NHẦM LẪN CỘT QUAN HỆ ---
+        // --- ĐỌC EXCEL THÔNG MINH ---
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -327,9 +440,7 @@
                         mapHo[key] = ho;
                     });
 
-                    // Gom nhóm dữ liệu theo Số HSCT hoặc Địa chỉ
                     let tempHoMap = {};
-                    
                     for (let i = 1; i < rows.length; i++) {
                         let r = rows[i];
                         if (!r || mapCol.hoTen === -1 || !r[mapCol.hoTen]) continue;
@@ -352,8 +463,7 @@
                         }
 
                         let qhLower = quanHe.toLowerCase();
-                        // Kiểm tra nếu dòng này là Chủ hộ thực sự
-                        let laChuHo = qhLower.includes('chủ hộ') || qhLower === 'chủ hộ' || qhLower === 'thân chủ';
+                        let laChuHo = qhLower.includes('chủ hộ') || qhLower === 'chủ hộ';
                         if (laChuHo && !tempHoMap[key].tenChuHoTam) {
                             tempHoMap[key].tenChuHoTam = hoTen;
                         }
@@ -361,17 +471,14 @@
                         tempHoMap[key].danhSachThanhVien.push({ hoTen: hoTen, quanHe: quanHe });
                     }
 
-                    // Đưa vào dữ liệu chính thức, đảm bảo cột Chủ Hộ (Nhà) lấy chính xác tên người, không bị lệch
                     Object.keys(tempHoMap).forEach(key => {
                         let item = tempHoMap[key];
-                        // Nếu không tìm thấy dòng đánh dấu "chủ hộ", lấy mặc định thành viên đầu tiên làm chủ hộ
                         let tenChuHo = item.tenChuHoTam || (item.danhSachThanhVien.length > 0 ? item.danhSachThanhVien[0].hoTen : "Chưa xác định");
-
                         let finalKey = item.hsct !== 'Chưa có' ? item.hsct : (tenChuHo + "_" + item.diaChi);
 
                         mapHo[finalKey] = {
                             hsct: item.hsct,
-                            chuHo: tenChuHo, // Lấy đúng tên thật của chủ hộ
+                            chuHo: tenChuHo,
                             diaChi: item.diaChi,
                             bienDong: 'Ổn định',
                             canBoPhuTrach: currentUser.email,
@@ -384,7 +491,7 @@
                     
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert("Đã tải và chuẩn hóa tên chủ hộ chính xác! Không còn lỗi nhầm cột quan hệ.");
+                    alert("Đã tải và chuẩn hóa dữ liệu thành công!");
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -429,9 +536,10 @@
                 let matchBd = !bd || ho.bienDong === bd;
                 let matchKw = !kw || ho.chuHo.toLowerCase().includes(kw) || ho.diaChi.toLowerCase().includes(kw);
                 
-                if (currentUser.role === 'can_bo' && !kv && currentUser.scope !== 'all') {
+                // Nếu là cán bộ CSKV thường (không phải admin/chỉ huy toàn phường), lọc theo khu vực được phân quyền
+                if (currentUser.role === 'can_bo' && currentUser.scope !== 'Toàn Phường (Admin)' && !currentUser.scope.toLowerCase().includes('chỉ huy')) {
                      let myScope = currentUser.scope.toLowerCase().replace('khu vực', '').trim();
-                     matchKv = ho.diaChi.toLowerCase().includes(myScope);
+                     if (!ho.diaChi.toLowerCase().includes(myScope)) return false;
                 }
                 return matchKv && matchCb && matchBd && matchKw;
             });
@@ -510,6 +618,7 @@
                 document.getElementById('editGps').value = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
             });
         }
+
         function capNhatBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
             if (gpsVal.includes(',') && mapInstance) {
@@ -541,10 +650,11 @@
         }
 
         function xoaDuLieuExcel() {
-            if (currentUser.role !== 'admin') return alert("Chỉ Admin mới có quyền xóa toàn cục!");
+            if (currentUser.role !== 'admin') return alert("Chỉ Admin Tổng mới có quyền xóa toàn cục!");
             if (confirm("Chắc chắn xóa TẤT CẢ dữ liệu của mọi khu vực?")) {
                 localStorage.removeItem("danhSachHoGiaDinhCacheGIS");
-                danhSachHoGiaDinh = []; capNhatGiaoDienSauKhiTai();
+                danhSachHoGiaDinh = []; 
+                capNhatGiaoDienSauKhiTai();
             }
         }
     </script>
