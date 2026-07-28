@@ -11,8 +11,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Thư viện mã hóa CryptoJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- Thư viện xử lý TOTP (Google Authenticator) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/otplib/12.0.1/otplib-browser.min.js"></script>
     <style>
         #map { height: 280px; width: 100%; border-radius: 0.75rem; z-index: 10; }
     </style>
@@ -201,14 +199,62 @@
 
     <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
-        const authenticator = window.otplib.authenticator;
-        const STORAGE_SECRET_KEY = "app_totp_secret_key_v99";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v99";
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v100";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v100";
 
         let currentSecretKey = "";
         let appData = { households: [] };
         let activeHouseholdId = null;
         let map, marker;
+
+        // --- HÀM GIẢI MÃ BASE32 THUẦN JS CHO TOTP ---
+        function base32ToBytes(base32) {
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+            let bits = "";
+            let hex = "";
+            for (let i = 0; i < base32.length; i++) {
+                let val = alphabet.indexOf(base32.charAt(i).toUpperCase());
+                if (val === -1) continue;
+                bits += val.toString(2).padStart(5, '0');
+            }
+            for (let i = 0; i + 8 <= bits.length; i += 8) {
+                let chunk = bits.substr(i, 8);
+                hex += parseInt(chunk, 2).toString(16).padStart(2, '0');
+            }
+            return CryptoJS.enc.Hex.parse(hex);
+        }
+
+        // --- HÀM TẠO MÃ TOTP 6 SỐ CHUẨN GOOGLE AUTHENTICATOR ---
+        function generateTOTP(secret, windowOffset = 0) {
+            try {
+                const key = base32ToBytes(secret);
+                const epoch = Math.floor(Date.now() / 1000);
+                const timeStep = 30;
+                let counter = Math.floor(epoch / timeStep) + windowOffset;
+
+                let timeHex = counter.toString(16).padStart(16, '0');
+                let timeBytes = CryptoJS.enc.Hex.parse(timeHex);
+
+                let hmac = CryptoJS.HmacSHA1(timeBytes, key);
+                let hmacHex = hmac.toString(CryptoJS.enc.Hex);
+                let offset = parseInt(hmacHex.substr(hmacHex.length - 1, 1), 16);
+                let binary = ((parseInt(hmacHex.substr(offset * 2, 8), 16) & 0x7fffffff));
+                let otp = binary % 1000000;
+                return otp.toString().padStart(6, '0');
+            } catch (e) {
+                return "";
+            }
+        }
+
+        // --- KIỂM TRA Mã 6 SỐ (Cho phép sai số lệch 1 khoảng thời gian 30s trước/sau tránh lệch đồng hồ) ---
+        function verifyTOTP(token, secret) {
+            for (let offset of [-1, 0, 1]) {
+                if (generateTOTP(secret, offset) === token) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         function initMap(lat = 10.0452, lng = 105.7469) {
             if (map) {
@@ -268,8 +314,8 @@
 
             currentSecretKey = secret;
 
-            // Render ảnh QR trực tiếp kích thước lớn 220x220
-            const otpauth = authenticator.keyuri("QuanLyHoDan", "QuanLyDiaBan", secret);
+            // Render ảnh QR chuẩn Google Authenticator trực tiếp kích thước lớn 220x220
+            const otpauth = `otpauth://totp/QuanLyHoDan:HeThong?secret=${secret}&issuer=QuanLyDiaBan`;
             const qrContainer = document.getElementById("qrcode-container");
             qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauth)}" alt="QR Code 2FA" width="220" height="220" style="width: 220px !important; height: 220px !important; display: block;" class="rounded-md">`;
             
@@ -287,7 +333,7 @@
                     return;
                 }
 
-                const isValid = authenticator.check(token, currentSecretKey);
+                const isValid = verifyTOTP(token, currentSecretKey);
                 if (isValid) {
                     lockScreen.classList.add("hidden");
                     document.getElementById("main-app").classList.remove("hidden");
