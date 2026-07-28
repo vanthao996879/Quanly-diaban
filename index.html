@@ -135,7 +135,7 @@
         <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
                 <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Gia Đình & Bản Đồ Địa Bàn</h2>
-                <input type="text" id="searchInput" placeholder="3. Tìm tên chủ hộ, số nhà, đường..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
+                <input type="text" id="searchInput" placeholder="3. Tìm tên chủ hộ, số nhà, SĐT..." onkeyup="timKiemNha()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
@@ -144,9 +144,9 @@
                             <th class="p-2.5 border-b border-gray-600">STT</th>
                             <th class="p-2.5 border-b border-gray-600">Số HSCT</th>
                             <th class="p-2.5 border-b border-gray-600">Chủ Hộ (Nhà)</th>
+                            <th class="p-2.5 border-b border-gray-600">Số Điện Thoại</th>
                             <th class="p-2.5 border-b border-gray-600">Địa Chỉ Thường Trú & Khu Vực</th>
                             <th class="p-2.5 border-b border-gray-600">Tọa Độ GPS</th>
-                            <th class="p-2.5 border-b border-gray-600">Tình Trạng / Ghi Chú</th>
                             <th class="p-2.5 border-b border-gray-600 text-center">Thành Viên</th>
                             <th class="p-2.5 border-b border-gray-600 text-center">Thao Tác</th>
                         </tr>
@@ -192,11 +192,11 @@
         </div>
     </div>
 
-    <!-- Modal Chi tiết Hộ Khẩu, Bản Đồ GIS, Ảnh, GPS & In Sổ -->
+    <!-- Modal Chi tiết Hộ Khẩu, Bản Đồ GIS, SĐT & In Sổ -->
     <div id="detailModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-gray-800 w-full max-w-4xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
-                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu, Tích Hợp Bản Đồ GIS & GPS Định Vị</h3>
+                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu, Tích Hợp Bản Đồ GIS & SĐT Liên Lạc</h3>
                 <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto space-y-6 flex-grow text-xs">
@@ -206,6 +206,10 @@
                         <div>
                             <label class="text-gray-400 block mb-1">Chủ hộ:</label>
                             <input type="text" id="editChuHo" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="text-gray-400 block mb-1">Số điện thoại liên lạc:</label>
+                            <input type="text" id="editSdt" placeholder="VD: 0912345678" class="bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-white w-full font-mono focus:outline-none focus:border-blue-500">
                         </div>
                         <div>
                             <label class="text-gray-400 block mb-1">Địa chỉ thường trú / Khu vực:</label>
@@ -251,6 +255,7 @@
                                     <th class="p-2">Ngày Sinh</th>
                                     <th class="p-2">Giới Tính</th>
                                     <th class="p-2">Quan hệ với chủ hộ</th>
+                                    <th class="p-2">Số điện thoại cá nhân</th>
                                 </tr>
                             </thead>
                             <tbody id="modalNhanKhauList" class="divide-y divide-gray-700"></tbody>
@@ -478,10 +483,7 @@
             if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) {
                 full = full ? `${full}, ${phuongStr}` : phuongStr;
             }
-
-            // Quy đổi tất cả các biến thể KV7, KV 7, Kp7, Khu phố 7, Khu Vực VII... về đúng 1 chuẩn duy nhất là "Khu Vực 7"
             full = full.replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*(vii|VII|7)\b/gi, "Khu Vực 7");
-
             return full;
         }
 
@@ -493,7 +495,6 @@
                 let phuongMatch = diaChi.match(/(Phường\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+|Xã\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+)/i);
                 if (phuongMatch) phuong = phuongMatch[0].split(',')[0].trim();
                 
-                // Trích xuất các khu vực đã chuẩn hóa
                 let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Ấp\s*[\w\s\d]+)/gi);
                 if (!duLieuPhanCap[phuong]) duLieuPhanCap[phuong] = new Set();
                 
@@ -545,7 +546,7 @@
                 let diaChiLower = ho.diaChi.toLowerCase();
                 let matchPhuong = !phuongVal || diaChiLower.includes(phuongVal);
                 let matchKhuVuc = !khuVucVal || diaChiLower.includes(khuVucVal);
-                let matchKeyword = !keyword || ho.chuHo.toLowerCase().includes(keyword) || ho.hsct.toLowerCase().includes(keyword) || diaChiLower.includes(keyword);
+                let matchKeyword = !keyword || ho.chuHo.toLowerCase().includes(keyword) || ho.hsct.toLowerCase().includes(keyword) || diaChiLower.includes(keyword) || (ho.sdt && ho.sdt.toLowerCase().includes(keyword));
                 return matchPhuong && matchKhuVuc && matchKeyword;
             });
             renderBangHo(filtered);
@@ -563,7 +564,7 @@
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
                     let headerRowIndex = 0;
-                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, diaChi: 5, phuongXa: -1, chuHo: 7, gps: -1, ghiChu: -1 };
+                    let mapping = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, gioiTinh: 4, sdt: -1, diaChi: 5, phuongXa: -1, chuHo: 7, gps: -1, ghiChu: -1 };
                     
                     for (let i = 0; i < Math.min(5, rows.length); i++) {
                         let r = rows[i];
@@ -575,6 +576,7 @@
                             if (text.includes('ngày sinh')) { mapping.ngaySinh = j; headerRowIndex = i; }
                             if (text.includes('quan hệ')) { mapping.quanHe = j; headerRowIndex = i; }
                             if (text.includes('giới tính')) { mapping.gioiTinh = j; headerRowIndex = i; }
+                            if (text.includes('sđt') || text.includes('điện thoại') || text.includes('so dien thoai')) { mapping.sdt = j; headerRowIndex = i; }
                             if (text.includes('địa chỉ') && !text.includes('phường')) { mapping.diaChi = j; headerRowIndex = i; }
                             if (text.includes('phường')) { mapping.phuongXa = j; headerRowIndex = i; }
                             if (text.includes('chủ hộ')) { mapping.chuHo = j; headerRowIndex = i; }
@@ -592,6 +594,7 @@
                         let ngaySinh = String(r[mapping.ngaySinh] || '').trim();
                         let quanHe = String(r[mapping.quanHe] || '').trim();
                         let gioiTinh = String(r[mapping.gioiTinh] || '').trim();
+                        let sdt = mapping.sdt !== -1 ? String(r[mapping.sdt] || '').trim() : '';
                         let diaChiGoc = String(r[mapping.diaChi] || '').trim();
                         let phuongStr = mapping.phuongXa !== -1 ? String(r[mapping.phuongXa] || '').trim() : '';
                         let chuHo = String(r[mapping.chuHo] || '').trim();
@@ -601,7 +604,7 @@
                         let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr);
 
                         if (hoTen && !hoTen.toLowerCase().includes('họ và tên')) {
-                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, diaChi: diaChiFull, chuHo, gpsExcel, ghiChuExcel });
+                            rawNhanKhau.push({ hsct, hoTen, ngaySinh, quanHe, gioiTinh, sdt, diaChi: diaChiFull, chuHo, gpsExcel, ghiChuExcel });
                         }
                     }
 
@@ -609,7 +612,11 @@
                     rawNhanKhau.forEach(nk => {
                         let key = nk.hsct ? nk.hsct : (nk.chuHo ? nk.chuHo : nk.diaChi);
                         if (!mapHo[key]) {
-                            mapHo[key] = { hsct: nk.hsct || 'Chưa có', chuHo: nk.chuHo || nk.hoTen, diaChi: nk.diaChi || 'Chưa cập nhật', gps: nk.gpsExcel || '', hinhAnh: '', ghiChu: nk.ghiChuExcel || '', thanhVien: [] };
+                            mapHo[key] = { hsct: nk.hsct || 'Chưa có', chuHo: nk.chuHo || nk.hoTen, sdt: nk.sdt || '', diaChi: nk.diaChi || 'Chưa cập nhật', gps: nk.gpsExcel || '', hinhAnh: '', ghiChu: nk.ghiChuExcel || '', thanhVien: [] };
+                        }
+                        // Nếu hộ chưa có SĐT nhưng thành viên (vd chủ hộ) có SĐT thì gán lên hộ
+                        if (!mapHo[key].sdt && nk.sdt) {
+                            mapHo[key].sdt = nk.sdt;
                         }
                         mapHo[key].thanhVien.push(nk);
                     });
@@ -652,7 +659,8 @@
                 return;
             }
             data.forEach((ho, index) => {
-                let gpsHtml = ho.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ho.gps)}" target="_blank" class="text-emerald-400 hover:underline font-mono">📍 ${ho.gps}</a>` : '<span class="text-gray-500">Chưa có GPS</span>';
+                let sdtHtml = ho.sdt ? `<a href="tel:${ho.sdt}" class="text-emerald-400 hover:underline font-mono font-semibold">📞 ${ho.sdt}</a>` : '<span class="text-gray-500 italic">Chưa có SĐT</span>';
+                let gpsHtml = ho.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ho.gps)}" target="_blank" class="text-blue-400 hover:underline font-mono">📍 Xem</a>` : '<span class="text-gray-500">Chưa có</span>';
                 let ghiChuHtml = ho.ghiChu ? `<span class="bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded text-[11px]">${ho.ghiChu}</span>` : '<span class="text-gray-500 italic">Bình thường</span>';
 
                 const row = document.createElement('tr');
@@ -661,9 +669,9 @@
                     <td class="p-2.5 border-b border-gray-700">${index + 1}</td>
                     <td class="p-2.5 border-b border-gray-700 text-blue-300 font-mono">${ho.hsct}</td>
                     <td class="p-2.5 border-b border-gray-700 font-semibold text-white">${ho.chuHo}</td>
+                    <td class="p-2.5 border-b border-gray-700">${sdtHtml}</td>
                     <td class="p-2.5 border-b border-gray-700 text-gray-300">${ho.diaChi}</td>
                     <td class="p-2.5 border-b border-gray-700">${gpsHtml}</td>
-                    <td class="p-2.5 border-b border-gray-700">${ghiChuHtml}</td>
                     <td class="p-2.5 border-b border-gray-700 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full font-bold">${ho.thanhVien.length} người</span></td>
                     <td class="p-2.5 border-b border-gray-700 text-center">
                         <button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded font-medium shadow">👁️ Bản Đồ & Sửa</button>
@@ -679,6 +687,7 @@
 
             document.getElementById('modalHsct').innerText = ho.hsct;
             document.getElementById('editChuHo').value = ho.chuHo;
+            document.getElementById('editSdt').value = ho.sdt || '';
             document.getElementById('editDiaChi').value = ho.diaChi;
             document.getElementById('editGps').value = ho.gps || '10.033198, 105.782806';
             document.getElementById('editGhiChu').value = ho.ghiChu || '';
@@ -696,7 +705,13 @@
             nkList.innerHTML = '';
             ho.thanhVien.forEach(tv => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="p-2 border-b border-gray-700 text-white">${tv.hoTen}</td><td class="p-2 border-b border-gray-700 text-gray-300">${tv.ngaySinh}</td><td class="p-2 border-b border-gray-700 text-gray-300">${tv.gioiTinh}</td><td class="p-2 border-b border-gray-700 text-blue-400">${tv.quanHe || 'Chủ hộ'}</td>`;
+                tr.innerHTML = `
+                    <td class="p-2 border-b border-gray-700 text-white">${tv.hoTen}</td>
+                    <td class="p-2 border-b border-gray-700 text-gray-300">${tv.ngaySinh}</td>
+                    <td class="p-2 border-b border-gray-700 text-gray-300">${tv.gioiTinh}</td>
+                    <td class="p-2 border-b border-gray-700 text-blue-400">${tv.quanHe || 'Chủ hộ'}</td>
+                    <td class="p-2 border-b border-gray-700 font-mono text-emerald-300">${tv.sdt || '-'}</td>
+                `;
                 nkList.appendChild(tr);
             });
 
@@ -789,8 +804,8 @@
         function luuThongTinHo() {
             if (currentSelectedHoIndex === null) return;
             let diaChiMoi = document.getElementById('editDiaChi').value;
-            // Áp dụng chuẩn hóa ngay khi lưu thủ công
             danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
+            danhSachHoGiaDinh[currentSelectedHoIndex].sdt = document.getElementById('editSdt').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = chuanHoaDiaChiVaKhuVuc(diaChiMoi, "");
             danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].ghiChu = document.getElementById('editGhiChu').value;
@@ -798,7 +813,7 @@
             localStorage.setItem("danhSachHoGiaDinhCacheGIS", JSON.stringify(danhSachHoGiaDinh));
             phanTichDuLieuPhanCap();
             thucHienLocVaTimKiem();
-            ghiNhatKy(`Cập nhật hộ và bản đồ GIS: ${danhSachHoGiaDinh[currentSelectedHoIndex].chuHo}`);
+            ghiNhatKy(`Cập nhật hộ và SĐT: ${danhSachHoGiaDinh[currentSelectedHoIndex].chuHo}`);
             dongModal();
             alert("Lưu thông tin thành công!");
         }
@@ -807,8 +822,8 @@
             if (currentSelectedHoIndex === null) return;
             const ho = danhSachHoGiaDinh[currentSelectedHoIndex];
             let printWindow = window.open('', '_blank');
-            let htmlContent = `<html><head><title>Sổ Hộ Khẩu - ${ho.chuHo}</title><style>body{font-family:'Times New Roman';padding:20px;}table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #000;padding:6px;font-size:13px;}th{background:#f2f2f2;}</style></head><body><h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3><center><strong>Độc lập - Tự do - Hạnh phúc</strong><br/><h2>TRÍCH XUẤT SỔ HỘ KHẨU ĐIỆN TỬ & GIS</h2></center><p><strong>Chủ hộ:</strong> ${ho.chuHo}</p><p><strong>Địa chỉ:</strong> ${ho.diaChi}</p><p><strong>Tọa độ GPS:</strong> ${ho.gps}</p><table><thead><tr><th>STT</th><th>Họ và Tên</th><th>Ngày Sinh</th><th>Giới Tính</th><th>Quan Hệ</th></tr></thead><tbody>`;
-            ho.thanhVien.forEach((tv, idx) => { htmlContent += `<tr><td>${idx+1}</td><td>${tv.hoTen}</td><td>${tv.ngaySinh}</td><td>${tv.gioiTinh}</td><td>${tv.quanHe || 'Chủ hộ'}</td></tr>`; });
+            let htmlContent = `<html><head><title>Sổ Hộ Khẩu - ${ho.chuHo}</title><style>body{font-family:'Times New Roman';padding:20px;}table{width:100%;border-collapse:collapse;margin-top:15px;}th,td{border:1px solid #000;padding:6px;font-size:13px;}th{background:#f2f2f2;}</style></head><body><h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3><center><strong>Độc lập - Tự do - Hạnh phúc</strong><br/><h2>TRÍCH XUẤT SỔ HỘ KHẨU ĐIỆN TỬ & GIS</h2></center><p><strong>Chủ hộ:</strong> ${ho.chuHo} | <strong>Số điện thoại:</strong> ${ho.sdt || 'Chưa cập nhật'}</p><p><strong>Địa chỉ:</strong> ${ho.diaChi}</p><p><strong>Tọa độ GPS:</strong> ${ho.gps}</p><table><thead><tr><th>STT</th><th>Họ và Tên</th><th>Ngày Sinh</th><th>Giới Tính</th><th>Quan Hệ</th><th>Số Điện Thoại</th></tr></thead><tbody>`;
+            ho.thanhVien.forEach((tv, idx) => { htmlContent += `<tr><td>${idx+1}</td><td>${tv.hoTen}</td><td>${tv.ngaySinh}</td><td>${tv.gioiTinh}</td><td>${tv.quanHe || 'Chủ hộ'}</td><td>${tv.sdt || ''}</td></tr>`; });
             htmlContent += `</tbody></table></body></html>`;
             printWindow.document.write(htmlContent); printWindow.document.close(); printWindow.focus();
             setTimeout(() => printWindow.print(), 500);
@@ -837,7 +852,7 @@
             let flatData = [];
             danhSachHoGiaDinh.forEach(ho => {
                 ho.thanhVien.forEach(tv => {
-                    flatData.push({ STT: flatData.length + 1, "HSCT": ho.hsct, "Họ Tên": tv.hoTen, "Ngày Sinh": tv.ngaySinh, "Giới Tính": tv.gioiTinh, "Quan Hệ": tv.quanHe, "Địa Chỉ": ho.diaChi, "GPS": ho.gps, "Ghi Chú": ho.ghiChu || "" });
+                    flatData.push({ STT: flatData.length + 1, "HSCT": ho.hsct, "Họ Tên": tv.hoTen, "Ngày Sinh": tv.ngaySinh, "Giới Tính": tv.gioiTinh, "Quan Hệ": tv.quanHe, "Số Điện Thoại": tv.sdt || ho.sdt || "", "Địa Chỉ": ho.diaChi, "GPS": ho.gps, "Ghi Chú": ho.ghiChu || "" });
                 });
             });
             const ws = XLSX.utils.json_to_sheet(flatData);
