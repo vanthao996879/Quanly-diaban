@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - Bảo Mật 2FA</title>
+    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - Đa Khu Vực Chuẩn Hóa</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS cho Bản đồ -->
@@ -31,7 +31,7 @@
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
             <h2 class="text-2xl font-bold text-white mb-1">Bảo Mật Hệ Thống</h2>
-            <p class="text-xs text-slate-400 mb-4">Quét mã QR bên dưới bằng ứng dụng Google Authenticator</p>
+            <p class="text-xs text-slate-400 mb-4">Quét mã QR bằng ứng dụng Google Authenticator</p>
             
             <div class="mb-4 bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col items-center">
                 <div id="qrcode-container" class="bg-white p-3 rounded-lg mb-3 shadow-inner flex items-center justify-center min-h-[220px]"></div>
@@ -54,9 +54,9 @@
             <div>
                 <h1 class="text-2xl font-bold text-white flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                    Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS
+                    Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS (Đa Khu Vực)
                 </h1>
-                <p class="text-sm text-slate-400 mt-1">Bảo mật 2FA - Dữ liệu mã hóa AES cục bộ an toàn tuyệt đối</p>
+                <p class="text-sm text-slate-400 mt-1">Bảo mật 2FA - Kiểm soát chống nhầm lẫn địa bàn thông minh</p>
             </div>
             <button onclick="location.reload()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-sm font-medium rounded-xl transition flex items-center gap-2 text-slate-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -89,16 +89,22 @@
                     <input type="text" id="input-hsct" placeholder="VD: HSCT-9921" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Xã/Phường</label>
+                    <label class="block text-xs text-slate-400 mb-1">Khu Vực (Bắt buộc chọn đúng)</label>
                     <select id="input-ward" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
-                        <option value="Phường Tân An">Phường Tân An</option>
-                        <option value="Phường An Cư">Phường An Cư</option>
-                        <option value="Phường An Hội">Phường An Hội</option>
+                        <option value="Khu Vực 1">Khu Vực 1</option>
+                        <option value="Khu Vực 2">Khu Vực 2</option>
+                        <option value="Khu Vực 3">Khu Vực 3</option>
+                        <option value="Khu Vực 4">Khu Vực 4</option>
+                        <option value="Khu Vực 5">Khu Vực 5</option>
+                        <option value="Khu Vực 6">Khu Vực 6</option>
+                        <option value="Khu Vực 7" selected>Khu Vực 7</option>
+                        <option value="Khu Vực 8">Khu Vực 8</option>
+                        <option value="Khu Vực 9">Khu Vực 9</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Số nhà, Tên đường</label>
-                    <input type="text" id="input-address" placeholder="VD: 12 đường B1" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
+                    <input type="text" id="input-address" placeholder="VD: 40D Trần Hoàng Na" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
                 </div>
             </div>
 
@@ -132,19 +138,31 @@
 
         <!-- Thanh tìm kiếm & Các nút Nhập/Xuất Excel, Báo cáo -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-            <div class="w-full md:w-1/2">
-                <input type="text" id="search-input" oninput="renderUI()" placeholder="🔍 Tìm kiếm theo số HSCT, chủ hộ, địa chỉ, số điện thoại..." class="w-full px-4 py-3 rounded-xl bg-slate-800/40 border border-slate-800 text-white focus:outline-none focus:border-sky-500 text-sm">
+            <div class="w-full md:w-1/2 flex gap-2">
+                <input type="text" id="search-input" oninput="renderUI()" placeholder="🔍 Tìm kiếm HSCT, chủ hộ, địa chỉ..." class="w-full px-4 py-3 rounded-xl bg-slate-800/40 border border-slate-800 text-white focus:outline-none focus:border-sky-500 text-sm">
+                <select id="filter-ward" onchange="renderUI()" class="px-3 py-3 rounded-xl bg-slate-800/40 border border-slate-800 text-white text-xs focus:outline-none focus:border-sky-500">
+                    <option value="ALL">Tất cả khu vực</option>
+                    <option value="Khu Vực 1">Khu Vực 1</option>
+                    <option value="Khu Vực 2">Khu Vực 2</option>
+                    <option value="Khu Vực 3">Khu Vực 3</option>
+                    <option value="Khu Vực 4">Khu Vực 4</option>
+                    <option value="Khu Vực 5">Khu Vực 5</option>
+                    <option value="Khu Vực 6">Khu Vực 6</option>
+                    <option value="Khu Vực 7">Khu Vực 7</option>
+                    <option value="Khu Vực 8">Khu Vực 8</option>
+                    <option value="Khu Vực 9">Khu Vực 9</option>
+                </select>
             </div>
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
                 <label class="px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30 cursor-pointer transition flex items-center gap-2">
-                    📂 Nhập Excel
+                    📂 Nhập Excel (Có kiểm tra chống nhầm lẫn)
                     <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
                 </label>
                 <button onclick="exportExcel()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-600/20">
-                    📊 Xuất Excel Chuẩn Mẫu
+                    📊 Xuất Excel
                 </button>
                 <button onclick="openReportModal()" class="px-4 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-lg shadow-sky-600/20">
-                    📈 Báo Cáo Thống Kê
+                    📈 Báo Cáo
                 </button>
             </div>
         </div>
@@ -152,7 +170,7 @@
         <!-- Bảng danh sách hộ dân chính -->
         <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-white">Danh Sách Hộ Dân Khu Vực</h3>
+                <h3 class="text-lg font-semibold text-white">Danh Sách Hộ Dân Các Khu Vực</h3>
                 <span id="total-count-badge" class="text-xs text-slate-400">Hiển thị 0 hộ</span>
             </div>
             <div class="overflow-x-auto">
@@ -163,16 +181,43 @@
                             <th class="p-4">Số HSCT</th>
                             <th class="p-4">Chủ Hộ</th>
                             <th class="p-4">Nhân Khẩu</th>
-                            <th class="p-4">Địa Chỉ / Đường</th>
-                            <th class="p-4">Xã/Phường</th>
+                            <th class="p-4">Địa Chỉ Thường Trú</th>
+                            <th class="p-4">Khu Vực</th>
                             <th class="p-4">Ảnh Nhà</th>
-                            <th class="p-4 text-center">Thao Tác Nghiệp Vụ</th>
+                            <th class="p-4 text-center">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody id="household-table-body" class="divide-y divide-slate-800">
-                        <tr><td colspan="8" class="p-6 text-center text-slate-500">Chưa có dữ liệu hộ dân nào.</td></tr>
+                        <tr><td colspan="8" class="p-6 text-center text-slate-500">Chưa có dữ liệu hộ dân nào. Vui lòng nhập file Excel.</td></tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL CHỌN KHU VỰC KHI NHẬP FILE BỊ THIẾU ================= -->
+    <div id="ward-prompt-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl text-center space-y-4">
+            <div class="inline-flex p-3 bg-amber-500/10 text-amber-400 rounded-full">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-white">Xác Nhận Địa Bàn Nhập File</h3>
+            <p class="text-xs text-slate-400">File bạn vừa chọn không ghi rõ tên khu vực trong tên file hoặc tiêu đề. Vui lòng chọn chính xác Khu Vực để tránh nhầm lẫn dữ liệu:</p>
+            
+            <select id="prompt-ward-select" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold focus:outline-none focus:border-sky-500">
+                <option value="Khu Vực 1">Khu Vực 1</option>
+                <option value="Khu Vực 2">Khu Vực 2</option>
+                <option value="Khu Vực 3">Khu Vực 3</option>
+                <option value="Khu Vực 4">Khu Vực 4</option>
+                <option value="Khu Vực 5">Khu Vực 5</option>
+                <option value="Khu Vực 6">Khu Vực 6</option>
+                <option value="Khu Vực 7" selected>Khu Vực 7</option>
+                <option value="Khu Vực 8">Khu Vực 8</option>
+                <option value="Khu Vực 9">Khu Vực 9</option>
+            </select>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="confirmImportWithSelectedWard()" class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl transition">Xác Nhận Tiến Hành Nhập</button>
             </div>
         </div>
     </div>
@@ -206,7 +251,7 @@
                         <tr class="bg-slate-950 text-slate-400 text-xs">
                             <th class="p-3">STT</th>
                             <th class="p-3">Họ và tên</th>
-                            <th class="p-3">Quan hệ</th>
+                            <th class="p-3">Quan hệ chủ hộ</th>
                             <th class="p-3">Giới tính</th>
                             <th class="p-3">Ngày sinh</th>
                             <th class="p-3">Số điện thoại</th>
@@ -228,13 +273,13 @@
     <div id="report-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-3xl shadow-2xl max-h-[90vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-                <h3 class="text-lg font-bold text-white">📈 Báo Cáo Thống Kê Dân Cư Khu Vực</h3>
+                <h3 class="text-lg font-bold text-white">📈 Báo Cáo Thống Kê Dân Cư Theo Khu Vực</h3>
                 <button onclick="closeReportModal()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
             </div>
 
             <div id="printable-area" class="flex-1 overflow-y-auto space-y-4 p-2">
                 <div class="text-center mb-6">
-                    <h2 class="text-xl font-bold text-white">BÁO CÁO TỔNG HỢP HỘ DÂN CƯ & NHÂN KHẨU</h2>
+                    <h2 class="text-xl font-bold text-white">BÁO CÁO TỔNG HỢP HỘ DÂN CƯ & NHÂN KHẨU ĐA KHU VỰC</h2>
                     <p class="text-xs text-slate-400 mt-1">Ngày xuất báo cáo: <span id="report-date"></span></p>
                 </div>
                 
@@ -250,11 +295,11 @@
                 </div>
 
                 <div class="bg-slate-800/40 p-4 rounded-xl border border-slate-800">
-                    <h4 class="text-sm font-semibold text-white mb-3">Thống kê theo Phường:</h4>
+                    <h4 class="text-sm font-semibold text-white mb-3">Thống kê chi tiết từng Khu Vực:</h4>
                     <table class="w-full text-left text-xs">
                         <thead>
                             <tr class="text-slate-400 border-b border-slate-700">
-                                <th class="pb-2">Xã/Phường</th>
+                                <th class="pb-2">Khu Vực</th>
                                 <th class="pb-2 text-center">Số hộ</th>
                                 <th class="pb-2 text-center">Số nhân khẩu</th>
                             </tr>
@@ -274,13 +319,14 @@
 
     <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
-        const STORAGE_SECRET_KEY = "app_totp_secret_key_v102";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v102";
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v105";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v105";
 
         let currentSecretKey = "";
         let appData = { households: [] };
         let activeHouseholdId = null;
         let map, marker;
+        let pendingExcelData = null; // Biến lưu tạm dữ liệu chờ xác nhận khu vực
 
         function base32ToBytes(base32) {
             const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -450,7 +496,7 @@
         function addHousehold() {
             const hsct = document.getElementById("input-hsct").value.trim();
             const ward = document.getElementById("input-ward").value;
-            const address = document.getElementById("input-address").value.trim();
+            let address = document.getElementById("input-address").value.trim();
             const chuoho = document.getElementById("input-chuoho").value.trim();
             const note = document.getElementById("input-note").value.trim();
             const lat = document.getElementById("input-lat").value;
@@ -462,21 +508,23 @@
                 return;
             }
 
+            if (!address.toLowerCase().includes(ward.toLowerCase())) {
+                address = `${address} - ${ward}`;
+            }
+
             if (imgInput.files && imgInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    saveHouseholdData(e.target.result);
+                    saveHouseholdData(e.target.result, address, ward);
                 };
                 reader.readAsDataURL(imgInput.files[0]);
             } else {
-                saveHouseholdData("Không có");
+                saveHouseholdData("Không có", address, ward);
             }
         }
 
-        function saveHouseholdData(imgData) {
+        function saveHouseholdData(imgData, address, ward) {
             const hsct = document.getElementById("input-hsct").value.trim();
-            const ward = document.getElementById("input-ward").value;
-            const address = document.getElementById("input-address").value.trim();
             const chuoho = document.getElementById("input-chuoho").value.trim();
             const note = document.getElementById("input-note").value.trim();
             const lat = document.getElementById("input-lat").value;
@@ -517,7 +565,7 @@
             }
         }
 
-        // --- XUẤT EXCEL CHUẨN MẪU BIỂU (Bao gồm Số điện thoại) ---
+        // --- XUẤT EXCEL ---
         function exportExcel() {
             if (appData.households.length === 0) {
                 alert("Không có dữ liệu để xuất Excel!");
@@ -525,22 +573,18 @@
             }
 
             let dataToExport = [];
-            appData.households.forEach((h, idx) => {
+            appData.households.forEach((h) => {
                 h.members.forEach((m) => {
                     dataToExport.push({
-                        "STT": idx + 1,
-                        "Số hồ sơ cư trú": h.hsct,
-                        "Xã/Phường": h.ward,
-                        "Địa chỉ cư trú": h.address,
-                        "Chủ hộ / Đại diện": h.chuoho,
-                        "Họ và tên thành viên": m.name,
-                        "Quan hệ với chủ hộ": m.relation,
+                        "Khu Vực": h.ward,
+                        "Số HSCT": h.hsct,
+                        "Họ và tên": m.name,
+                        "Ngày sinh": m.dob,
+                        "Quan hệ chủ hộ": m.relation,
                         "Giới tính": m.gender,
-                        "Ngày tháng năm sinh": m.dob,
-                        "Số điện thoại": m.phone,
-                        "Vĩ độ (Lat)": h.lat,
-                        "Kinh độ (Lng)": h.lng,
-                        "Ghi chú": h.note
+                        "Địa chỉ thường trú": h.address,
+                        "Số ĐT": m.phone !== "---" ? m.phone : "",
+                        "Chủ hộ": h.chuoho
                     });
                 });
             });
@@ -548,13 +592,22 @@
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "SoQuanLyCuTru");
-            XLSX.writeFile(workbook, "SoQuanLyCuTru_BieuMau.xlsx");
+            XLSX.writeFile(workbook, "SoQuanLyCuTru_DaKhuVuc.xlsx");
         }
 
-        // --- NHẬP EXCEL (Tự động nhận diện cột Số điện thoại) ---
+        // --- NHẬP EXCEL CHỐNG NHẦM LẪN THÔNG MINH ---
         function importExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
+
+            const fileName = file.name;
+            let detectedWard = null;
+
+            // Quét tên file xem có chứa định danh khu vực rõ ràng không (VD: khu_vuc_2, kv3,...)
+            let match = fileName.match(/kv\s*(\d+)/i) || fileName.match(/khu\s*vuc\s*(\d+)/i) || fileName.match(/khu\s*(\d+)/i);
+            if (match) {
+                detectedWard = `Khu Vực ${match[1]}`;
+            }
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -565,57 +618,97 @@
                     const worksheet = workbook.Sheets[firstSheetName];
                     const json = XLSX.utils.sheet_to_json(worksheet);
 
-                    let householdsMap = {};
+                    pendingExcelData = { json, detectedWard };
 
-                    json.forEach(row => {
-                        let hsct = row["Số hồ sơ cư trú"] || row["Số HSCT"] || row["hsct"] || "HSCT-UNKNOWN";
-                        let chuoho = row["Chủ hộ / Đại diện"] || row["Chủ hộ"] || row["chuoho"] || "Chưa rõ";
-                        let ward = row["Xã/Phường"] || row["ward"] || "Phường Tân An";
-                        let address = row["Địa chỉ cư trú"] || row["Địa chỉ"] || row["address"] || "Chưa cập nhật";
-                        let memberName = row["Họ và tên thành viên"] || row["Tên thành viên"] || row["name"] || chuoho;
-                        let relation = row["Quan hệ với chủ hộ"] || row["relation"] || "Chủ hộ";
-                        let gender = row["Giới tính"] || row["gender"] || "Nam";
-                        let dob = row["Ngày tháng năm sinh"] || row["Ngày sinh"] || row["dob"] || "---";
-                        let phone = row["Số điện thoại"] || row["SĐT"] || row["phone"] || "---";
-                        let lat = row["Vĩ độ (Lat)"] || "10.0452";
-                        let lng = row["Kinh độ (Lng)"] || "105.7469";
-                        let note = row["Ghi chú"] || "";
-
-                        if (!householdsMap[hsct]) {
-                            householdsMap[hsct] = {
-                                id: Date.now() + Math.random(),
-                                hsct,
-                                ward,
-                                address,
-                                chuoho,
-                                note,
-                                lat,
-                                lng,
-                                img: "Không có",
-                                members: []
-                            };
-                        }
-
-                        householdsMap[hsct].members.push({
-                            id: Date.now() + Math.random(),
-                            name: memberName,
-                            relation,
-                            gender,
-                            dob,
-                            phone
-                        });
-                    });
-
-                    appData.households = Object.values(householdsMap);
-                    saveAppData();
-                    renderUI();
-                    alert("Nhập file Excel thành công!");
+                    if (!detectedWard) {
+                        // Nếu tên file không rõ khu vực, hiển thị Popup bắt buộc người dùng chọn để chống nhầm lẫn
+                        document.getElementById("ward-prompt-modal").classList.remove("hidden");
+                    } else {
+                        // Nếu tên file đã rõ ràng, tự động thực hiện import luôn
+                        processExcelData(detectedWard);
+                    }
                 } catch (err) {
-                    alert("Lỗi đọc file Excel. Vui lòng kiểm tra lại định dạng!");
+                    console.error(err);
+                    alert("Lỗi đọc file Excel. Vui lòng kiểm tra lại cấu trúc file!");
                 }
                 event.target.value = "";
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        function confirmImportWithSelectedWard() {
+            const selectedWard = document.getElementById("prompt-ward-select").value;
+            document.getElementById("ward-prompt-modal").classList.add("hidden");
+            if (pendingExcelData) {
+                processExcelData(selectedWard);
+                pendingExcelData = null;
+            }
+        }
+
+        function processExcelData(targetWard) {
+            let json = pendingExcelData.json;
+            let householdsMap = {};
+
+            json.forEach(row => {
+                let hsct = row["Số HSCT"] || row["Số hồ sơ cư trú"] || row["hsct"] || "HSCT-UNKNOWN";
+                let chuoho = row["Chủ hộ"] || row["Chủ hộ / Đại diện"] || row["chuoho"] || "Chưa rõ";
+                let rawAddress = row["Địa chỉ thường trú"] || row["Địa chỉ"] || row["address"] || "";
+                
+                let address = String(rawAddress).trim();
+                if (!address.toLowerCase().includes(targetWard.toLowerCase())) {
+                    address = `${address} - ${targetWard}`;
+                }
+
+                let memberName = row["Họ và tên"] || row["Tên thành viên"] || row["name"] || chuoho;
+                let relation = row["Quan hệ chủ hộ"] || row["Quan hệ\n chủ hộ"] || row["relation"] || "Chủ hộ";
+                let gender = row["Giới tính"] || row["gender"] || "Nam";
+                let dobRaw = row["Ngày sinh"] || row["dob"] || "---";
+                
+                let dob = "---";
+                if (dobRaw) {
+                    if (typeof dobRaw === 'number') {
+                        dob = new Date(Math.round((dobRaw - (25567 + 2)) * 86400 * 1000)).toLocaleDateString("vi-VN");
+                    } else {
+                        dob = String(dobRaw).trim();
+                    }
+                }
+
+                let phoneRaw = row["Số ĐT"] || row["Số điện thoại"] || row["SĐT"] || row["phone"] || "---";
+                let phone = (phoneRaw && phoneRaw !== "---") ? String(phoneRaw).trim() : "---";
+
+                let lat = "10.0452";
+                let lng = "105.7469";
+
+                if (!householdsMap[hsct]) {
+                    householdsMap[hsct] = {
+                        id: Date.now() + Math.random(),
+                        hsct,
+                        ward: targetWard,
+                        address,
+                        chuoho,
+                        note: "",
+                        lat,
+                        lng,
+                        img: "Không có",
+                        members: []
+                    };
+                }
+
+                householdsMap[hsct].members.push({
+                    id: Date.now() + Math.random(),
+                    name: memberName,
+                    relation,
+                    gender,
+                    dob,
+                    phone
+                });
+            });
+
+            // Gộp hoặc thêm mới dữ liệu vào hệ thống
+            appData.households = appData.households.concat(Object.values(householdsMap));
+            saveAppData();
+            renderUI();
+            alert(`Nhập dữ liệu thành công vào bàn làm việc của ${targetWard}!`);
         }
 
         // --- BÁO CÁO THỐNG KÊ ---
@@ -627,21 +720,21 @@
 
             let wardStats = {};
             appData.households.forEach(h => {
-                if (!wardStats[h.ward]) wardStats[h.ward] = { houses: 0, residents: 0 };
+                if (!wardStats[h.ward]) {
+                    wardStats[h.ward] = { houses: 0, residents: 0 };
+                }
                 wardStats[h.ward].houses += 1;
                 wardStats[h.ward].residents += h.members.length;
             });
 
             const wardBody = document.getElementById("ward-stats-body");
-            wardBody.innerHTML = Object.keys(wardStats).length === 0 
-                ? `<tr><td colspan="3" class="text-center py-4 text-slate-500">Chưa có dữ liệu</td></tr>`
-                : Object.entries(wardStats).map(([ward, stat]) => `
-                    <tr>
-                        <td class="py-2 text-white font-medium">${ward}</td>
-                        <td class="py-2 text-center text-sky-400 font-bold">${stat.houses}</td>
-                        <td class="py-2 text-center text-emerald-400 font-bold">${stat.residents}</td>
-                    </tr>
-                `).join('');
+            wardBody.innerHTML = Object.keys(wardStats).map(ward => `
+                <tr>
+                    <td class="py-2 text-white font-medium">${ward}</td>
+                    <td class="py-2 text-center text-sky-400 font-bold">${wardStats[ward].houses}</td>
+                    <td class="py-2 text-center text-emerald-400 font-bold">${wardStats[ward].residents}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="3" class="text-center text-slate-500 py-2">Chưa có dữ liệu</td></tr>`;
 
             document.getElementById("report-modal").classList.remove("hidden");
         }
@@ -722,14 +815,20 @@
 
         function renderUI() {
             const searchKeyword = document.getElementById("search-input").value.toLowerCase().trim();
+            const selectedFilterWard = document.getElementById("filter-ward").value;
 
             let filtered = appData.households.filter(h => {
+                const matchWardFilter = (selectedFilterWard === "ALL" || h.ward === selectedFilterWard);
+                
                 const matchHsct = h.hsct.toLowerCase().includes(searchKeyword);
                 const matchChuoho = h.chuoho.toLowerCase().includes(searchKeyword);
                 const matchAddress = h.address.toLowerCase().includes(searchKeyword);
+                const matchWard = h.ward.toLowerCase().includes(searchKeyword);
                 const matchMembers = h.members.some(m => m.name.toLowerCase().includes(searchKeyword) || m.phone.toLowerCase().includes(searchKeyword));
 
-                return !searchKeyword || matchHsct || matchChuoho || matchAddress || matchMembers;
+                const matchSearch = (!searchKeyword || matchHsct || matchChuoho || matchAddress || matchWard || matchMembers);
+
+                return matchWardFilter && matchSearch;
             });
 
             document.getElementById("stat-houses").innerText = appData.households.length;
@@ -739,7 +838,7 @@
 
             const tbody = document.getElementById("household-table-body");
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">Không tìm thấy hộ dân phù hợp.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-500">Không tìm thấy hộ dân phù hợp với bộ lọc.</td></tr>`;
                 return;
             }
 
@@ -752,7 +851,7 @@
                         <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded-full border border-emerald-500/20">👥 ${h.members.length} nhân khẩu</span>
                     </td>
                     <td class="p-4 text-slate-300">${h.address}</td>
-                    <td class="p-4 text-slate-300 text-xs">${h.ward}</td>
+                    <td class="p-4 text-sky-300 font-medium text-xs">${h.ward}</td>
                     <td class="p-4 text-slate-400 text-xs">${h.img !== "Không có" ? `<a href="${h.img}" target="_blank" class="text-sky-400 underline">Xem ảnh</a>` : "Không có"}</td>
                     <td class="p-4 text-center space-x-2">
                         <button onclick="openMembersModal(${h.id})" class="px-3 py-1 bg-sky-500/15 hover:bg-sky-500/30 text-sky-400 text-xs font-medium rounded-lg transition border border-sky-500/20" title="Xem chi tiết nhân khẩu">👁️ Xem</button>
