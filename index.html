@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Dân Cư & Nhà Ở - Bảo Mật 2FA & Mã Hóa AES</title>
+    <title>Hệ Thống Quản Lý Dân Cư & Nhà Ở - Bảo Mật 2FA</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Thư viện mã hóa CryptoJS -->
@@ -24,14 +24,12 @@
             <h2 class="text-2xl font-bold text-white mb-2">Bảo Mật Hệ Thống</h2>
             <p id="lock-subtitle" class="text-sm text-slate-400 mb-6">Nhập mã xác thực từ Google Authenticator để mở khóa</p>
             
-            <!-- Phần hiển thị QR Code nếu thiết lập lần đầu -->
             <div id="setup-section" class="hidden mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
-                <p class="text-xs text-amber-400 mb-3">Chưa có cấu hình bảo mật. Quét mã QR này bằng ứng dụng Google Authenticator trên điện thoại của bạn:</p>
+                <p class="text-xs text-amber-400 mb-3">Chưa có cấu hình bảo mật. Quét mã QR này bằng ứng dụng Google Authenticator:</p>
                 <div id="qrcode-container" class="bg-white p-3 inline-block rounded-lg mb-3"></div>
                 <p class="text-xs text-slate-400">Hoặc nhập thủ công Secret Key: <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold"></code></p>
             </div>
 
-            <!-- Ô nhập mã PIN 6 số -->
             <div class="mb-6">
                 <input type="text" id="totp-input" placeholder="000000" maxlength="6" class="w-full py-3 text-center text-3xl font-mono tracking-[1em] rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-sky-500 transition" autofocus>
             </div>
@@ -41,15 +39,15 @@
         </div>
     </div>
 
-    <!-- ================= GIAO DIỆN CHÍNH CỦA HỆ THỐNG ================= -->
+    <!-- ================= GIAO DIỆN CHÍNH ================= -->
     <div id="main-app" class="hidden container mx-auto px-4 py-8 max-w-6xl">
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 bg-slate-800/40 border border-slate-800 p-6 rounded-2xl backdrop-blur-md gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-white flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                    Quản Lý Dân Cư & Nhà Ở Địa Bàn
+                    Quản Lý Hộ Dân Cư & Nhà Ở
                 </h1>
-                <p class="text-sm text-slate-400 mt-1">Hệ thống bảo mật 2FA & Mã hóa dữ liệu cục bộ an toàn</p>
+                <p class="text-sm text-slate-400 mt-1">Giao diện gọn gàng theo hộ gia đình - Bảo mật 2FA & Mã hóa AES</p>
             </div>
             <button onclick="location.reload()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-sm font-medium rounded-xl transition flex items-center gap-2 text-slate-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -60,59 +58,74 @@
         <!-- Thống kê nhanh -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl">
-                <h3 class="text-slate-400 text-sm font-medium">Tổng số Nhân khẩu</h3>
-                <p id="stat-residents" class="text-3xl font-bold text-sky-400 mt-2">0</p>
+                <h3 class="text-slate-400 text-sm font-medium">Tổng số Hộ dân cư</h3>
+                <p id="stat-houses" class="text-3xl font-bold text-sky-400 mt-2">0</p>
             </div>
             <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl">
-                <h3 class="text-slate-400 text-sm font-medium">Tổng số Hộ nhà ở</h3>
-                <p id="stat-houses" class="text-3xl font-bold text-emerald-400 mt-2">0</p>
+                <h3 class="text-slate-400 text-sm font-medium">Tổng số Nhân khẩu</h3>
+                <p id="stat-residents" class="text-3xl font-bold text-emerald-400 mt-2">0</p>
             </div>
         </div>
 
-        <!-- Form nhập liệu -->
+        <!-- Form thêm hộ gia đình mới -->
         <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl mb-8">
-            <h3 class="text-lg font-semibold mb-4 text-white">Thêm Nhân Khẩu & Hộ Dân Mới</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <input type="text" id="input-name" placeholder="Họ và tên" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
-                <input type="text" id="input-dob" placeholder="Năm sinh (VD: 1995)" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
-                <input type="text" id="input-address" placeholder="Địa chỉ nhà ở / Số nhà" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
+            <h3 class="text-lg font-semibold mb-4 text-white">Thêm Hộ Gia Đình & Nhân Khẩu Mới</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input type="text" id="input-hsct" placeholder="Số HSCT (Ví dụ: 31147-000746)" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
+                <input type="text" id="input-chuoho" placeholder="Họ tên Chủ hộ" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
+                <input type="text" id="input-diachi" placeholder="Địa chỉ / Số nhà / Đường" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
+                <input type="text" id="input-thanhvien" placeholder="Danh sách thành viên & ngày sinh (VD: Vợ: Nguyễn Thị A (1998))" class="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
             </div>
-            <button onclick="addResident()" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-500 font-medium rounded-xl transition shadow-lg shadow-sky-600/20 text-white">Lưu Dữ Liệu Mã Hóa</button>
+            <button onclick="addHousehold()" class="px-6 py-2.5 bg-sky-600 hover:bg-sky-500 font-medium rounded-xl transition shadow-lg shadow-sky-600/20 text-white">Lưu Hộ Gia Đình An Toàn</button>
         </div>
 
-        <!-- Bảng danh sách -->
+        <!-- Bảng danh sách rút gọn theo Hộ -->
         <div class="bg-slate-800/40 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-white">Danh Sách Dân Cư Đã Quản Lý</h3>
+            <div class="p-6 border-b border-slate-800">
+                <h3 class="text-lg font-semibold text-white">Danh Sách Hộ Dân Khu Vực</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-900/50 text-slate-400 text-sm">
-                            <th class="p-4">Họ và tên</th>
-                            <th class="p-4">Năm sinh</th>
-                            <th class="p-4">Địa chỉ nhà ở</th>
-                            <th class="p-4 text-center">Thao tác</th>
+                            <th class="p-4">Số HSCT</th>
+                            <th class="p-4">Chủ Hộ</th>
+                            <th class="p-4">Nhân Khẩu</th>
+                            <th class="p-4">Địa Chỉ / Đường</th>
+                            <th class="p-4 text-center">Thao Tác Nghiệp Vụ</th>
                         </tr>
                     </thead>
-                    <tbody id="resident-table-body" class="divide-y divide-slate-800">
-                        <tr><td colspan="4" class="p-6 text-center text-slate-500">Chưa có dữ liệu nào.</td></tr>
+                    <tbody id="household-table-body" class="divide-y divide-slate-800">
+                        <tr><td colspan="5" class="p-6 text-center text-slate-500">Chưa có dữ liệu hộ dân nào.</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- ================= LOGIC XỬ LÝ BẢO MẬT & ỨNG DỤNG ================= -->
+    <!-- ================= MODAL XEM CHI TIẾT NHÂN KHẨU TRONG HỘ ================= -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 class="text-lg font-bold text-white" id="modal-title">Chi Tiết Hộ Gia Đình</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 mb-6" id="modal-content">
+                <!-- Nội dung chi tiết nhân khẩu sẽ được load vào đây -->
+            </div>
+            <button onclick="closeModal()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl transition">Đóng</button>
+        </div>
+    </div>
+
+    <!-- ================= LOGIC JAVASCRIPT ================= -->
     <script>
         const authenticator = window.otplib.authenticator;
         const STORAGE_SECRET_KEY = "app_totp_secret_key";
-        const STORAGE_DATA_KEY = "app_encrypted_database";
+        const STORAGE_DATA_KEY = "app_encrypted_database_v2";
 
         let currentSecretKey = "";
-        let appData = { residents: [] };
+        let appData = { households: [] };
 
-        // Khởi động hệ thống kiểm tra bảo mật
         document.addEventListener("DOMContentLoaded", function() {
             let secret = localStorage.getItem(STORAGE_SECRET_KEY);
             const lockScreen = document.getElementById("security-lock-screen");
@@ -120,26 +133,18 @@
             const subtitle = document.getElementById("lock-subtitle");
 
             if (!secret) {
-                // Tạo mới secret key nếu chưa cài đặt
                 secret = authenticator.generateSecret();
                 localStorage.setItem(STORAGE_SECRET_KEY, secret);
-
                 setupSection.classList.remove("hidden");
                 subtitle.innerText = "Thiết lập Google Authenticator lần đầu";
                 
                 const otpauth = authenticator.keyuri("AdminSystem", "QuanLyDanCu", secret);
-                
-                new QRCode(document.getElementById("qrcode-container"), {
-                    text: otpauth,
-                    width: 140,
-                    height: 140
-                });
+                new QRCode(document.getElementById("qrcode-container"), { text: otpauth, width: 140, height: 140 });
                 document.getElementById("manual-secret").innerText = secret;
             }
 
             currentSecretKey = secret;
 
-            // Xử lý sự kiện xác thực
             const verifyBtn = document.getElementById("verify-btn");
             const inputField = document.getElementById("totp-input");
             const errorMsg = document.getElementById("error-msg");
@@ -152,14 +157,10 @@
                     return;
                 }
 
-                // Kiểm tra mã OTP chuẩn Google Authenticator
                 const isValid = authenticator.check(token, currentSecretKey);
-
                 if (isValid) {
                     lockScreen.classList.add("hidden");
                     document.getElementById("main-app").classList.remove("hidden");
-                    
-                    // Tải và giải mã dữ liệu sau khi mở khóa thành công
                     loadAppData();
                 } else {
                     errorMsg.innerText = "Mã xác thực không chính xác hoặc đã hết hạn!";
@@ -170,16 +171,12 @@
             }
 
             verifyBtn.addEventListener("click", handleVerify);
-            inputField.addEventListener("keypress", function(e) {
-                if (e.key === "Enter") handleVerify();
-            });
+            inputField.addEventListener("keypress", function(e) { if (e.key === "Enter") handleVerify(); });
         });
 
-        // --- HÀM MÃ HÓA VÀ LƯU TRỮ DỮ LIỆU ---
         function saveAppData() {
             try {
                 const jsonString = JSON.stringify(appData);
-                // Dùng khóa bảo mật Google Authenticator làm khóa mã hóa AES
                 const encrypted = CryptoJS.AES.encrypt(jsonString, currentSecretKey).toString();
                 localStorage.setItem(STORAGE_DATA_KEY, encrypted);
             } catch (e) {
@@ -187,74 +184,97 @@
             }
         }
 
-        // --- HÀM GIẢI MÃ VÀ ĐỌC DỮ LIỆU ---
         function loadAppData() {
             const encrypted = localStorage.getItem(STORAGE_DATA_KEY);
             if (!encrypted) {
-                appData = { residents: [] };
+                appData = { households: [] };
                 renderUI();
                 return;
             }
             try {
                 const bytes = CryptoJS.AES.decrypt(encrypted, currentSecretKey);
-                const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
-                appData = JSON.parse(decryptedString);
+                appData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
                 renderUI();
             } catch (e) {
-                console.error("Lỗi giải mã dữ liệu (Khóa không khớp hoặc dữ liệu bị thay đổi):", e);
-                appData = { residents: [] };
+                appData = { households: [] };
                 renderUI();
             }
         }
 
-        // Thêm nhân khẩu mới
-        function addResident() {
-            const name = document.getElementById("input-name").value.trim();
-            const dob = document.getElementById("input-dob").value.trim();
-            const address = document.getElementById("input-address").value.trim();
+        function addHousehold() {
+            const hsct = document.getElementById("input-hsct").value.trim();
+            const chuoho = document.getElementById("input-chuoho").value.trim();
+            const diachi = document.getElementById("input-diachi").value.trim();
+            const thanhvien = document.getElementById("input-thanhvien").value.trim();
 
-            if (!name || !dob || !address) {
-                alert("Vui lòng điền đầy đủ thông tin nhân khẩu!");
+            if (!hsct || !chuoho || !diachi) {
+                alert("Vui lòng điền Số HSCT, Chủ hộ và Địa chỉ!");
                 return;
             }
 
-            appData.residents.push({ id: Date.now(), name, dob, address });
-            saveAppData(); // Tự động mã hóa và lưu vào localStorage
+            appData.households.push({
+                id: Date.now(),
+                hsct,
+                chuoho,
+                diachi,
+                thanhvien: thanhvien || "Không có thông tin chi tiết bổ sung"
+            });
+
+            saveAppData();
             renderUI();
 
-            // Reset form
-            document.getElementById("input-name").value = "";
-            document.getElementById("input-dob").value = "";
-            document.getElementById("input-address").value = "";
+            document.getElementById("input-hsct").value = "";
+            document.getElementById("input-chuoho").value = "";
+            document.getElementById("input-diachi").value = "";
+            document.getElementById("input-thanhvien").value = "";
         }
 
-        // Xóa nhân khẩu
-        function deleteResident(id) {
-            if (confirm("Bạn có chắc chắn muốn xóa nhân khẩu này?")) {
-                appData.residents = appData.residents.filter(r => r.id !== id);
+        function deleteHousehold(id) {
+            if (confirm("Bạn có chắc chắn muốn xóa hộ gia đình này?")) {
+                appData.households = appData.households.filter(h => h.id !== id);
                 saveAppData();
                 renderUI();
             }
         }
 
-        // Cập nhật giao diện hiển thị
-        function renderUI() {
-            document.getElementById("stat-residents").innerText = appData.residents.length;
-            document.getElementById("stat-houses").innerText = new Set(appData.residents.map(r => r.address)).size;
+        function viewDetail(id) {
+            const h = appData.households.find(item => item.id === id);
+            if (!h) return;
 
-            const tbody = document.getElementById("resident-table-body");
-            if (appData.residents.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500">Chưa có dữ liệu nào.</td></tr>`;
+            document.getElementById("modal-title").innerText = `HSCT: ${h.hsct} - Chủ hộ: ${h.chuoho}`;
+            document.getElementById("modal-content").innerHTML = `
+                <div class="bg-slate-800 p-4 rounded-xl space-y-2 border border-slate-700">
+                    <p class="text-sm text-slate-300"><strong>Địa chỉ:</strong> ${h.diachi}</p>
+                    <p class="text-sm text-slate-300"><strong>Thành viên & Ngày sinh / Chi tiết:</strong></p>
+                    <div class="p-3 bg-slate-950 rounded-lg text-sky-300 text-sm font-mono whitespace-pre-wrap">${h.thanhvien}</div>
+                </div>
+            `;
+            document.getElementById("detail-modal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("detail-modal").classList.add("hidden");
+        }
+
+        function renderUI() {
+            document.getElementById("stat-houses").innerText = appData.households.length;
+            document.getElementById("stat-residents").innerText = appData.households.length; // Hoặc tổng số thành viên nếu tách tách riêng
+
+            const tbody = document.getElementById("household-table-body");
+            if (appData.households.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Chưa có dữ liệu hộ dân nào.</td></tr>`;
                 return;
             }
 
-            tbody.innerHTML = appData.residents.map(r => `
+            tbody.innerHTML = appData.households.map(h => `
                 <tr class="hover:bg-slate-800/30 transition">
-                    <td class="p-4 font-medium text-white">${r.name}</td>
-                    <td class="p-4 text-slate-300">${r.dob}</td>
-                    <td class="p-4 text-slate-300">${r.address}</td>
-                    <td class="p-4 text-center">
-                        <button onclick="deleteResident(${r.id})" class="px-3 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium rounded-lg transition border border-rose-500/20">Xóa</button>
+                    <td class="p-4 font-medium text-sky-400">${h.hsct}</td>
+                    <td class="p-4 font-bold text-white">${h.chuoho}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded-full border border-emerald-500/20">Hộ gia đình</span></td>
+                    <td class="p-4 text-slate-300">${h.diachi}</td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="viewDetail(${h.id})" class="px-3 py-1 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-medium rounded-lg transition border border-sky-500/20" title="Xem chi tiết">👁️ Xem</button>
+                        <button onclick="deleteHousehold(${h.id})" class="px-3 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium rounded-lg transition border border-rose-500/20" title="Xóa">🗑️ Xóa</button>
                     </td>
                 </tr>
             `).join('');
