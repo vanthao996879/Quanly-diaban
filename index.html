@@ -36,6 +36,8 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+            gap: 15px;
         }
         header h1 {
             margin: 0;
@@ -43,6 +45,28 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .role-selector {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.3);
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+        .role-selector option {
+            color: #333;
+            background: #fff;
+        }
+
         .user-info {
             font-size: 14px;
             background: rgba(255,255,255,0.1);
@@ -218,15 +242,27 @@
 
     <header>
         <h1><i class="fa-solid fa-shield-halved"></i> Quản Lý Nhân Hộ Khẩu - Công An Phường</h1>
-        <div class="user-info">
-            <i class="fa-solid fa-user-shield"></i> Xin chào: <strong>Đồng chí (Ban Chỉ huy)</strong>
+        <div class="header-right">
+            <!-- Chọn góc nhìn nhanh: Ban chỉ huy hoặc nhập số hiệu CSKV linh hoạt -->
+            <div>
+                <label style="font-size: 13px; margin-right: 5px;"><i class="fa-solid fa-eye"></i> Góc nhìn:</label>
+                <select id="currentRoleView" class="role-selector" onchange="doiGocNhin()">
+                    <option value="BAN_CHI_HUY">Ban Chỉ Huy (Toàn Phường)</option>
+                    <option value="CSKV_7">Cảnh Sát Khu Vực 7</option>
+                    <option value="CSKV_11">Cảnh Sát Khu Vực 11</option>
+                    <option value="KHAC">Cảnh Sát Khu Vực Khác...</option>
+                </select>
+            </div>
+            <div class="user-info" id="userInfoText">
+                <i class="fa-solid fa-user-shield"></i> Xin chào: <strong>Ban Chỉ Huy</strong>
+            </div>
         </div>
     </header>
 
     <div class="container">
-        <!-- BẢNG THỐNG KÊ TỔNG QUAN PHÂN LOẠI CƯ TRÚ & BIẾN ĐỘNG -->
+        <!-- BẢNG THỐNG KÊ TỔNG QUAN -->
         <div class="command-section">
-            <h3><i class="fa-solid fa-chart-pie"></i> Bảng Thống Kê Tổng Quan Cư Trú & Biến Động Toàn Phường</h3>
+            <h3 id="dashboardTitle"><i class="fa-solid fa-chart-pie"></i> Bảng Thống Kê Tổng Quan Cư Trú & Biến Động Toàn Phường</h3>
             <div class="dashboard-cards">
                 <div class="card success">
                     <h4>Thường Trú</h4>
@@ -251,22 +287,20 @@
             </div>
         </div>
 
-        <!-- THANH TÌM KIẾM VÀ LỌC PHÂN LOẠI -->
+        <!-- THANH TÌM KIẾM VÀ LỌC -->
         <div class="action-bar">
             <div class="filter-group">
-                <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm họ tên, CCCD..." onkeyup="renderTable()" style="width: 220px;">
+                <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm họ tên, CCCD..." onkeyup="renderTable()" style="width: 200px;">
                 
-                <!-- Lọc theo loại cư trú -->
                 <select id="loaiCuTruFilter" onchange="renderTable()">
-                    <option value="all">-- Tất cả loại cư trú --</option>
+                    <option value="all">-- Loại cư trú --</option>
                     <option value="Thường trú">Thường trú</option>
                     <option value="Tạm trú">Tạm trú</option>
                     <option value="Lưu trú">Lưu trú</option>
                 </select>
 
-                <!-- Lọc theo biến động -->
                 <select id="bienDongFilter" onchange="renderTable()">
-                    <option value="all">-- Tất cả trạng thái biến động --</option>
+                    <option value="all">-- Trạng thái biến động --</option>
                     <option value="Ổn định">Ổn định</option>
                     <option value="Bán nhà/Giải tỏa">Hộ bán nhà / Giải tỏa</option>
                     <option value="Chết">Chết</option>
@@ -274,10 +308,9 @@
                 </select>
             </div>
             <div class="btn-group">
-                <!-- Nút Import Excel ẩn input file -->
                 <input type="file" id="excelFile" accept=".xlsx, .xls" style="display: none;" onchange="xuLyImportExcel(event)">
                 <button class="btn-success" onclick="document.getElementById('excelFile').click()"><i class="fa-solid fa-file-excel"></i> Import Excel</button>
-                <button onclick="themHoSoMẫu()"><i class="fa-solid fa-user-plus"></i> Thêm Khai Báo Mới</button>
+                <button onclick="themHoSoMẫu()"><i class="fa-solid fa-user-plus"></i> Thêm Khai Báo</button>
             </div>
         </div>
 
@@ -291,7 +324,7 @@
                         <th>Loại Cư Trú</th>
                         <th>Mã Hộ / Sổ Định Danh</th>
                         <th>CCCD / Định Danh</th>
-                        <th>Khu vực</th>
+                        <th>Khu Vực</th>
                         <th>Trạng thái biến động</th>
                         <th style="text-align: center;">Thao tác</th>
                     </tr>
@@ -304,14 +337,55 @@
     </div>
 
     <script>
-        // Dữ liệu mẫu ban đầu
+        // Dữ liệu mẫu toàn phường chứa các khu vực khác nhau (vd: KV 7, KV 11)
         let danhSachNhanKhau = [
-            { id: 1, hoTen: "Nguyễn Văn A", loaiCuTru: "Thường trú", maHo: "HK001", cccd: "092083000123", khuVuc: "KV1", trangThai: "Ổn định" },
-            { id: 2, hoTen: "Trần Thị B", loaiCuTru: "Tạm trú", maHo: "TT015", cccd: "092085000456", khuVuc: "KV2", trangThai: "Ổn định" },
-            { id: 3, hoTen: "Lê Văn C", loaiCuTru: "Thường trú", maHo: "HK003", cccd: "092070000789", khuVuc: "KV1", trangThai: "Bán nhà/Giải tỏa" },
-            { id: 4, hoTen: "Phạm Thị D", loaiCuTru: "Lưu trú", maHo: "LT022", cccd: "092066000111", khuVuc: "KV3", trangThai: "Đi nước ngoài/Bỏ địa phương" },
-            { id: 5, hoTen: "Hoàng Văn E", loaiCuTru: "Thường trú", maHo: "HK005", cccd: "092055000321", khuVuc: "KV3", trangThai: "Chết" }
+            { id: 1, hoTen: "Nguyễn Văn A", loaiCuTru: "Thường trú", maHo: "HK001", cccd: "092083000123", khuVuc: "KV7", trangThai: "Ổn định" },
+            { id: 2, hoTen: "Trần Thị B", loaiCuTru: "Tạm trú", maHo: "TT015", cccd: "092085000456", khuVuc: "KV7", trangThai: "Ổn định" },
+            { id: 3, hoTen: "Lê Văn C", loaiCuTru: "Thường trú", maHo: "HK003", cccd: "092070000789", khuVuc: "KV11", trangThai: "Bán nhà/Giải tỏa" },
+            { id: 4, hoTen: "Phạm Thị D", loaiCuTru: "Lưu trú", maHo: "LT022", cccd: "092066000111", khuVuc: "KV11", trangThai: "Đi nước ngoài/Bỏ địa phương" },
+            { id: 5, hoTen: "Hoàng Văn E", loaiCuTru: "Thường trú", maHo: "HK005", cccd: "092055000321", khuVuc: "KV7", trangThai: "Chết" }
         ];
+
+        // Biến lưu trữ mã khu vực tùy chỉnh nếu cán bộ chọn "Cán Sát Khu Vực Khác"
+        let customKV = "KV7";
+
+        function doiGocNhin() {
+            let roleSelect = document.getElementById('currentRoleView');
+            let roleValue = roleSelect.value;
+            let titleText = document.getElementById('dashboardTitle');
+            let userInfoText = document.getElementById('userInfoText');
+
+            if (roleValue === "BAN_CHI_HUY") {
+                titleText.innerHTML = `<i class="fa-solid fa-chart-pie"></i> Bảng Thống Kê Tổng Quan Cư Trú & Biến Động Toàn Phường`;
+                userInfoText.innerHTML = `<i class="fa-solid fa-user-shield"></i> Xin chào: <strong>Ban Chỉ Huy</strong>`;
+            } else {
+                if (roleValue === "KHAC") {
+                    let nhapKV = prompt("Nhập số hiệu khu vực bạn phụ trách (Ví dụ: KV5, KV12, Khu vực 9...):", "KV5");
+                    if (nhapKV && nhapKV.trim() !== "") {
+                        customKV = nhapKV.trim();
+                    }
+                } else if (roleValue === "CSKV_7") {
+                    customKV = "KV7";
+                } else if (roleValue === "CSKV_11") {
+                    customKV = "KV11";
+                }
+
+                titleText.innerHTML = `<i class="fa-solid fa-chart-pie"></i> Bảng Thống Kê Cư Trú & Biến Động Địa Bàn Phụ Trách (${customKV})`;
+                userInfoText.innerHTML = `<i class="fa-solid fa-user"></i> Xin chào: <strong>Cảnh Sát Địa Bàn (${customKV})</strong>`;
+            }
+            renderTable();
+        }
+
+        // Lọc dữ liệu theo đúng phạm vi người đang xem
+        function layDuLieuTheoGocNhin() {
+            let roleValue = document.getElementById('currentRoleView').value;
+            if (roleValue === "BAN_CHI_HUY") {
+                return danhSachNhanKhau; // Toàn phường
+            } else {
+                // Chỉ lấy đúng dữ liệu của khu vực cán bộ đó quản lý
+                return danhSachNhanKhau.filter(item => item.khuVuc.toLowerCase() === customKV.toLowerCase());
+            }
+        }
 
         function renderTable() {
             const keyword = document.getElementById('searchInput').value.toLowerCase();
@@ -321,7 +395,9 @@
             
             tbody.innerHTML = "";
 
-            let filteredData = danhSachNhanKhau.filter(item => {
+            let activeData = layDuLieuTheoGocNhin();
+
+            let filteredData = activeData.filter(item => {
                 let matchKeyword = item.hoTen.toLowerCase().includes(keyword) || item.cccd.includes(keyword);
                 let matchLoaiCuTru = (filterLoaiCuTru === 'all' || item.loaiCuTru === filterLoaiCuTru);
                 let matchTrangThai = (filterTrangThai === 'all' || item.trangThai === filterTrangThai);
@@ -329,8 +405,8 @@
             });
 
             if(filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">Không tìm thấy dữ liệu phù hợp</td></tr>`;
-                capNhatTheThongKe();
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888; padding: 25px;">Không tìm thấy dữ liệu phù hợp trong địa bàn quản lý</td></tr>`;
+                capNhatTheThongKe(activeData);
                 return;
             }
 
@@ -349,7 +425,7 @@
                     <td><span class="badge ${badgeCuTru}">${item.loaiCuTru}</span></td>
                     <td>${item.maHo}</td>
                     <td>${item.cccd}</td>
-                    <td>${item.khuVuc}</td>
+                    <td><b>${item.khuVuc}</b></td>
                     <td><span class="badge ${badgeTrangThai}">${item.trangThai}</span></td>
                     <td style="text-align: center;">
                         <button class="btn-sm" onclick="doiTrangThai(${item.id})"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
@@ -359,16 +435,15 @@
                 tbody.innerHTML += tr;
             });
 
-            capNhatTheThongKe();
+            capNhatTheThongKe(activeData);
         }
 
-        // Tự động đếm số liệu cho từng thẻ thống kê
-        function capNhatTheThongKe() {
-            document.getElementById('lblThuongTru').innerText = danhSachNhanKhau.filter(i => i.loaiCuTru === 'Thường trú').length;
-            document.getElementById('lblTamTru').innerText = danhSachNhanKhau.filter(i => i.loaiCuTru === 'Tạm trú' || i.loaiCuTru === 'Lưu trú').length;
-            document.getElementById('lblBanNha').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Bán nhà/Giải tỏa').length;
-            document.getElementById('lblChet').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Chết').length;
-            document.getElementById('lblBienDongKhac').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Đi nước ngoài/Bỏ địa phương').length;
+        function capNhatTheThongKe(dataScope) {
+            document.getElementById('lblThuongTru').innerText = dataScope.filter(i => i.loaiCuTru === 'Thường trú').length;
+            document.getElementById('lblTamTru').innerText = dataScope.filter(i => i.loaiCuTru === 'Tạm trú' || i.loaiCuTru === 'Lưu trú').length;
+            document.getElementById('lblBanNha').innerText = dataScope.filter(i => i.trangThai === 'Bán nhà/Giải tỏa').length;
+            document.getElementById('lblChet').innerText = dataScope.filter(i => i.trangThai === 'Chết').length;
+            document.getElementById('lblBienDongKhac').innerText = dataScope.filter(i => i.trangThai === 'Đi nước ngoài/Bỏ địa phương').length;
         }
 
         function doiTrangThai(id) {
@@ -382,7 +457,10 @@
         }
 
         function themHoSoMẫu() {
-            let ten = prompt("Nhập họ tên nhân khẩu mới:");
+            let roleValue = document.getElementById('currentRoleView').value;
+            let targetKV = (roleValue === "BAN_CHI_HUY") ? "KV7" : customKV;
+
+            let ten = prompt(`Thêm nhân khẩu mới vào địa bàn (${targetKV})\nNhập họ tên:`);
             if(ten && ten.trim() !== "") {
                 let loaiInput = prompt("Chọn loại cư trú (Nhập số):\n1. Thường trú\n2. Tạm trú\n3. Lưu trú", "1");
                 let loai = "Thường trú";
@@ -395,7 +473,7 @@
                     loaiCuTru: loai,
                     maHo: (loai === "Thường trú" ? "HK00" : (loai === "Tạm trú" ? "TT0" : "LT0")) + (Math.floor(Math.random() * 90) + 10),
                     cccd: "0920" + Math.floor(10000000 + Math.random() * 90000000),
-                    khuVuc: "KV" + (Math.floor(Math.random() * 3) + 1),
+                    khuVuc: targetKV,
                     trangThai: "Ổn định"
                 });
                 renderTable();
@@ -409,13 +487,15 @@
             }
         }
 
-        // Xử lý Import File Excel và hộp thoại hỏi loại cư trú
+        // Xử lý Import File Excel gắn thẳng vào khu vực người đang thao tác
         function xuLyImportExcel(event) {
             let file = event.target.files[0];
             if (!file) return;
 
-            // Hỏi người dùng phân loại file trước khi đọc dữ liệu
-            let luaChon = prompt("Xác định loại cư trú cho file Excel bạn đang tải lên:\n1. Thường trú\n2. Tạm trú\n3. Lưu trú", "1");
+            let roleValue = document.getElementById('currentRoleView').value;
+            let targetKV = (roleValue === "BAN_CHI_HUY") ? "KV7" : customKV;
+
+            let luaChon = prompt(`Xác định loại cư trú cho file Excel của địa bàn [${targetKV}]:\n1. Thường trú\n2. Tạm trú\n3. Lưu trú`, "1");
             let loaiCuTruChon = "Thường trú";
             if (luaChon === "2") loaiCuTruChon = "Tạm trú";
             else if (luaChon === "3") loaiCuTruChon = "Lưu trú";
@@ -430,14 +510,13 @@
                     let jsonSheet = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                     let countThem = 0;
-                    // Bỏ qua dòng tiêu đề (dòng 0), đọc từ dòng 1 trở đi
                     for (let i = 1; i < jsonSheet.length; i++) {
                         let row = jsonSheet[i];
-                        if (row && row.length > 0 && row[0]) { // Giả định cột đầu tiên có Họ tên
+                        if (row && row.length > 0 && row[0]) {
                             let hoTenExcel = row[0] ? row[0].toString() : "Chưa rõ";
                             let maHoExcel = row[1] ? row[1].toString() : ((loaiCuTruChon === "Thường trú" ? "HK" : "TT") + Math.floor(100 + Math.random() * 900));
                             let cccdExcel = row[2] ? row[2].toString() : ("0920" + Math.floor(10000000 + Math.random() * 90000000));
-                            let khuVucExcel = row[3] ? row[3].toString() : "KV1";
+                            let khuVucExcel = row[3] ? row[3].toString() : targetKV; // Lấy theo khu vực hiện tại nếu file không chỉ định rõ
 
                             danhSachNhanKhau.push({
                                 id: danhSachNhanKhau.length > 0 ? danhSachNhanKhau[danhSachNhanKhau.length - 1].id + 1 : 1,
@@ -452,13 +531,12 @@
                         }
                     }
 
-                    alert(`Import thành công ${countThem} nhân khẩu dưới diện "${loaiCuTruChon}"!`);
+                    alert(`Import thành công ${countThem} nhân khẩu diện "${loaiCuTruChon}" vào địa bàn ${targetKV}!`);
                     renderTable();
                 } catch (error) {
                     alert("Lỗi đọc file Excel! Vui lòng kiểm tra lại cấu trúc file.");
                     console.error(error);
                 }
-                // Reset ô input file để có thể chọn lại cùng 1 file nếu cần
                 event.target.value = "";
             };
             reader.readAsArrayBuffer(file);
