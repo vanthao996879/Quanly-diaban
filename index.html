@@ -84,7 +84,7 @@
                     <h1 class="text-xl font-bold text-blue-400">Quản Lý Địa Bàn Cho CSKV & Bản Đồ Số GIS</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền: <span id="userScopeDisplay" class="text-amber-300 font-semibold">Toàn bộ</span>[cite: 4].</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền: <span id="userScopeDisplay" class="text-amber-300 font-semibold"></span>[cite: 4].</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <button onclick="moModalPhanHoi()" class="bg-amber-600 hover:bg-amber-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
@@ -529,7 +529,7 @@
                 badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-900/80 text-blue-300 border border-blue-700";
                 badge.innerText = `Cảnh sát khu vực (${currentUser.scope})`;
                 document.getElementById('btnQuanLyUser').classList.add('hidden');
-                document.getElementById('btnUploadExcelContainer').style.display = 'none';
+                document.getElementById('btnUploadExcelContainer').style.display = 'flex'; // Cho phép CSKV tự tải file của mình lên
             }
             thucHienLocVaTimKiem();
         }
@@ -635,19 +635,16 @@
             moModalQuanLyUser();
         }
 
-        // --- HÀM CHUẨN HÓA ĐỊA CHỈ & ÉP BUỘC QUY ĐỔI KV6 THÀNH KV7 THÔNG MINH ---
+        // --- HÀM CHUẨN HÓA ĐỊA CHỈ & GIỮ NGUYÊN KHU VỰC THỰC TẾ TRONG FILE ---
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc) {
             let full = diaChiGoc || "";
             
-            // Xử lý ép buộc chuẩn hóa: Vì file của bạn chứa dữ liệu KV6 nhưng thuộc phạm vi quản lý KV7,
-            // ta tự động quy đổi mọi ký hiệu KV6 / kv6 / khu vực 6 thành Khu Vực 7.
-            full = full.replace(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*6\b/gi, "Khu Vực 7");
-            
-            // Kiểm tra xem đã có khu vực chưa, nếu chưa thì gán mặc định Khu Vực 7
+            // Nhận diện chính xác số khu vực thực tế có trong chuỗi (VD: KV6, kv 6, Khu Vực 7,...)
             const matchKv = full.match(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*(\d+)/i);
-            let khuVucChuan = "Khu Vực 7";
+            let khuVucChuan = currentUser.scope || "Khu Vực 7";
             
             if (matchKv && matchKv[2]) {
+                // Chuẩn hóa đồng bộ tên gọi ví dụ: kv6 -> Khu Vực 6
                 khuVucChuan = `Khu Vực ${matchKv[2]}`;
             }
 
@@ -676,7 +673,7 @@
                         duLieuPhanCap["Phường Tân An"].add(textKv);
                     });
                 } else {
-                    duLieuPhanCap["Phường Tân An"].add("Khu Vực 7"); 
+                    duLieuPhanCap["Phường Tân An"].add(currentUser.scope || "Khu Vực 7"); 
                 }
             });
 
@@ -685,8 +682,12 @@
 
             const selectKv = document.getElementById('filterKhuVuc');
             if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
-                selectKv.innerHTML = `<option value="${currentUser.scope}">${currentUser.scope}</option>`;
-                selectKv.disabled = true;
+                // Nếu là CSKV thông thường, mặc định ưu tiên chọn đúng phạm vi của họ, nhưng vẫn cho phép chọn xem nếu file có nhiều khu vực
+                selectKv.innerHTML = '<option value="">-- Tất cả Khu Vực của tôi --</option>';
+                Array.from(duLieuPhanCap["Phường Tân An"]).sort().forEach(kv => {
+                    let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
+                });
+                selectKv.value = currentUser.scope;
             } else {
                 selectKv.disabled = false;
                 selectKv.innerHTML = '<option value="">-- Tất cả Khu Vực --</option>';
@@ -703,9 +704,8 @@
 
         function thucHienLocVaTimKiem() {
             let khuVucVal = document.getElementById('filterKhuVuc').value.toLowerCase();
-            if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
-                khuVucVal = currentUser.scope.toLowerCase();
-            }
+            
+            // Nếu là cán bộ khu vực, mặc định lọc theo đúng scope của họ trừ khi chọn hiển thị toàn bộ
             let bienDongVal = document.getElementById('filterBienDong').value;
             const keyword = document.getElementById('searchInput').value.toLowerCase();
 
@@ -716,6 +716,9 @@
                 if (khuVucVal) {
                     let cleanKv = khuVucVal.replace('khu vực', '').replace('kv', '').trim();
                     matchKhuVuc = diaChiLower.includes(khuVucVal) || diaChiLower.includes(cleanKv);
+                } else if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
+                    let myScopeClean = currentUser.scope.toLowerCase().replace('khu vực', '').replace('kv', '').trim();
+                    matchKhuVuc = diaChiLower.includes(currentUser.scope.toLowerCase()) || diaChiLower.includes(myScopeClean);
                 }
 
                 let matchBienDong = !bienDongVal || (ho.bienDong || 'Ổn định') === bienDongVal;
@@ -809,7 +812,7 @@
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
                     ghiNhatKy(`Nhập file Excel (${danhSachHoGiaDinh.length} hộ)`);
-                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình và tự động quy chuẩn KV6 thành KV7!`);
+                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình từ file Excel!`);
                 } catch (err) { alert("Lỗi đọc file Excel: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -825,7 +828,7 @@
         }
 
         function xoaDuLieuExcel() {
-            if (currentUser.role === 'can_bo') { alert("Cán bộ CSKV không có quyền xóa toàn bộ dữ liệu!"); return; }
+            if (currentUser.role === 'can_bo') { alert("Cán bộ CSKV không có quyền xóa toàn bộ dữ liệu hệ thống chung!"); return; }
             if (confirm("Xóa toàn bộ dữ liệu hệ thống?")) {
                 danhSachHoGiaDinh = [];
                 localStorage.removeItem("danhSachHoGiaDinhCacheGIS");
@@ -838,7 +841,7 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-gray-400">Không tìm thấy hộ gia đình phù hợp.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-gray-400">Không tìm thấy hộ gia đình phù hợp trong phạm vi quản lý.</td></tr>`;
                 return;
             }
             data.forEach((ho, index) => {
