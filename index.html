@@ -29,7 +29,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight">Hệ Thống Quản Lý Địa Bàn</h1>
-                    <p class="text-xs text-indigo-200">Quản lý Hộ dân, Phường xã & Định vị bản đồ</p>
+                    <p class="text-xs text-indigo-200">Quản lý Hộ dân, 103 Xã/Phường & Định vị bản đồ</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -49,17 +49,20 @@
 
         <!-- Quản Lý Danh Mục Phường/Xã (Admin) -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-100 space-y-3">
-            <h2 class="text-sm font-bold text-indigo-900 flex items-center gap-2">
-                <i class="fa-solid fa-gear text-indigo-600"></i> Quản Lý Danh Mục Phường/Xã (Admin)
-            </h2>
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-indigo-900 flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-indigo-600"></i> Quản Lý Danh Mục 103 Xã/Phường (Admin)
+                </h2>
+                <button onclick="resetDefaultWards()" class="text-xs text-indigo-600 hover:underline"><i class="fa-solid fa-rotate-right"></i> Khôi phục mặc định 103 xã/phường</button>
+            </div>
             <div class="flex gap-2">
-                <input type="text" id="newWardInput" placeholder="Nhập tên phường/xã mới..." class="flex-grow border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="text" id="newWardInput" placeholder="Nhập tên xã/phường mới..." class="flex-grow border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
                 <button onclick="addWard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> Thêm Phường
+                    <i class="fa-solid fa-plus"></i> Thêm Xã/Phường
                 </button>
             </div>
-            <div id="wardListContainer" class="flex flex-wrap gap-2 pt-1">
-                <!-- Danh sách phường -->
+            <div id="wardListContainer" class="flex flex-wrap gap-2 pt-1 max-h-36 overflow-y-auto border border-slate-100 p-2 rounded-lg bg-slate-50">
+                <!-- Danh sách xã phường -->
             </div>
         </div>
 
@@ -100,7 +103,7 @@
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 text-xs">
                     <i class="fa-solid fa-search"></i>
                 </span>
-                <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Tìm kiếm Số HSCT, Tên đường, Chủ hộ, Ghi chú..." class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                <input type="text" id="searchKeyword" oninput="filterData()" placeholder="Tìm kiếm Số HSCT, Tên đường, Chủ hộ, Ngày sinh, Ghi chú..." class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
             </div>
         </div>
 
@@ -116,9 +119,9 @@
                     <input type="text" id="inputHsct" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: HSCT-9921">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Quận/Huyện - Phường/Xã:</label>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Xã/Phường sau sáp nhập:</label>
                     <select id="inputPhuong" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="">-- Chọn Phường/Xã --</option>
+                        <option value="">-- Chọn Xã/Phường --</option>
                     </select>
                 </div>
                 <div>
@@ -140,10 +143,14 @@
                 <input type="hidden" id="inputLng" value="105.7469">
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Tên chủ hộ:</label>
                     <input type="text" id="inputChuHo" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: Nguyễn Văn A">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Ngày sinh chủ hộ:</label>
+                    <input type="text" id="inputNgaySinh" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" placeholder="VD: 15/08/1985">
                 </div>
                 <div>
                     <label class="block text-[11px] font-semibold text-slate-600 mb-1">Chụp ảnh nhà:</label>
@@ -175,8 +182,9 @@
                             <th class="py-2.5 px-3">STT</th>
                             <th class="py-2.5 px-3">Số HSCT</th>
                             <th class="py-2.5 px-3">Chủ Hộ</th>
+                            <th class="py-2.5 px-3">Ngày Sinh</th>
                             <th class="py-2.5 px-3">Địa Chỉ / Tuyến Đường</th>
-                            <th class="py-2.5 px-3">Phường Xã</th>
+                            <th class="py-2.5 px-3">Xã/Phường</th>
                             <th class="py-2.5 px-3 text-center">Ảnh Nhà</th>
                             <th class="py-2.5 px-3 text-center">Thao Tác</th>
                         </tr>
@@ -202,17 +210,15 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let globalData = [];
-        let wardList = [
-            "phường An Bình, thành phố Cần Thơ",
-            "phường Cái Khế, thành phố Cần Thơ",
-            "phường Ninh Kiều, thành phố Cần Thơ",
-            "phường Tân An, thành phố Cần Thơ"
+        let defaultWards = [
+            "Phường Ninh Kiều", "Phường Cái Khế", "Phường Tân An", "Phường An Bình", "Phường Thới An Đông", "Phường Bình Thủy", "Phường Long Tuyền", "Phường Cái Răng", "Phường Hưng Phú", "Phường Ô Môn", "Phường Phước Thới", "Phường Thới Long", "Phường Trung Nhứt", "Phường Thuận Hưng", "Phường Thốt Nốt", "Phường Vị Thanh", "Phường Vị Tân", "Phường Long Bình", "Phường Long Mỹ", "Phường Long Phú 1", "Phường Đại Thành", "Phường Ngã Bảy", "Phường Phú Lợi", "Phường Sóc Trăng", "Phường Mỹ Xuyên", "Phường Vĩnh Phước", "Phường Vĩnh Châu", "Phường Khánh Hòa", "Phường Ngã Năm", "Phường Mỹ Quới", "Xã Phong Điền", "Xã Nhơn Ái", "Xã Thới Lai", "Xã Đông Thuận", "Xã Trường Xuân", "Xã Trường Thành", "Xã Cờ Đỏ", "Xã Đông Hiệp", "Xã Trung Hưng", "Xã Vĩnh Thạnh", "Xã Vĩnh Trinh", "Xã Thạnh An", "Xã Thạnh Quới", "Xã Hỏa Lựu", "Xã Vị Thủy", "Xã Vĩnh Thuận Đông", "Xã Vị Thanh 1", "Xã Vĩnh Tường", "Xã Vĩnh Viễn", "Xã Xà Phiên", "Xã Lương Tâm", "Xã Thạnh Xuân", "Xã Tân Hòa", "Xã Trường Long Tây", "Xã Châu Thành", "Xã Đông Phước", "Xã Phú Hữu", "Xã Tân Bình", "Xã Hòa An", "Xã Phương Bình", "Xã Tân Phước Hưng", "Xã Hiệp Hưng", "Xã Phụng Hiệp", "Xã Thạnh Hòa", "Xã Hòa Tú", "Xã Gia Hòa", "Xã Nhu Gia", "Xã Ngọc Tố", "Xã Trường Khánh", "Xã Đại Ngãi", "Xã Tân Thạnh", "Xã Long Phú", "Xã Nhơn Mỹ", "Xã An Lạc Thôn", "Xã Kế Sách", "Xã Thới An Hội", "Xã Đại Hải", "Xã Phú Tâm", "Xã An Ninh", "Xã Thuận Hòa", "Xã Hồ Đắc Kiện", "Xã Mỹ Tú", "Xã Long Hưng", "Xã Mỹ Hương", "Xã Tân Long", "Xã Phú Lộc", "Xã Vĩnh Lợi", "Xã Lâm Tân", "Xã Thạnh Thới An", "Xã Tài Văn", "Xã Liêu Tú", "Xã Lịch Hội Thượng", "Xã Trần Đề", "Xã An Thạnh", "Xã Cù Lao Dung", "Phường Tân Lộc", "Xã Trường Long", "Xã Thạnh Phú", "Xã Thới Hưng", "Xã Phong Nẫm", "Xã Mỹ Phước", "Xã Lai Hòa", "Xã Vĩnh Hải"
         ];
+        let wardList = [...defaultWards];
         
         let map, marker;
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedWards = localStorage.getItem('quanly_diaban_wards');
+            const savedWards = localStorage.getItem('quanly_diaban_wards_103');
             if (savedWards) {
                 try { wardList = JSON.parse(savedWards); } catch(e){}
             }
@@ -271,25 +277,25 @@
         function renderWards() {
             const container = document.getElementById('wardListContainer');
             container.innerHTML = wardList.map((w, idx) => `
-                <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-2.5 py-1 rounded-lg text-xs flex items-center gap-2">
-                    <span><i class="fa-solid fa-map-pin text-indigo-600 mr-1"></i>${w}</span>
+                <div class="bg-indigo-50 border border-indigo-200 text-indigo-800 px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1.5">
+                    <span>${w}</span>
                     <button onclick="deleteWard(${idx})" class="text-rose-600 hover:text-rose-800 font-bold ml-1"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `).join('');
-            localStorage.setItem('quanly_diaban_wards', JSON.stringify(wardList));
+            localStorage.setItem('quanly_diaban_wards_103', JSON.stringify(wardList));
             populateWardDropdown();
         }
 
         function addWard() {
             const val = document.getElementById('newWardInput').value.trim();
-            if (!val) { alert('Vui lòng nhập tên phường/xã!'); return; }
+            if (!val) { alert('Vui lòng nhập tên xã/phường!'); return; }
             if (!wardList.includes(val)) {
                 wardList.push(val);
                 document.getElementById('newWardInput').value = '';
                 renderWards();
                 filterData();
             } else {
-                alert('Phường này đã có trong danh mục!');
+                alert('Xã/Phường này đã có trong danh mục!');
             }
         }
 
@@ -299,9 +305,17 @@
             filterData();
         }
 
+        function resetDefaultWards() {
+            if (confirm('Bạn có muốn khôi phục lại danh sách chuẩn 103 xã/phường không?')) {
+                wardList = [...defaultWards];
+                renderWards();
+                filterData();
+            }
+        }
+
         function populateWardDropdown() {
             const select = document.getElementById('inputPhuong');
-            select.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>' + wardList.map(w => `<option value="${w}">${w}</option>`).join('');
+            select.innerHTML = '<option value="">-- Chọn Xã/Phường --</option>' + wardList.map(w => `<option value="${w}">${w}</option>`).join('');
         }
 
         function saveToLocalStorage() {
@@ -312,7 +326,7 @@
             const keyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
             const filtered = globalData.filter(item => {
                 if (!keyword) return true;
-                const matchText = `${item['Chủ hộ'] || ''} ${item['Số HSCT'] || ''} ${item['Tên đường'] || ''} ${item['Phường xã'] || ''} ${item['Ghi chú'] || ''}`.toLowerCase();
+                const matchText = `${item['Chủ hộ'] || ''} ${item['Ngày sinh'] || ''} ${item['Số HSCT'] || ''} ${item['Tên đường'] || ''} ${item['Xã/Phường'] || item['Phường xã'] || ''} ${item['Ghi chú'] || ''}`.toLowerCase();
                 return matchText.includes(keyword);
             });
             renderTable(filtered);
@@ -324,12 +338,14 @@
             document.getElementById('tableCount').innerText = data.length;
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400"><i class="fa-solid fa-folder-open text-2xl mb-1 block"></i> Chưa có dữ liệu căn nhà nào</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400"><i class="fa-solid fa-folder-open text-2xl mb-1 block"></i> Chưa có dữ liệu căn nhà nào</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = data.map((item, index) => {
                 const realIndex = globalData.indexOf(item);
+                const wardName = item['Xã/Phường'] || item['Phường xã'] || '';
+                const ngaySinh = item['Ngày sinh'] || '';
                 let photoHtml = '<span class="text-slate-400">Không có</span>';
                 if (item['Ảnh nhà']) {
                     photoHtml = `<img src="${item['Ảnh nhà']}" alt="Ảnh nhà" class="w-10 h-10 object-cover rounded-lg mx-auto cursor-pointer border border-slate-200 hover:opacity-80 shadow-sm" onclick="openImageModal('${item['Ảnh nhà']}')" title="Bấm để xem ảnh lớn">`;
@@ -340,8 +356,9 @@
                         <td class="py-2.5 px-3 font-medium text-slate-500">${index + 1}</td>
                         <td class="py-2.5 px-3 font-semibold text-indigo-600">${item['Số HSCT'] || ''}</td>
                         <td class="py-2.5 px-3 font-bold text-slate-900">${item['Chủ hộ'] || ''}</td>
+                        <td class="py-2.5 px-3 text-slate-600">${ngaySinh}</td>
                         <td class="py-2.5 px-3 text-slate-700">${item['Tên đường'] || ''}</td>
-                        <td class="py-2.5 px-3 text-slate-600">${item['Phường xã'] || ''}</td>
+                        <td class="py-2.5 px-3 text-slate-600">${wardName}</td>
                         <td class="py-2.5 px-3 text-center">${photoHtml}</td>
                         <td class="py-2.5 px-3 text-center">
                             <button onclick="deleteHousehold(${realIndex})" class="bg-rose-50 text-rose-600 hover:bg-rose-100 p-1.5 rounded-md transition" title="Xóa"><i class="fa-solid fa-trash"></i></button>
@@ -372,6 +389,7 @@
             const phuong = document.getElementById('inputPhuong').value;
             const duong = document.getElementById('inputDuong').value.trim();
             const chuHo = document.getElementById('inputChuHo').value.trim();
+            const ngaySinh = document.getElementById('inputNgaySinh').value.trim();
             const ghiChu = document.getElementById('inputGhiChu').value.trim();
             const lat = document.getElementById('inputLat').value;
             const lng = document.getElementById('inputLng').value;
@@ -382,20 +400,21 @@
             if (photoInput.files && photoInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, e.target.result);
+                    finishSave(hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, e.target.result);
                 };
                 reader.readAsDataURL(photoInput.files[0]);
             } else {
-                finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, '');
+                finishSave(hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, '');
             }
         }
 
-        function finishSave(hsct, phuong, duong, chuHo, ghiChu, lat, lng, photoData) {
+        function finishSave(hsct, phuong, duong, chuHo, ngaySinh, ghiChu, lat, lng, photoData) {
             const newItem = {
                 "Số HSCT": hsct,
-                "Phường xã": phuong,
+                "Xã/Phường": phuong,
                 "Tên đường": duong,
                 "Chủ hộ": chuHo,
+                "Ngày sinh": ngaySinh,
                 "Ghi chú": ghiChu,
                 "Latitude": lat,
                 "Longitude": lng,
@@ -409,6 +428,7 @@
             document.getElementById('inputHsct').value = '';
             document.getElementById('inputDuong').value = '';
             document.getElementById('inputChuHo').value = '';
+            document.getElementById('inputNgaySinh').value = '';
             document.getElementById('inputGhiChu').value = '';
             document.getElementById('inputPhoto').value = '';
             alert('Đã thêm căn nhà mới thành công!');
