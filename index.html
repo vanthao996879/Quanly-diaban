@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Dân Cư & Bản Đồ GPS</title>
+    <title>Hệ Thống Quản Lý Dân Cư & Báo Cáo Thống Kê</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -20,19 +20,82 @@
             }
         }
     </script>
-    <!-- Leaflet CSS & JS -->
+    <!-- SheetJS (XLSX) để đọc file Excel thông minh -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Leaflet CSS & JS cho bản đồ GPS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
-<body class="bg-darker text-white min-h-screen">
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">Hệ Thống Quản Lý Dân Cư & Bản Đồ GPS</h1>
-        <div id="map" class="h-96 w-full rounded-lg shadow-lg"></div>
+<body class="bg-darker text-white min-h-screen p-4">
+    <div class="container mx-auto space-y-6">
+        
+        <!-- Tiêu đề hệ thống -->
+        <header class="flex flex-col md:flex-row justify-between items-center bg-card p-4 rounded-xl shadow-lg border border-gray-800">
+            <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Thống Kê Sáp Nhập</h1>
+            <div class="mt-3 md:mt-0 flex gap-3">
+                <!-- Nút tải file Excel mẫu hoặc nhập dữ liệu -->
+                <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                    <span>📂 Nhập dữ liệu Excel</span>
+                    <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
+                </label>
+                <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                    <span>📊 Xuất Báo Cáo</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Khu vực Thống kê nhanh (Dashboard Summary) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
+                <p class="text-gray-400 text-sm">Tổng số ĐVHC (Sau sáp nhập)</p>
+                <h3 id="statTongSo" class="text-3xl font-bold text-blue-400 mt-1">103</h3>
+            </div>
+            <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
+                <p class="text-gray-400 text-sm">Số Phường</p>
+                <h3 id="statPhuong" class="text-3xl font-bold text-emerald-400 mt-1">--</h3>
+            </div>
+            <div class="bg-card p-4 rounded-xl border border-gray-800 shadow">
+                <p class="text-gray-400 text-sm">Số Xã / Thị trấn</p>
+                <h3 id="statXa" class="text-3xl font-bold text-amber-400 mt-1">--</h3>
+            </div>
+        </div>
+
+        <!-- Bản đồ và Bảng dữ liệu -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Bản đồ GPS -->
+            <div class="lg:col-span-1 bg-card p-4 rounded-xl border border-gray-800 shadow flex flex-col">
+                <h2 class="text-lg font-semibold mb-3">Bản Đồ Định Vị GPS</h2>
+                <div id="map" class="h-80 w-full rounded-lg shadow-inner flex-grow"></div>
+            </div>
+
+            <!-- Bảng hiển thị danh sách -->
+            <div class="lg:col-span-2 bg-card p-4 rounded-xl border border-gray-800 shadow flex flex-col">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-lg font-semibold">Danh Sách Địa Bàn Quản Lý</h2>
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm nhanh..." onkeyup="timKiemDuLieu()" class="bg-darker border border-gray-700 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="overflow-x-auto flex-grow max-h-80">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-800 text-gray-300 sticky top-0">
+                                <th class="p-2 border-b border-gray-700">STT</th>
+                                <th class="p-2 border-b border-gray-700">Trước Sáp Nhập</th>
+                                <th class="p-2 border-b border-gray-700">Sau Sáp Nhập</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-gray-800">
+                            <!-- Dữ liệu sẽ được render tự động từ JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Dữ liệu 103 xã phường sau sáp nhập -->
+    <!-- Script Xử lý Dữ liệu, Excel và Bản đồ -->
     <script>
-        const danhSach103XaPhuong = [
+        // Dữ liệu mặc định 103 xã phường
+        let danhSach103XaPhuong = [
             { stt: 1, truocSapNhap: "Phường Tân An, Thới Bình, Xuân Khánh", sauSapNhap: "Phường Ninh Kiều" },
             { stt: 2, truocSapNhap: "Phường An Hòa, phường Cái Khế và một phần phường Bùi Hữu Nghĩa", sauSapNhap: "Phường Cái Khế" },
             { stt: 3, truocSapNhap: "Phường An Khánh, phường Hưng Lợi", sauSapNhap: "Phường Tân An" },
@@ -138,8 +201,112 @@
             { stt: 103, truocSapNhap: "Xã Vĩnh Hải", sauSapNhap: "Xã Vĩnh Hải" }
         ];
 
-        // Ví dụ kiểm tra dữ liệu đã vào thành công hay chưa
-        console.log("Đã tải thành công:", danhSach103XaPhuong.length, "đơn vị hành chính.");
+        // Khởi tạo bản đồ Leaflet (mặc định tại Cần Thơ)
+        const map = L.map('map').setView([10.0452, 105.7469], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Hàm render dữ liệu ra bảng và cập nhật thống kê
+        function capNhatGiaoDien(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            let demPhuong = 0;
+            let demXa = 0;
+
+            data.forEach((item, index) => {
+                // Thống kê tự động dựa trên từ khóa "Phường" hay "Xã"
+                if (item.sauSapNhap && item.sauSapNhap.toLowerCase().includes('phường')) {
+                    demPhuong++;
+                } else {
+                    demXa++;
+                }
+
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-800 transition";
+                row.innerHTML = `
+                    <td class="p-2 border-b border-gray-800">${index + 1}</td>
+                    <td class="p-2 border-b border-gray-800 text-gray-300">${item.truocSapNhap || ''}</td>
+                    <td class="p-2 border-b border-gray-800 font-medium text-blue-300">${item.sauSapNhap || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Cập nhật số liệu thống kê lên Dashboard
+            document.getElementById('statTongSo').innerText = data.length;
+            document.getElementById('statPhuong').innerText = demPhuong;
+            document.getElementById('statXa').innerText = demXa;
+        }
+
+        // Tính năng Đọc file Excel thông minh (SheetJS)
+        function nhapFileExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Lấy tên sheet đầu tiên
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // Chuyển đổi dữ liệu Excel sang dạng JSON
+                const excelJson = XLSX.utils.sheet_to_json(worksheet);
+
+                if (excelJson.length > 0) {
+                    // Ánh xạ dữ liệu linh hoạt (hỗ trợ nhiều định dạng tên cột khác nhau)
+                    danhSach103XaPhuong = excelJson.map((row, idx) => ({
+                        stt: row.STT || row.stt || (idx + 1),
+                        truocSapNhap: row.truocSapNhap || row['Trước sáp nhập'] || row['Truoc sap nhap'] || '',
+                        sauSapNhap: row.sauSapNhap || row['Sau sáp nhập'] || row['Sau sap nhap'] || ''
+                    }));
+
+                    capNhatGiaoDien(danhSach103XaPhuong);
+                    alert(`Nhập thành công ${danhSach103XaPhuong.length} bản ghi từ file Excel!`);
+                } else {
+                    alert("File Excel trống hoặc không đúng định dạng.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Tính năng Tìm kiếm nhanh trên bảng
+        function timKiemDuLieu() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = danhSach103XaPhuong.filter(item => 
+                (item.truocSapNhap && item.truocSapNhap.toLowerCase().includes(keyword)) ||
+                (item.sauSapNhap && item.sauSapNhap.toLowerCase().includes(keyword))
+            );
+            
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            filtered.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-800 transition";
+                row.innerHTML = `
+                    <td class="p-2 border-b border-gray-800">${index + 1}</td>
+                    <td class="p-2 border-b border-gray-800 text-gray-300">${item.truocSapNhap}</td>
+                    <td class="p-2 border-b border-gray-800 font-medium text-blue-300">${item.sauSapNhap}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Tính năng Xuất Báo Cáo Thống Kê ra file Excel mới
+        function xuatBaoCaoThongKê() {
+            const worksheet = XLSX.utils.json_to_sheet(danhSach103XaPhuong);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoSapNhap");
+            XLSX.writeFile(workbook, "Bao_Cao_Thong_Ke_Sap_Nhap.xlsx");
+        }
+
+        // Chạy lần đầu khi load trang
+        window.onload = function() {
+            capNhatGiaoDien(danhSach103XaPhuong);
+        };
     </script>
 </body>
 </html>
