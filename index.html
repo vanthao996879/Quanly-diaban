@@ -9,6 +9,7 @@
             --primary-color: #003366;
             --secondary-color: #004080;
             --accent-color: #d9534f;
+            --warning-color: #f0ad4e;
             --light-bg: #f4f6f9;
             --border-color: #ccc;
         }
@@ -41,29 +42,38 @@
         }
         .dashboard-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
         }
         .card {
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-left: 5px solid var(--primary-color);
         }
         .card.warning {
+            border-left-color: var(--warning-color);
+        }
+        .card.danger {
             border-left-color: var(--accent-color);
         }
         .card h3 {
             margin-top: 0;
-            font-size: 16px;
+            font-size: 14px;
             color: #555;
         }
         .card .number {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             color: var(--primary-color);
+        }
+        .card.warning .number {
+            color: #d88500;
+        }
+        .card.danger .number {
+            color: var(--accent-color);
         }
         .action-bar {
             background: white;
@@ -129,6 +139,7 @@
         .command-section h3 {
             margin-top: 0;
             color: var(--primary-color);
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -140,25 +151,29 @@
     </header>
 
     <div class="container">
-        <!-- TIỆN ÍCH THỐNG KÊ TOÀN PHƯỜNG (Dành riêng cho Ban Chỉ huy) -->
+        <!-- BẢNG THỐNG KÊ TỔNG QUAN & BIẾN ĐỘNG TOÀN PHƯỜNG -->
         <div class="command-section" id="commandDashboard">
-            <h3>Bảng Thống Kê Tổng Quan Toàn Phường (Dành cho Ban Chỉ huy)</h3>
+            <h3>Bảng Thống Kê Tổng Quan & Biến Động Dân Cư Toàn Phường</h3>
             <div class="dashboard-cards">
                 <div class="card">
-                    <h3>Tổng số Hộ Khẩu Toàn Phường</h3>
+                    <h3>Tổng số Hộ Khẩu</h3>
                     <div class="number" id="totalHoKhao">1,245</div>
                 </div>
                 <div class="card">
-                    <h3>Tổng số Nhân Khẩu Thường Trú</h3>
+                    <h3>Nhân Khẩu Thường Trú</h3>
                     <div class="number" id="totalNhanKhao">4,820</div>
                 </div>
                 <div class="card warning">
-                    <h3>Biến động tạm vắng / tạm trú</h3>
-                    <div class="number" id="totalTamTruVang">142</div>
+                    <h3>Hộ Bán Nhà / Giải Tỏa</h3>
+                    <div class="number" id="totalBanNhaGiaiToa">18</div>
                 </div>
-                <div class="card">
-                    <h3>Số Khu Vực / Cảnh sát khu vực</h3>
-                    <div class="number">8 Khu vực</div>
+                <div class="card danger">
+                    <h3>Nhân Khẩu Chết</h3>
+                    <div class="number" id="totalNhanKhaoChet">12</div>
+                </div>
+                <div class="card warning">
+                    <h3>Bỏ Địa Phương / Đi Nước Ngoài</h3>
+                    <div class="number" id="totalBienDongKhac">35</div>
                 </div>
             </div>
         </div>
@@ -189,6 +204,7 @@
                     <th>Ngày sinh</th>
                     <th>Địa chỉ thường trú</th>
                     <th>Khu vực</th>
+                    <th>Trạng thái / Biến động</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -200,6 +216,7 @@
                     <td>15/05/1985</td>
                     <td>12/3 Đường Số 1</td>
                     <td>Khu vực 1</td>
+                    <td><span style="color: green; font-weight: bold;">Thường trú ổn định</span></td>
                     <td>
                         <button onclick="suaHoSo(1)">Sửa</button>
                         <button class="btn-danger" onclick="xoaHoSo(1)">Xóa</button>
@@ -212,6 +229,7 @@
                     <td>20/10/1990</td>
                     <td>45/8 Đường Số 2</td>
                     <td>Khu vực 2</td>
+                    <td><span style="color: #d88500; font-weight: bold;">Đã đi nước ngoài</span></td>
                     <td>
                         <button onclick="suaHoSo(2)">Sửa</button>
                         <button class="btn-danger" onclick="xoaHoSo(2)">Xóa</button>
@@ -222,17 +240,14 @@
     </div>
 
     <script>
-        // Khởi tạo giao diện và phân quyền tổng quan
         function kichHoatGiaoDienChinh() {
-            // Mặc định Ban Chỉ huy có quyền scope: 'all'[cite: 4]
-            console.log("Đã tải xong giao diện quản lý toàn phường.");
+            console.log("Đã tải xong giao diện quản lý và thống kê biến động.");
         }
 
         function thucHienLocVaTimKiem() {
             const keyword = document.getElementById('searchInput').value;
             const khuVuc = document.getElementById('khuVucFilter').value;
-            alert(`Đang lọc dữ liệu cho khu vực: ${khuVuc} với từ khóa: "${keyword}"`);
-            // Logic kết nối backend hoặc xử lý mảng dữ liệu tại đây
+            alert(`Đang lọc dữ liệu khu vực: ${khuVuc} với từ khóa: "${keyword}"`);
         }
 
         function moModalThem() {
@@ -249,7 +264,6 @@
             }
         }
 
-        // Chạy hàm khởi tạo khi trang load xong
         window.onload = function() {
             kichHoatGiaoDienChinh();
         };
