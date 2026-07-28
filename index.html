@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - Đa Khu Vực</title>
+    <title>Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS - Phân Quyền Admin/User</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS cho Bản đồ -->
@@ -24,27 +24,33 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 
-    <!-- ================= MÀN HÌNH KHÓA XÁC THỰC GOOGLE AUTHENTICATOR ================= -->
+    <!-- ================= MÀN HÌNH ĐĂNG NHẬP & XÁC THỰC GOOGLE / 2FA ================= -->
     <div id="security-lock-screen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center">
-            <div class="inline-flex p-3 bg-sky-500/10 text-sky-400 rounded-full mb-3">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md text-center space-y-4">
+            <div class="inline-flex p-3 bg-sky-500/10 text-sky-400 rounded-full">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
-            <h2 class="text-2xl font-bold text-white mb-1">Bảo Mật Hệ Thống</h2>
-            <p class="text-xs text-slate-400 mb-4">Quét mã QR bằng ứng dụng Google Authenticator</p>
+            <h2 class="text-2xl font-bold text-white">Đăng Nhập Hệ Thống</h2>
+            <p class="text-xs text-slate-400">Nhập Gmail của bạn và mã xác thực 2FA từ ứng dụng Google Authenticator</p>
             
-            <div class="mb-4 bg-slate-800/60 p-4 rounded-xl border border-slate-700 flex flex-col items-center">
-                <div id="qrcode-container" class="bg-white p-3 rounded-lg mb-3 shadow-inner flex items-center justify-center min-h-[220px]"></div>
-                <p class="text-xs text-slate-400">Hoặc nhập mã khóa thủ công:</p>
-                <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold text-sm bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 block mt-1 tracking-wider"></code>
+            <div class="space-y-3 text-left">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Tài khoản Gmail của bạn:</label>
+                    <input type="email" id="login-email" placeholder="VD: vanthao3011@gmail.com" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm focus:outline-none focus:border-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Mã xác thực Google Authenticator (6 số):</label>
+                    <input type="text" id="totp-input" placeholder="000000" maxlength="6" class="w-full py-2.5 text-center text-2xl font-mono tracking-[0.5em] rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
+                </div>
             </div>
 
-            <div class="mb-4">
-                <input type="text" id="totp-input" placeholder="000000" maxlength="6" class="w-full py-3 text-center text-3xl font-mono tracking-[1em] rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-sky-500 transition" autofocus>
+            <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700 text-left">
+                <p class="text-[11px] text-slate-400 mb-1">Mã Secret Key dùng cho 2FA (Quét bằng app Authenticator):</p>
+                <code id="manual-secret" class="text-sky-400 font-mono select-all font-bold text-xs bg-slate-950 px-2 py-1 rounded border border-slate-800 block tracking-wider"></code>
             </div>
 
-            <button id="verify-btn" class="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl shadow-lg shadow-sky-500/20 transition">Xác Thực Mở Khóa</button>
-            <p id="error-msg" class="text-rose-400 text-sm mt-3 hidden"></p>
+            <button id="verify-btn" class="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl shadow-lg shadow-sky-500/20 transition">Đăng Nhập Hệ Thống</button>
+            <p id="error-msg" class="text-rose-400 text-sm hidden"></p>
         </div>
     </div>
 
@@ -54,13 +60,13 @@
             <div>
                 <h1 class="text-2xl font-bold text-white flex items-center gap-2">
                     <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                    Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS (Đa Khu Vực)
+                    Hệ Thống Quản Lý Hộ Dân Cư & Bản Đồ GPS
                 </h1>
-                <p class="text-sm text-slate-400 mt-1">Bảo mật 2FA - Đọc linh hoạt cấu trúc file Excel</p>
+                <p class="text-sm text-slate-400 mt-1">Đang đăng nhập với: <span id="current-user-badge" class="text-sky-400 font-semibold"></span> | Vai trò: <span id="current-role-badge" class="px-2 py-0.5 rounded text-xs font-bold"></span></p>
             </div>
-            <button onclick="location.reload()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-sm font-medium rounded-xl transition flex items-center gap-2 text-slate-200">
+            <button onclick="logoutApp()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-sm font-medium rounded-xl transition flex items-center gap-2 text-slate-200">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                Khóa Hệ Thống (Logout)
+                Đăng Xuất (Logout)
             </button>
         </header>
 
@@ -76,11 +82,11 @@
             </div>
         </div>
 
-        <!-- Form Thêm Hộ Dân & Định Vị Vùng KDC -->
-        <div class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl mb-8 space-y-4">
+        <!-- Form Thêm Hộ Dân & Định Vị Vùng KDC (CHỈ ADMIN MỚI THẤY VÀ THAO TÁC ĐƯỢC) -->
+        <div id="admin-action-section" class="bg-slate-800/40 border border-slate-800 p-6 rounded-2xl mb-8 space-y-4">
             <h3 class="text-lg font-semibold text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                Thêm Hộ Dân & Định Vị Vùng KDC
+                Thêm Hộ Dân & Gán Ảnh, Định Vị GPS (Quyền Admin)
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -108,14 +114,23 @@
                 </div>
             </div>
 
+            <!-- PHẦN TÍCH HỢP BẢN ĐỒ VÀ ĐỊNH VỊ GPS -->
             <div>
                 <div class="flex justify-between items-center mb-1">
-                    <label class="text-xs text-slate-400">Vị trí căn nhà trên bản đồ khu vực (Click lên bản đồ để chọn ghim):</label>
+                    <label class="text-xs text-slate-400">Vị trí căn nhà trên bản đồ khu vực (Click lên bản đồ để ghim hoặc dùng GPS):</label>
                     <button onclick="getCurrentGPS()" class="text-xs text-sky-400 hover:underline flex items-center gap-1">📍 Lấy vị trí GPS hiện tại</button>
                 </div>
                 <div id="map"></div>
-                <input type="hidden" id="input-lat" value="10.0452">
-                <input type="hidden" id="input-lng" value="105.7469">
+                <div class="flex gap-4 mt-2">
+                    <div class="flex-1">
+                        <label class="block text-[10px] text-slate-400">Vĩ độ (Latitude):</label>
+                        <input type="text" id="input-lat" value="10.0452" readonly class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 font-mono">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[10px] text-slate-400">Kinh độ (Longitude):</label>
+                        <input type="text" id="input-lng" value="105.7469" readonly class="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 font-mono">
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -124,7 +139,7 @@
                     <input type="text" id="input-chuoho" placeholder="VD: Nguyễn Văn A" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-sky-500">
                 </div>
                 <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ảnh nhà (Tùy chọn)</label>
+                    <label class="block text-xs text-slate-400 mb-1">Gán Ảnh Nhà (Chụp / Tải lên)</label>
                     <input type="file" id="input-img" accept="image/*" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-500/10 file:text-sky-400 hover:file:bg-sky-500/20">
                 </div>
                 <div>
@@ -153,8 +168,8 @@
                     <option value="Khu Vực 9">Khu Vực 9</option>
                 </select>
             </div>
-            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <label class="px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30 cursor-pointer transition flex items-center gap-2">
+            <div id="admin-buttons-wrapper" class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <label id="btn-import-excel" class="px-4 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-semibold rounded-xl border border-emerald-500/30 cursor-pointer transition flex items-center gap-2">
                     📂 Nhập Excel Thông Minh
                     <input type="file" id="import-excel-file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(event)">
                 </label>
@@ -188,7 +203,7 @@
                         </tr>
                     </thead>
                     <tbody id="household-table-body" class="divide-y divide-slate-800">
-                        <tr><td colspan="8" class="p-6 text-center text-slate-500">Chưa có dữ liệu hộ dân nào. Vui lòng nhập file Excel.</td></tr>
+                        <tr><td colspan="8" class="p-6 text-center text-slate-500">Chưa có dữ liệu hộ dân nào. Vui lòng nhập file Excel hoặc thêm mới.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -202,7 +217,7 @@
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
             <h3 class="text-xl font-bold text-white">Xác Nhận Địa Bàn Nhập File</h3>
-            <p class="text-xs text-slate-400">File bạn vừa chọn không ghi rõ tên khu vực trong tên file. Vui lòng chọn chính xác Khu Vực để tránh nhầm lẫn dữ liệu:</p>
+            <p class="text-xs text-slate-400">File bạn vừa chọn không ghi rõ tên khu vực trong tên file. Vui lòng chọn chính xác Khu Vực tương ứng:</p>
             
             <select id="prompt-ward-select" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold focus:outline-none focus:border-sky-500">
                 <option value="Khu Vực 1">Khu Vực 1</option>
@@ -216,9 +231,7 @@
                 <option value="Khu Vực 9">Khu Vực 9</option>
             </select>
 
-            <div class="flex gap-2 pt-2">
-                <button onclick="confirmImportWithSelectedWard()" class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl transition">Xác Nhận Tiến Hành Nhập</button>
-            </div>
+            <button onclick="confirmImportWithSelectedWard()" class="w-full py-3 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-xl transition">Xác Nhận Tiến Hành Nhập</button>
         </div>
     </div>
 
@@ -230,7 +243,8 @@
                 <button onclick="closeMembersModal()" class="text-slate-400 hover:text-white font-bold text-xl">&times;</button>
             </div>
 
-            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
+            <!-- Form thêm thành viên (Chỉ hiển thị với Admin) -->
+            <div id="admin-add-member-box" class="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mb-4 space-y-3">
                 <h4 class="text-sm font-semibold text-sky-400">+ Thêm thành viên mới vào hộ</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
                     <input type="text" id="member-name" placeholder="Họ và tên..." class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white">
@@ -255,7 +269,7 @@
                             <th class="p-3">Giới tính</th>
                             <th class="p-3">Ngày sinh</th>
                             <th class="p-3">Số điện thoại</th>
-                            <th class="p-3 text-center">Thao tác</th>
+                            <th class="p-3 text-center admin-col-header">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="members-table-body" class="divide-y divide-slate-800">
@@ -264,7 +278,7 @@
             </div>
 
             <div class="mt-4 pt-3 border-t border-slate-800 text-right">
-                <button onclick="closeMembersModal()" class="px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-xl transition">Hoàn tất</button>
+                <button onclick="closeMembersModal()" class="px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-xl transition">Đóng</button>
             </div>
         </div>
     </div>
@@ -317,12 +331,18 @@
         </div>
     </div>
 
-    <!-- ================= LOGIC JAVASCRIPT ================= -->
+    <!-- ================= LOGIC JAVASCRIPT PHÂN QUYỀN & LƯU THÔNG TIN ================= -->
     <script>
-        const STORAGE_SECRET_KEY = "app_totp_secret_key_v106";
-        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v106";
+        const STORAGE_SECRET_KEY = "app_totp_secret_key_v108";
+        const STORAGE_DATA_KEY = "app_encrypted_database_gps_v108";
+        const STORAGE_SAVED_SESSION = "app_saved_login_email_v108";
+
+        // Danh sách định nghĩa Admin tối cao chính xác theo yêu cầu của bạn
+        const ADMIN_EMAILS = ["vanthao996879@gmail.com", "vanthao3011@gmail.com"];
 
         let currentSecretKey = "";
+        let loggedInEmail = "";
+        let isAdminUser = false;
         let appData = { households: [] };
         let activeHouseholdId = null;
         let map, marker;
@@ -408,7 +428,7 @@
                     document.getElementById('input-lng').value = lng;
                     initMap(lat, lng);
                 }, function(error) {
-                    alert("Không thể lấy vị trí GPS hiện tại.");
+                    alert("Không thể lấy vị trí GPS hiện tại. Vui lòng cấp quyền định vị.");
                 });
             } else {
                 alert("Trình duyệt không hỗ trợ Geolocation.");
@@ -417,8 +437,6 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             let secret = localStorage.getItem(STORAGE_SECRET_KEY);
-            const lockScreen = document.getElementById("security-lock-screen");
-
             if (!secret) {
                 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
                 secret = "";
@@ -427,33 +445,43 @@
                 }
                 localStorage.setItem(STORAGE_SECRET_KEY, secret);
             }
-
             currentSecretKey = secret;
-
-            const otpauth = `otpauth://totp/QuanLyHoDan:HeThong?secret=${secret}&issuer=QuanLyDiaBan`;
-            const qrContainer = document.getElementById("qrcode-container");
-            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(otpauth)}" alt="QR Code 2FA" width="220" height="220" style="width: 220px !important; height: 220px !important; display: block;" class="rounded-md">`;
-            
             document.getElementById("manual-secret").innerText = secret;
 
             const verifyBtn = document.getElementById("verify-btn");
+            const emailInput = document.getElementById("login-email");
             const inputField = document.getElementById("totp-input");
             const errorMsg = document.getElementById("error-msg");
 
+            // KIỂM TRA PHIÊN ĐĂNG NHẬP ĐÃ LƯU TRƯỚC ĐÓ
+            const savedEmail = localStorage.getItem(STORAGE_SAVED_SESSION);
+            if (savedEmail) {
+                emailInput.value = savedEmail;
+                // Tự động đăng nhập luôn nếu đã có lịch sử lưu email hợp lệ
+                loginSuccessFlow(savedEmail);
+                return;
+            }
+
             function handleVerify() {
+                const email = emailInput.value.trim().toLowerCase();
                 const token = inputField.value.trim();
+
+                if (!email || !email.includes("@")) {
+                    errorMsg.innerText = "Vui lòng nhập địa chỉ Gmail hợp lệ!";
+                    errorMsg.classList.remove("hidden");
+                    return;
+                }
                 if (token.length !== 6) {
-                    errorMsg.innerText = "Vui lòng nhập đúng 6 chữ số!";
+                    errorMsg.innerText = "Vui lòng nhập đúng 6 chữ số mã xác thực!";
                     errorMsg.classList.remove("hidden");
                     return;
                 }
 
                 const isValid = verifyTOTP(token, currentSecretKey);
                 if (isValid) {
-                    lockScreen.classList.add("hidden");
-                    document.getElementById("main-app").classList.remove("hidden");
-                    loadAppData();
-                    setTimeout(() => { initMap(); }, 300);
+                    // Lưu lại phiên đăng nhập để lần sau vào không cần hỏi lại
+                    localStorage.setItem(STORAGE_SAVED_SESSION, email);
+                    loginSuccessFlow(email);
                 } else {
                     errorMsg.innerText = "Mã xác thực không chính xác hoặc đã hết hạn!";
                     errorMsg.classList.remove("hidden");
@@ -466,7 +494,36 @@
             inputField.addEventListener("keypress", function(e) { if (e.key === "Enter") handleVerify(); });
         });
 
+        function loginSuccessFlow(email) {
+            loggedInEmail = email;
+            isAdminUser = ADMIN_EMAILS.includes(email);
+
+            document.getElementById("security-lock-screen").classList.add("hidden");
+            document.getElementById("main-app").classList.remove("hidden");
+
+            document.getElementById("current-user-badge").innerText = loggedInEmail;
+            const roleBadge = document.getElementById("current-role-badge");
+            if (isAdminUser) {
+                roleBadge.innerText = "ADMIN QUẢN TRỊ";
+                roleBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30";
+            } else {
+                roleBadge.innerText = "USER (CHỈ XEM)";
+                roleBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                document.getElementById("admin-action-section").style.display = "none";
+                document.getElementById("btn-import-excel").style.display = "none";
+            }
+
+            loadAppData();
+            setTimeout(() => { if (isAdminUser) initMap(); }, 300);
+        }
+
+        function logoutApp() {
+            localStorage.removeItem(STORAGE_SAVED_SESSION);
+            location.reload();
+        }
+
         function saveAppData() {
+            if (!isAdminUser) return;
             try {
                 const jsonString = JSON.stringify(appData);
                 const encrypted = CryptoJS.AES.encrypt(jsonString, currentSecretKey).toString();
@@ -494,6 +551,11 @@
         }
 
         function addHousehold() {
+            if (!isAdminUser) {
+                alert("Bạn đăng nhập bằng tài khoản User nên không có quyền thực hiện thao tác này!");
+                return;
+            }
+
             const hsct = document.getElementById("input-hsct").value.trim();
             const ward = document.getElementById("input-ward").value;
             let address = document.getElementById("input-address").value.trim();
@@ -558,6 +620,10 @@
         }
 
         function deleteHousehold(id) {
+            if (!isAdminUser) {
+                alert("Tài khoản User không có quyền xóa dữ liệu!");
+                return;
+            }
             if (confirm("Gỡ bỏ toàn bộ hộ gia đình này?")) {
                 appData.households = appData.households.filter(h => h.id !== id);
                 saveAppData();
@@ -594,14 +660,13 @@
             XLSX.writeFile(workbook, "SoQuanLyCuTru_DaKhuVuc.xlsx");
         }
 
-        // --- NHẬP EXCEL THÔNG MINH (DÒ TÌM LINH HOẠT KHÔNG SỢ LỆCH CỘT) ---
         function importExcel(event) {
+            if (!isAdminUser) return;
             const file = event.target.files[0];
             if (!file) return;
 
             const fileName = file.name;
             let detectedWard = null;
-
             let match = fileName.match(/kv\s*(\d+)/i) || fileName.match(/khu\s*vuc\s*(\d+)/i) || fileName.match(/khu\s*(\d+)/i);
             if (match) {
                 detectedWard = `Khu Vực ${match[1]}`;
@@ -612,10 +677,7 @@
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Đọc dạng mảng các dòng (array of arrays) để quét linh hoạt bất kể tên tiêu đề
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                     pendingExcelData = { rows, detectedWard };
@@ -626,7 +688,6 @@
                         processExcelRows(detectedWard);
                     }
                 } catch (err) {
-                    console.error(err);
                     alert("Lỗi đọc file Excel. Vui lòng kiểm tra lại cấu trúc file!");
                 }
                 event.target.value = "";
@@ -645,12 +706,8 @@
 
         function processExcelRows(targetWard) {
             let rows = pendingExcelData.rows;
-            if (!rows || rows.length <= 1) {
-                alert("File Excel không có dữ liệu!");
-                return;
-            }
+            if (!rows || rows.length <= 1) return;
 
-            // Dò tìm dòng tiêu đề (Header row) chứa các từ khóa quan trọng
             let headerIdx = 0;
             let colMap = { hsct: -1, chuoho: -1, name: -1, relation: -1, address: -1, gender: -1, dob: -1, phone: -1 };
 
@@ -659,21 +716,21 @@
                 let foundMatchCount = 0;
 
                 rowStr.forEach((cellVal, colIdx) => {
-                    if (cellVal.includes("hsct") || cellVal.includes("hồ sơ") || cellVal.includes("số định danh") || cellVal.includes("mã")) {
+                    if (cellVal.includes("hsct") || cellVal.includes("hồ sơ") || cellVal.includes("mã")) {
                         colMap.hsct = colIdx; foundMatchCount++;
                     } else if (cellVal.includes("chủ hộ") && !cellVal.includes("quan hệ")) {
                         colMap.chuoho = colIdx; foundMatchCount++;
-                    } else if (cellVal.includes("họ và tên") || cellVal.includes("tên thành viên") || cellVal.includes("họ tên")) {
+                    } else if (cellVal.includes("họ và tên") || cellVal.includes("họ tên")) {
                         colMap.name = colIdx; foundMatchCount++;
                     } else if (cellVal.includes("quan hệ") || cellVal.includes("qh")) {
                         colMap.relation = colIdx; foundMatchCount++;
-                    } else if (cellVal.includes("địa chỉ") || cellVal.includes("thường trú") || cellVal.includes("nơi ở")) {
+                    } else if (cellVal.includes("địa chỉ") || cellVal.includes("thường trú")) {
                         colMap.address = colIdx; foundMatchCount++;
                     } else if (cellVal.includes("giới tính")) {
                         colMap.gender = colIdx; foundMatchCount++;
                     } else if (cellVal.includes("ngày sinh") || cellVal.includes("năm sinh")) {
                         colMap.dob = colIdx; foundMatchCount++;
-                    } else if (cellVal.includes("điện thoại") || cellVal.includes("sđt") || cellVal.includes("phone")) {
+                    } else if (cellVal.includes("điện thoại") || cellVal.includes("sđt")) {
                         colMap.phone = colIdx; foundMatchCount++;
                     }
                 });
@@ -685,8 +742,6 @@
             }
 
             let householdsMap = {};
-
-            // Duyệt qua các dòng dữ liệu bên dưới dòng tiêu đề
             for (let i = headerIdx + 1; i < rows.length; i++) {
                 let r = rows[i];
                 if (!r || r.length === 0) continue;
@@ -700,10 +755,7 @@
                 let dob = (colMap.dob !== -1 && r[colMap.dob]) ? String(r[colMap.dob]).trim() : "---";
                 let phone = (colMap.phone !== -1 && r[colMap.phone]) ? String(r[colMap.phone]).trim() : "---";
 
-                // Nếu không tìm thấy cột chủ hộ nhưng có cột tên, gán tên làm chủ hộ nếu là chủ hộ
-                if (chuoho === "Chưa rõ" && name !== "Chưa rõ") {
-                    chuoho = name;
-                }
+                if (chuoho === "Chưa rõ" && name !== "Chưa rõ") chuoho = name;
 
                 let address = rawAddress;
                 if (!address.toLowerCase().includes(targetWard.toLowerCase())) {
@@ -737,7 +789,7 @@
 
             const importedList = Object.values(householdsMap);
             if (importedList.length === 0) {
-                alert("Không quét được dữ liệu hợp lệ từ file. Vui lòng kiểm tra lại file Excel!");
+                alert("Không quét được dữ liệu hợp lệ từ file!");
                 return;
             }
 
@@ -755,9 +807,7 @@
 
             let wardStats = {};
             appData.households.forEach(h => {
-                if (!wardStats[h.ward]) {
-                    wardStats[h.ward] = { houses: 0, residents: 0 };
-                }
+                if (!wardStats[h.ward]) wardStats[h.ward] = { houses: 0, residents: 0 };
                 wardStats[h.ward].houses += 1;
                 wardStats[h.ward].residents += h.members.length;
             });
@@ -784,6 +834,14 @@
             if (!h) return;
 
             document.getElementById("modal-household-title").innerText = `Danh Sách Nhân Khẩu Hộ: ${h.chuoho} (${h.address})`;
+            
+            const addMemberBox = document.getElementById("admin-add-member-box");
+            if (!isAdminUser) {
+                addMemberBox.style.display = "none";
+            } else {
+                addMemberBox.style.display = "block";
+            }
+
             renderMembersTable();
             document.getElementById("members-modal").classList.remove("hidden");
         }
@@ -807,14 +865,15 @@
                     <td class="p-3 text-slate-300">${m.gender || 'Nam'}</td>
                     <td class="p-3 text-slate-300">${m.dob}</td>
                     <td class="p-3 text-emerald-400 font-mono">${m.phone}</td>
-                    <td class="p-3 text-center">
+                    ${isAdminUser ? `<td class="p-3 text-center">
                         <button onclick="deleteMember(${m.id})" class="px-2.5 py-1 bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 text-xs rounded transition border border-rose-500/20">🗑️ Xóa</button>
-                    </td>
+                    </td>` : ''}
                 </tr>
             `).join('');
         }
 
         function addMemberToCurrentHousehold() {
+            if (!isAdminUser) return;
             const name = document.getElementById("member-name").value.trim();
             const relation = document.getElementById("member-relation").value.trim();
             const gender = document.getElementById("member-gender").value;
@@ -840,6 +899,7 @@
         }
 
         function deleteMember(memberId) {
+            if (!isAdminUser) return;
             const h = appData.households.find(item => item.id === activeHouseholdId);
             if (h) {
                 h.members = h.members.filter(m => m.id !== memberId);
@@ -854,7 +914,6 @@
 
             let filtered = appData.households.filter(h => {
                 const matchWardFilter = (selectedFilterWard === "ALL" || h.ward === selectedFilterWard);
-                
                 const matchHsct = h.hsct.toLowerCase().includes(searchKeyword);
                 const matchChuoho = h.chuoho.toLowerCase().includes(searchKeyword);
                 const matchAddress = h.address.toLowerCase().includes(searchKeyword);
@@ -862,7 +921,6 @@
                 const matchMembers = h.members.some(m => m.name.toLowerCase().includes(searchKeyword) || m.phone.toLowerCase().includes(searchKeyword));
 
                 const matchSearch = (!searchKeyword || matchHsct || matchChuoho || matchAddress || matchWard || matchMembers);
-
                 return matchWardFilter && matchSearch;
             });
 
@@ -890,7 +948,7 @@
                     <td class="p-4 text-slate-400 text-xs">${h.img !== "Không có" ? `<a href="${h.img}" target="_blank" class="text-sky-400 underline">Xem ảnh</a>` : "Không có"}</td>
                     <td class="p-4 text-center space-x-2">
                         <button onclick="openMembersModal(${h.id})" class="px-3 py-1 bg-sky-500/15 hover:bg-sky-500/30 text-sky-400 text-xs font-medium rounded-lg transition border border-sky-500/20" title="Xem chi tiết nhân khẩu">👁️ Xem</button>
-                        <button onclick="deleteHousehold(${h.id})" class="px-3 py-1 bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 text-xs font-medium rounded-lg transition border border-rose-500/20" title="Xóa hộ">🗑️ Xóa</button>
+                        ${isAdminUser ? `<button onclick="deleteHousehold(${h.id})" class="px-3 py-1 bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 text-xs font-medium rounded-lg transition border border-rose-500/20" title="Xóa hộ">🗑️ Xóa</button>` : ''}
                     </td>
                 </tr>
             `).join('');
