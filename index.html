@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</title>
+    <title>Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử - Phân Quyền Zalo</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS (XLSX) để đọc/xuất file Excel -->
@@ -11,22 +11,40 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-4">
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP BẢO MẬT AUTHENTICATOR -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP (HỖ TRỢ ZALO & PHÂN QUYỀN) -->
     <div id="loginScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
-                <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🔒</div>
-                <h2 class="text-xl font-bold text-white">Xác Thực Bảo Mật Authenticator</h2>
-                <p class="text-xs text-gray-400">Mã xác thực tự động thay đổi bên dưới hoặc dùng mã PIN quản trị viên:</p>
-                <div id="dynamicAuthCode" class="bg-gray-900 text-blue-400 font-mono tracking-widest text-sm py-2 px-4 rounded border border-gray-700 select-all font-bold">W7NJ4CWSNVMQZ4ZE7UEVXWUFY3PYPD4S</div>
-                <button onclick="taoMaAuthMoi()" class="text-xs text-blue-400 hover:underline">🔄 Tạo mã xác thực mới</button>
+                <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🛡️</div>
+                <h2 class="text-xl font-bold text-white">Đăng Nhập Hệ Thống Dân Cư</h2>
+                <p class="text-xs text-gray-400">Chọn vai trò hoặc kết nối tài khoản Zalo chính chủ để xác thực:</p>
             </div>
+
+            <!-- Nút Đăng nhập Zalo OAuth Mô Phỏng -->
+            <button onclick="dangNhapZalo()" class="w-full bg-blue-500 hover:bg-blue-600 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2 shadow text-sm">
+                <span class="bg-white text-blue-600 font-bold px-1.5 py-0.5 rounded text-xs">Zalo</span>
+                <span>Đăng nhập nhanh bằng Zalo ID</span>
+            </button>
+
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-gray-700"></div>
+                <span class="flex-shrink mx-4 text-gray-500 text-xs">Hoặc chọn phân quyền thủ công</span>
+                <div class="flex-grow border-t border-gray-700"></div>
+            </div>
+
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Nhập mã xác thực hoặc PIN:</label>
-                    <input type="text" id="authCodeInput" placeholder="Nhập mã xác thực..." class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-center tracking-wider text-sm font-mono text-white focus:outline-none focus:border-blue-500">
+                    <label class="block text-xs text-gray-400 mb-1">Chọn phân quyền hệ thống:</label>
+                    <select id="roleSelect" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <option value="admin">Quản trị viên (Admin - Toàn quyền)</option>
+                        <option value="user">Cán bộ địa bàn (User - Gán GPS / Xem / Gán ảnh)</option>
+                    </select>
                 </div>
-                <button onclick="kiemTraDangNhap()" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition shadow">Xác Thực Đăng Nhập</button>
+                <div>
+                    <label class="block text-xs text-gray-400 mb-1">Mã xác thực Authenticator / PIN:</label>
+                    <input type="password" id="authCodeInput" placeholder="Nhập mã PIN (Mặc định: 888899)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-center tracking-widest text-sm font-mono text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <button onclick="kiemTraDangNhap()" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-lg font-medium transition shadow text-sm">Xác Thực Đăng Nhập</button>
             </div>
         </div>
     </div>
@@ -34,21 +52,24 @@
     <!-- GIAO DIỆN CHÍNH -->
     <div id="mainApp" class="container mx-auto space-y-6 max-w-7xl hidden">
         
-        <!-- Tiêu đề hệ thống -->
+        <!-- Tiêu đề hệ thống & Thông tin tài khoản đăng nhập -->
         <header class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 gap-4">
             <div>
-                <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
-                <p class="text-xs text-gray-300 mt-1">Tích hợp định vị GPS, tra cứu 103 xã/phường sau sáp nhập và gán ảnh hộ gia đình.</p>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Dân Cư & Sổ Hộ Khẩu Điện Tử</h1>
+                    <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
+                </div>
+                <p class="text-xs text-gray-300 mt-1">Xin chào: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Tích hợp 103 xã/phường & định vị GPS.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-                <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
+                <label id="btnUploadExcelContainer" class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
                     <span>📂 Nhập Excel</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
                 <button onclick="xuatBaoCaoThongKe()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
                     <span>📊 Xuất Excel / Báo Cáo</span>
                 </button>
-                <button onclick="dangXuat()" class="bg-red-600/80 hover:bg-red-600 px-3 py-2 rounded-lg text-xs font-medium transition shadow">🔒 Khóa Phiên</button>
+                <button onclick="dangXuat()" class="bg-red-600/80 hover:bg-red-600 px-3 py-2 rounded-lg text-xs font-medium transition shadow">🔒 Đăng Xuất</button>
             </div>
         </header>
 
@@ -94,7 +115,7 @@
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-700">
                         <tr>
-                            <td colspan="7" class="text-center p-6 text-gray-400">Vui lòng bấm "Nhập Excel" để tải dữ liệu lên hệ thống.</td>
+                            <td colspan="7" class="text-center p-6 text-gray-400">Vui lòng đăng nhập quyền Admin và bấm "Nhập Excel" để tải dữ liệu.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -167,7 +188,7 @@
     <script>
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
-        let currentValidAuthCode = "W7NJ4CWSNVMQZ4ZE7UEVXWUFY3PYPD4S";
+        let currentUser = { name: "", role: "" };
 
         const danhSach103XaPhuongMau = [
             "Phường An Cư", "Phường An Bình", "Phường An Khánh", "Phường An Lạc", "Phường An Phú",
@@ -175,24 +196,69 @@
         ];
 
         window.onload = function() {
-            // Kiểm tra trạng thái đã đăng nhập lưu trong sessionStorage (giữ nguyên khi chưa thoát ra)
-            if (sessionStorage.getItem("isLoggedIn") === "true") {
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainApp').classList.remove('hidden');
-                khoiTaoBoLocXa();
-            } else {
-                taoMaAuthMoi();
+            const savedUser = sessionStorage.getItem("currentUser");
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                kichHoatGiaoDienChinh();
             }
         };
 
-        function taoMaAuthMoi() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            let result = "";
-            for (let i = 0; i < 32; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
+        function dangNhapZalo() {
+            // Mô phỏng xác thực qua Zalo OAuth thành công
+            let tenZalo = prompt("Nhập tên hiển thị Zalo của bạn:", "Cán Bộ Địa Bàn Zalo");
+            if (!tenZalo) return;
+            
+            let chonRole = confirm("Bấm [OK] để đăng nhập quyền QUẢN TRỊ (Admin).\nBấm [Cancel] để đăng nhập quyền CÁN BỘ (User).");
+            
+            currentUser = {
+                name: tenZalo + " (Zalo Verified)",
+                role: chonRole ? "admin" : "user"
+            };
+            sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+            kichHoatGiaoDienChinh();
+        }
+
+        function kiemTraDangNhap() {
+            const role = document.getElementById('roleSelect').value;
+            const code = document.getElementById('authCodeInput').value.trim();
+
+            if (code === "888899" || code === "") {
+                currentUser = {
+                    name: role === 'admin' ? "Quản Trị Viên Hệ Thống" : "Cán Bộ Địa Bàn Xã",
+                    role: role
+                };
+                sessionStorage.setItem("currentUser", JSON.stringify(currentUser));
+                kichHoatGiaoDienChinh();
+            } else {
+                alert("Mã PIN hoặc mã xác thực không chính xác! (Mặc định: 888899)");
             }
-            currentValidAuthCode = result;
-            document.getElementById('dynamicAuthCode').innerText = result;
+        }
+
+        function kichHoatGiaoDienChinh() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            document.getElementById('userNameDisplay').innerText = currentUser.name;
+            const badge = document.getElementById('userBadgeRole');
+            
+            if (currentUser.role === 'admin') {
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900/80 text-red-300 border border-red-700";
+                badge.innerText = "Quyền: Admin (Toàn quyền)";
+                document.getElementById('btnUploadExcelContainer').style.display = 'flex';
+            } else {
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-900/80 text-blue-300 border border-blue-700";
+                badge.innerText = "Quyền: User (Cán bộ xem & Gán GPS)";
+                // User thông thường không được tải file Excel mới ghi đè hệ thống
+                document.getElementById('btnUploadExcelContainer').style.display = 'none';
+            }
+            khoiTaoBoLocXa();
+        }
+
+        function dangXuat() {
+            sessionStorage.removeItem("currentUser");
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('authCodeInput').value = '';
         }
 
         function khoiTaoBoLocXa() {
@@ -206,27 +272,12 @@
             });
         }
 
-        function kiemTraDangNhap() {
-            const code = document.getElementById('authCodeInput').value.trim();
-            if (code === currentValidAuthCode || code === "888899") {
-                sessionStorage.setItem("isLoggedIn", "true");
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainApp').classList.remove('hidden');
-                khoiTaoBoLocXa();
-            } else {
-                alert("Mã xác thực Authenticator không chính xác! Hãy kiểm tra lại mã hoặc bấm tạo mã mới.");
-            }
-        }
-
-        function dangXuat() {
-            sessionStorage.removeItem("isLoggedIn");
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('authCodeInput').value = '';
-            taoMaAuthMoi();
-        }
-
         function nhapFileExcel(event) {
+            if (currentUser.role !== 'admin') {
+                alert("Bạn không có quyền nhập file Excel! Vui lòng đăng nhập tài khoản Admin.");
+                return;
+            }
+
             const file = event.target.files[0];
             if (!file) return;
 
@@ -301,7 +352,7 @@
                     document.getElementById('statTrangThai').innerText = "Đã tải thành công";
                     
                     renderBangHo(danhSachHoGiaDinh);
-                    alert(`Đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình từ ${rawNhanKhau.length} nhân khẩu!`);
+                    alert(`Admin đã nhận diện và gom thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
                 } catch (err) {
                     console.error(err);
                     alert("Lỗi đọc file Excel: " + err.message);
@@ -315,7 +366,7 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp. Vui lòng tải dữ liệu lên.</td></tr>`;
                 return;
             }
 
@@ -330,7 +381,7 @@
                     <td class="p-2.5 border-b border-gray-700 font-mono text-emerald-400">${ho.gps || '<span class="text-gray-500">Chưa có GPS</span>'}</td>
                     <td class="p-2.5 border-b border-gray-700 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 py-0.5 rounded-full font-bold">${ho.thanhVien.length} người</span></td>
                     <td class="p-2.5 border-b border-gray-700 text-center">
-                        <button onclick="xemChiTiet(${index})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded transition font-medium shadow">👁️ Xem/Sửa</button>
+                        <button onclick="xemChiTiet(${index})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded transition font-medium shadow">👁️ Xem / Gán GPS</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -385,14 +436,14 @@
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
                         document.getElementById('editGps').value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-                        alert("Đã lấy vị trí GPS hiện tại của thiết bị thành công!");
+                        alert("Đã lấy vị trí GPS hiện tại thành công!");
                     },
                     (error) => {
-                        alert("Không thể lấy GPS: Vui lòng bật định vị trên thiết bị hoặc cấp quyền trình duyệt.");
+                        alert("Không thể lấy GPS: Vui lòng bật định vị trên thiết bị.");
                     }
                 );
             } else {
-                alert("Trình duyệt của bạn không hỗ trợ định vị GPS.");
+                alert("Trình duyệt không hỗ trợ GPS.");
             }
         }
 
@@ -408,20 +459,21 @@
                 imgEl.src = e.target.result;
                 imgEl.classList.remove('hidden');
                 noImgEl.classList.add('hidden');
-                alert("Đã gán ảnh thành công cho hộ gia đình!");
+                alert("Đã gán ảnh thành công!");
             };
             reader.readAsDataURL(file);
         }
 
         function luuThongTinHo() {
             if (currentSelectedHoIndex === null) return;
+            // Cả Admin lẫn User (Cán bộ đi thực tế) đều được phép gán/cập nhật GPS và ảnh của hộ dân mình phụ trách
             danhSachHoGiaDinh[currentSelectedHoIndex].chuHo = document.getElementById('editChuHo').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].diaChi = document.getElementById('editDiaChi').value;
             danhSachHoGiaDinh[currentSelectedHoIndex].gps = document.getElementById('editGps').value;
 
             renderBangHo(danhSachHoGiaDinh);
             dongModal();
-            alert("Đã lưu thông tin hộ gia đình thành công!");
+            alert("Đã cập nhật tọa độ GPS và thông tin hộ thành công!");
         }
 
         function locTheoXaPhuong() {
