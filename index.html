@@ -122,10 +122,10 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <select id="filterXaPhuong" onchange="chonPhuongXa()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="">-- 1. Chọn Phường / Xã --</option>
+                        <option value="Phường Tân An">Phường Tân An</option>
                     </select>
                     <select id="filterKhuVuc" onchange="chonKhuVuc()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="">-- 2. Chọn Khu vực / Khu phố --</option>
+                        <option value="">-- Chọn Khu vực / Khu phố --</option>
                     </select>
                 </div>
             </div>
@@ -477,105 +477,72 @@
             moModalQuanLyUser();
         }
 
-        // HÀM CHUẨN HÓA ĐỊA CHỈ & GOM GỌN MỌI BIẾN THỂ VỀ CHUNG "Khu Vực 7"
+        // HÀM CHUẨN HÓA ĐỊA CHỈ & BẮT BUỘC GẮN VÀO PHƯỜNG TÂN AN
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongStr) {
             let full = diaChiGoc || "";
-            if (phuongStr && !full.toLowerCase().includes(phuongStr.toLowerCase())) {
-                full = full ? `${full}, ${phuongStr}` : phuongStr;
+            // Luôn đảm bảo có chữ Phường Tân An
+            if (!full.toLowerCase().includes("tân an")) {
+                full = full ? `${full}, Phường Tân An` : "Phường Tân An";
             }
             full = full.replace(/\b(kv|khu vực|khu vuc|kp|khu pho|khu phố)\s*[-_\.]?\s*(vii|VII|7)\b/gi, "Khu Vực 7");
             return full;
         }
 
         function phanTichDuLieuPhanCap() {
-            duLieuPhanCap = {};
+            duLieuPhanCap = {"Phường Tân An": new Set()};
             danhSachHoGiaDinh.forEach(ho => {
                 let diaChi = ho.diaChi || "";
-                let phuong = "Phường Tân An";
-                let phuongMatch = diaChi.match(/(Phường\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+|Xã\s+[A-ZÀ-Ỹa-zà-ỹ0-9\s]+)/i);
-                if (phuongMatch) phuong = phuongMatch[0].split(',')[0].trim();
-                
                 let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Ấp\s*[\w\s\d]+)/gi);
-                if (!duLieuPhanCap[phuong]) duLieuPhanCap[phuong] = new Set();
                 
                 if (kvMatches) {
-                    kvMatches.forEach(kv => duLieuPhanCap[phuong].add(kv.trim().replace(/\s+/g, ' ')));
+                    kvMatches.forEach(kv => duLieuPhanCap["Phường Tân An"].add(kv.trim().replace(/\s+/g, ' ')));
                 } else {
-                    duLieuPhanCap[phuong].add("Khu Vực 7");
+                    duLieuPhanCap["Phường Tân An"].add("Khu Vực 7");
                 }
             });
 
             const selectXa = document.getElementById('filterXaPhuong');
-            selectXa.innerHTML = '<option value="">-- 1. Chọn Phường / Xã --</option>';
-            Object.keys(duLieuPhanCap).sort().forEach(p => {
-                let opt = document.createElement('option'); opt.value = p; opt.textContent = p; selectXa.appendChild(opt);
-            });
-
-            // Tự động chọn Phường đầu tiên nếu có
-            if (selectXa.options.length > 1) {
-                selectXa.selectedIndex = 1;
-            }
+            selectXa.innerHTML = '<option value="Phường Tân An">Phường Tân An</option>';
+            selectXa.value = "Phường Tân An";
 
             const selectKv = document.getElementById('filterKhuVuc');
             if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') {
                 selectKv.innerHTML = `<option value="${currentUser.scope}">${currentUser.scope}</option>`;
                 selectKv.disabled = true;
             } else {
-                selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực / Khu phố --</option>';
-                let phuongChon = selectXa.value;
-                if (phuongChon && duLieuPhanCap[phuongChon]) {
-                    Array.from(duLieuPhanCap[phuongChon]).sort().forEach(kv => {
-                        let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
-                    });
-                    // Tự động chọn khu vực đầu tiên để không bị trống bảng
-                    if (selectKv.options.length > 1) {
-                        selectKv.selectedIndex = 1;
-                    }
+                selectKv.innerHTML = '<option value="">-- Chọn Khu vực / Khu phố --</option>';
+                Array.from(duLieuPhanCap["Phường Tân An"]).sort().forEach(kv => {
+                    let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
+                });
+                if (selectKv.options.length > 1) {
+                    selectKv.selectedIndex = 1;
                 }
             }
             thucHienLocVaTimKiem();
         }
 
-        function chonPhuongXa() {
-            const phuongChon = document.getElementById('filterXaPhuong').value;
-            const selectKv = document.getElementById('filterKhuVuc');
-            if (currentUser.role === 'admin') {
-                selectKv.innerHTML = '<option value="">-- 2. Chọn Khu vực / Khu phố --</option>';
-                if (phuongChon && duLieuPhanCap[phuongChon]) {
-                    Array.from(duLieuPhanCap[phuongChon]).sort().forEach(kv => {
-                        let opt = document.createElement('option'); opt.value = kv; opt.textContent = kv; selectKv.appendChild(opt);
-                    });
-                    if (selectKv.options.length > 1) selectKv.selectedIndex = 1;
-                }
-            }
-            thucHienLocVaTimKiem();
-        }
-
+        function chonPhuongXa() { thucHienLocVaTimKiem(); }
         function chonKhuVuc() { thucHienLocVaTimKiem(); }
         function timKiemNha() { thucHienLocVaTimKiem(); }
 
         function thucHienLocVaTimKiem() {
-            const phuongVal = document.getElementById('filterXaPhuong').value.toLowerCase();
             let khuVucVal = document.getElementById('filterKhuVuc').value.toLowerCase();
             if (currentUser.role === 'can_bo' && currentUser.scope !== 'all') khuVucVal = currentUser.scope.toLowerCase();
             const keyword = document.getElementById('searchInput').value.toLowerCase();
 
             const filtered = danhSachHoGiaDinh.filter(ho => {
                 let diaChiLower = ho.diaChi.toLowerCase();
-                let matchPhuong = !phuongVal || diaChiLower.includes(phuongVal) || true; // Nới lỏng để không bị ẩn nhầm
                 
-                // Xử lý thông minh phần khu vực (khớp linh hoạt số 7, vii, v.v.)
                 let matchKhuVuc = true;
                 if (khuVucVal) {
                     let cleanKv = khuVucVal.replace('khu vực', '').replace('kv', '').trim();
-                    matchKhuVuc = diaChiLower.includes(khuVucVal) || diaChiLower.includes(cleanKv) || ho.diaChi.toLowerCase().includes(cleanKv);
+                    matchKhuVuc = diaChiLower.includes(khuVucVal) || diaChiLower.includes(cleanKv);
                 }
 
                 let matchKeyword = !keyword || ho.chuHo.toLowerCase().includes(keyword) || ho.hsct.toLowerCase().includes(keyword) || diaChiLower.includes(keyword) || (ho.sdt && ho.sdt.toLowerCase().includes(keyword));
-                return matchPhuong && matchKhuVuc && matchKeyword;
+                return matchKhuVuc && matchKeyword;
             });
 
-            // Nếu lọc bộ lọc ra 0 kết quả do lệch chữ, tự động hiện toàn bộ dữ liệu để tránh màn hình trống
             renderBangHo(filtered.length > 0 ? filtered : danhSachHoGiaDinh);
         }
 
@@ -652,7 +619,7 @@
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
                     ghiNhatKy(`Nhập file Excel (${danhSachHoGiaDinh.length} hộ)`);
-                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình!`);
+                    alert(`Đã tải thành công ${danhSachHoGiaDinh.length} hộ gia đình thuộc Phường Tân An!`);
                 } catch (err) { alert("Lỗi file Excel: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -747,7 +714,7 @@
 
         function khoiTaoBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
-            let coords = [10.033198, 105.782806];
+            let coords = [10.033198, 105.782806]; // Tâm cơ bản Phường Tân An
             if (gpsVal.includes(',')) {
                 let parts = gpsVal.split(',');
                 let lat = parseFloat(parts[0]);
