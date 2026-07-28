@@ -42,7 +42,7 @@
         }
         .dashboard-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
@@ -53,27 +53,17 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             border-left: 5px solid var(--primary-color);
         }
-        .card.warning {
-            border-left-color: var(--warning-color);
-        }
-        .card.danger {
-            border-left-color: var(--accent-color);
-        }
+        .card.warning { border-left-color: var(--warning-color); }
+        .card.danger { border-left-color: var(--accent-color); }
         .card h3 {
             margin-top: 0;
-            font-size: 14px;
+            font-size: 13px;
             color: #555;
         }
         .card .number {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             color: var(--primary-color);
-        }
-        .card.warning .number {
-            color: #d88500;
-        }
-        .card.danger .number {
-            color: var(--accent-color);
         }
         .action-bar {
             background: white;
@@ -100,15 +90,9 @@
             cursor: pointer;
             font-size: 14px;
         }
-        button:hover {
-            background-color: var(--secondary-color);
-        }
-        button.btn-danger {
-            background-color: var(--accent-color);
-        }
-        button.btn-danger:hover {
-            background-color: #c9302c;
-        }
+        button:hover { background-color: var(--secondary-color); }
+        button.btn-danger { background-color: var(--accent-color); }
+        button.btn-danger:hover { background-color: #c9302c; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -126,9 +110,7 @@
             background-color: var(--primary-color);
             color: white;
         }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
+        tr:hover { background-color: #f1f1f1; }
         .command-section {
             background: #eef2f7;
             border: 1px dashed var(--primary-color);
@@ -147,51 +129,50 @@
 
     <header>
         <h1>QUẢN LÝ NHÂN HỘ KHẨU - CÔNG AN PHƯỜNG</h1>
-        <div class="user-info" id="userInfo">Xin chào: <strong>Đồng chí (Ban Chỉ huy)</strong></div>
+        <div class="user-info">Xin chào: <strong>Đồng chí (Ban Chỉ huy)</strong></div>
     </header>
 
     <div class="container">
-        <!-- BẢNG THỐNG KÊ TỔNG QUAN & BIẾN ĐỘNG TOÀN PHƯỜNG -->
-        <div class="command-section" id="commandDashboard">
+        <!-- BẢNG THỐNG KÊ TỔNG QUAN & BIẾN ĐỘNG TỰ ĐỘNG -->
+        <div class="command-section">
             <h3>Bảng Thống Kê Tổng Quan & Biến Động Dân Cư Toàn Phường</h3>
             <div class="dashboard-cards">
                 <div class="card">
                     <h3>Tổng số Hộ Khẩu</h3>
-                    <div class="number" id="totalHoKhao">1,245</div>
+                    <div class="number" id="lblTotalHo">0</div>
                 </div>
                 <div class="card">
-                    <h3>Nhân Khẩu Thường Trú</h3>
-                    <div class="number" id="totalNhanKhao">4,820</div>
+                    <h3>Thường Trú Ổn Định</h3>
+                    <div class="number" id="lblThuongTru">0</div>
                 </div>
                 <div class="card warning">
                     <h3>Hộ Bán Nhà / Giải Tỏa</h3>
-                    <div class="number" id="totalBanNhaGiaiToa">18</div>
+                    <div class="number" id="lblBanNha">0</div>
                 </div>
                 <div class="card danger">
                     <h3>Nhân Khẩu Chết</h3>
-                    <div class="number" id="totalNhanKhaoChet">12</div>
+                    <div class="number" id="lblChet">0</div>
                 </div>
                 <div class="card warning">
                     <h3>Bỏ Địa Phương / Đi Nước Ngoài</h3>
-                    <div class="number" id="totalBienDongKhac">35</div>
+                    <div class="number" id="lblBienDongKhac">0</div>
                 </div>
             </div>
         </div>
 
         <div class="action-bar">
             <div>
-                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, CCCD, địa chỉ..." style="width: 250px;">
-                <select id="khuVucFilter">
-                    <option value="all">Tất cả các khu vực (Toàn phường)</option>
-                    <option value="KV1">Khu vực 1</option>
-                    <option value="KV2">Khu vực 2</option>
-                    <option value="KV3">Khu vực 3</option>
-                    <option value="KV4">Khu vực 4</option>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm tên, CCCD..." onkeyup="renderTable()">
+                <select id="bienDongFilter" onchange="renderTable()">
+                    <option value="all">Tất cả trạng thái biến động</option>
+                    <option value="Thường trú">Thường trú ổn định</option>
+                    <option value="Bán nhà/Giải tỏa">Hộ bán nhà / Giải tỏa</option>
+                    <option value="Chết">Chết</option>
+                    <option value="Đi nước ngoài/Bỏ địa phương">Đi nước ngoài / Bỏ địa phương</option>
                 </select>
-                <button onclick="thucHienLocVaTimKiem()">Lọc dữ liệu</button>
             </div>
             <div>
-                <button onclick="moModalThem()"><i class="fa fa-plus"></i> Thêm Nhân Khẩu</button>
+                <button onclick="themHoSoMẫu()">+ Thêm Mẫu / Khai Báo Biến Động</button>
             </div>
         </div>
 
@@ -200,72 +181,111 @@
                 <tr>
                     <th>STT</th>
                     <th>Họ và Tên</th>
-                    <th>CCCD / Định danh</th>
-                    <th>Ngày sinh</th>
-                    <th>Địa chỉ thường trú</th>
+                    <th>Mã Hộ Khẩu</th>
+                    <th>CCCD</th>
                     <th>Khu vực</th>
-                    <th>Trạng thái / Biến động</th>
+                    <th>Trạng thái biến động</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody id="dataTableBody">
-                <tr>
-                    <td>1</td>
-                    <td>Nguyễn Văn A</td>
-                    <td>092083000123</td>
-                    <td>15/05/1985</td>
-                    <td>12/3 Đường Số 1</td>
-                    <td>Khu vực 1</td>
-                    <td><span style="color: green; font-weight: bold;">Thường trú ổn định</span></td>
-                    <td>
-                        <button onclick="suaHoSo(1)">Sửa</button>
-                        <button class="btn-danger" onclick="xoaHoSo(1)">Xóa</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>Trần Thị B</td>
-                    <td>092085000456</td>
-                    <td>20/10/1990</td>
-                    <td>45/8 Đường Số 2</td>
-                    <td>Khu vực 2</td>
-                    <td><span style="color: #d88500; font-weight: bold;">Đã đi nước ngoài</span></td>
-                    <td>
-                        <button onclick="suaHoSo(2)">Sửa</button>
-                        <button class="btn-danger" onclick="xoaHoSo(2)">Xóa</button>
-                    </td>
-                </tr>
+                <!-- Dữ liệu được load động bằng JavaScript -->
             </tbody>
         </table>
     </div>
 
     <script>
-        function kichHoatGiaoDienChinh() {
-            console.log("Đã tải xong giao diện quản lý và thống kê biến động.");
+        // Mảng dữ liệu mẫu có gắn trạng thái biến động cụ thể
+        let danhSachNhanKhau = [
+            { id: 1, hoTen: "Nguyễn Văn A", maHo: "HK001", cccd: "092083000123", khuVuc: "KV1", trangThai: "Thường trú" },
+            { id: 2, hoTen: "Trần Thị B", maHo: "HK002", cccd: "092085000456", khuVuc: "KV2", trangThai: "Đi nước ngoài/Bỏ địa phương" },
+            { id: 3, hoTen: "Lê Văn C", maHo: "HK003", cccd: "092070000789", khuVuc: "KV1", trangThai: "Bán nhà/Giải tỏa" },
+            { id: 4, hoTen: "Phạm Văn D", maHo: "HK004", cccd: "092055000321", khuVuc: "KV3", trangThai: "Chết" }
+        ];
+
+        // Hàm tính toán và hiển thị lại bảng + số liệu tổng quan
+        function renderTable() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const filterTrangThai = document.getElementById('bienDongFilter').value;
+            const tbody = document.getElementById('dataTableBody');
+            
+            tbody.innerHTML = "";
+
+            let filteredData = danhSachNhanKhau.filter(item => {
+                let matchKeyword = item.hoTen.toLowerCase().includes(keyword) || item.cccd.includes(keyword);
+                let matchTrangThai = (filterTrangThai === 'all' || item.trangThai === filterTrangThai);
+                return matchKeyword && matchTrangThai;
+            });
+
+            // Đổ dữ liệu vào bảng
+            filteredData.forEach((item, index) => {
+                let mauSac = "green";
+                if(item.trangThai === "Bán nhà/Giải tỏa" || item.trangThai === "Đi nước ngoài/Bỏ địa phương") mauSac = "#d88500";
+                if(item.trangThai === "Chết") mauSac = "#d9534f";
+
+                let tr = `<tr>
+                    <td>${index + 1}</td>
+                    <td><b>${item.hoTen}</b></td>
+                    <td>${item.maHo}</td>
+                    <td>${item.cccd}</td>
+                    <td>${item.khuVuc}</td>
+                    <td><span style="color: ${mauSac}; font-weight: bold;">${item.trangThai}</span></td>
+                    <td>
+                        <button onclick="doiTrangThai(${item.id})">Cập nhật biến động</button>
+                        <button class="btn-danger" onclick="xoaHoSo(${item.id})">Xóa</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += tr;
+            });
+
+            capNhatTheThongKe();
         }
 
-        function thucHienLocVaTimKiem() {
-            const keyword = document.getElementById('searchInput').value;
-            const khuVuc = document.getElementById('khuVucFilter').value;
-            alert(`Đang lọc dữ liệu khu vực: ${khuVuc} với từ khóa: "${keyword}"`);
+        // Hàm tự động cập nhật số liệu lên các thẻ thống kê tổng quan
+        function capNhatTheThongKe() {
+            document.getElementById('lblTotalHo').innerText = danhSachNhanKhau.length; // Giả lập tổng số hộ/khẩu
+            document.getElementById('lblThuongTru').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Thường trú').length;
+            document.getElementById('lblBanNha').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Bán nhà/Giải tỏa').length;
+            document.getElementById('lblChet').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Chết').length;
+            document.getElementById('lblBienDongKhac').innerText = danhSachNhanKhau.filter(i => i.trangThai === 'Đi nước ngoài/Bỏ địa phương').length;
         }
 
-        function moModalThem() {
-            alert("Mở cửa sổ thêm mới nhân khẩu/hộ khẩu.");
+        // Mô phỏng thay đổi trạng thái biến động khi Cảnh sát khu vực làm nghiệp vụ
+        function doiTrangThai(id) {
+            let item = danhSachNhanKhau.find(i => i.id === id);
+            let luaChon = prompt(`Chọn trạng thái mới cho ${item.hoTen}:\n1. Thường trú\n2. Bán nhà/Giải tỏa\n3. Chết\n4. Đi nước ngoài/Bỏ địa phương`);
+            if(luaChon === "1") item.trangThai = "Thường trú";
+            if(luaChon === "2") item.trangThai = "Bán nhà/Giải tỏa";
+            if(luaChon === "3") item.trangThai = "Chết";
+            if(luaChon === "4") item.trangThai = "Đi nước ngoài/Bỏ địa phương";
+            renderTable();
         }
 
-        function suaHoSo(id) {
-            alert(`Chỉnh sửa hồ sơ ID: ${id}`);
+        function themHoSoMẫu() {
+            let ten = prompt("Nhập họ tên nhân khẩu mới:");
+            if(ten) {
+                danhSachNhanKhau.push({
+                    id: danhSachNhanKhau.length + 1,
+                    hoTen: ten,
+                    maHo: "HK00" + (danhSachNhanKhau.length + 1),
+                    cccd: "0920" + Math.floor(10000000 + Math.random() * 90000000),
+                    khuVuc: "KV1",
+                    trangThai: "Thường trú"
+                });
+                renderTable();
+            }
         }
 
         function xoaHoSo(id) {
             if(confirm("Bạn có chắc chắn muốn xóa hồ sơ này?")) {
-                alert(`Đã xóa hồ sơ ID: ${id}`);
+                danhSachNhanKhau = danhSachNhanKhau.filter(i => i.id !== id);
+                renderTable();
             }
         }
 
+        // Khởi chạy khi load trang
         window.onload = function() {
-            kichHoatGiaoDienChinh();
+            renderTable();
         };
     </script>
 </body>
