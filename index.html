@@ -38,7 +38,7 @@
 <body class="bg-gray-950 text-white min-h-screen p-4">
 
     <!-- BƯỚC 1: ĐĂNG NHẬP GMAIL -->
-    <div id="loginScreen" class="fixed inset-0 bg-gray-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div id="loginScreen" class="fixed inset-0 bg-gray-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🗺️</div>
@@ -316,7 +316,7 @@
     <script>
         const ADMIN_EMAIL = "vanthao3011@gmail.com";
         // Tọa độ chuẩn xác tâm Phường Tân An mới (sáp nhập từ An Khánh & Hưng Lợi) theo bản đồ số quy hoạch
-        const TAN_AN_CENTER = [10.021500, 105.757500]; 
+        const TAN_AN_CENTER = [10.024500, 105.772500]; 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
@@ -328,12 +328,15 @@
         let miniMapMarkersGroup = null;
 
         window.onload = function() {
-            const savedUser = sessionStorage.getItem("currentUserAuthGIS");
+            const savedUser = localStorage.getItem("currentUserAuthGIS");
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
                 kiemTraVaGanQuyenThucTe();
                 kichHoatGiaoDienChinh();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
             }
+
             const savedData = localStorage.getItem("danhSachHoGiaDinhCacheGIS");
             if (savedData) {
                 danhSachHoGiaDinh = JSON.parse(savedData);
@@ -448,13 +451,13 @@
 
             currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7' };
             kiemTraVaGanQuyenThucTe();
-            sessionStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
+            localStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
             document.getElementById('otpScreen').classList.add('hidden');
             kichHoatGiaoDienChinh();
         }
 
         function dangXuat() {
-            sessionStorage.removeItem("currentUserAuthGIS"); 
+            localStorage.removeItem("currentUserAuthGIS"); 
             location.reload();
         }
 
@@ -491,10 +494,10 @@
 
             // Vẽ ranh giới/vùng định vị Phường Tân An mới (sáp nhập từ An Khánh & Hưng Lợi)
             let boundaryPolygon = L.polygon([
-                [10.0330, 105.7480],
-                [10.0330, 105.7680],
-                [10.0100, 105.7680],
-                [10.0100, 105.7480]
+                [10.0380, 105.7600],
+                [10.0380, 105.7850],
+                [10.0120, 105.7850],
+                [10.0120, 105.7600]
             ], { color: '#3b82f6', weight: 2, fillColor: '#1d4ed8', fillOpacity: 0.15 }).addTo(mainMiniMapInstance);
             boundaryPolygon.bindPopup("<b>Phường Tân An (Mới)</b><br>Sáp nhập từ An Khánh và Hưng Lợi");
 
@@ -638,10 +641,12 @@
 
                         let hoTenLower = hoTen.toLowerCase();
                         let hsctLower = hsct.toLowerCase();
+                        
+                        // LỌC BỎ DÒNG TIÊU ĐỀ TRÙNG LẶP HOẶC DỮ LIỆU RÁC
                         if (
                             hoTenLower === 'họ và tên' || hoTenLower === 'họ tên' || 
                             hsctLower === 'số hsct' || hsctLower === 'hsct' ||
-                            hoTenLower.includes('chủ hộ') || !hoTen
+                            hoTenLower.includes('chủ hộ') || hoTenLower.includes('địa chỉ') || !hoTen
                         ) {
                             continue;
                         }
