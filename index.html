@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Điều Hành Địa Bàn CSKV & Bản Đồ GIS Phường Tân An - Cần Thơ</title>
+    <title>Phần Mềm Quản Lý Địa Bàn CSKV & Bản Đồ GIS</title>
     <!-- CSS & JS External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -21,7 +21,7 @@
 
     <style>
         #mapContainer { height: 280px; width: 100%; border-radius: 0.5rem; z-index: 10; cursor: crosshair; }
-        #mainMiniMap { height: 440px; width: 100%; border-radius: 0.75rem; z-index: 10; }
+        #mainMiniMap { height: 460px; width: 100%; border-radius: 0.75rem; z-index: 10; }
         #qrcodeCanvas { display: flex; justify-content: center; align-items: center; background: white; padding: 15px; border-radius: 12px; width: fit-content; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         #qrcodeCanvas img, #qrcodeCanvas canvas { display: block; width: 180px !important; height: 180px !important; }
         
@@ -30,8 +30,6 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(75, 85, 99, 0.4);
         }
-        
-        canvas.signature-pad { border: 2px dashed #4b5563; border-radius: 0.5rem; background: #111827; width: 100%; height: 110px; cursor: crosshair; touch-action: none; }
 
         .custom-pin-pulse {
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
@@ -43,6 +41,11 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
+        /* Ẩn bớt thanh cuộn cho bảng nhân khẩu */
+        .hide-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .hide-scroll::-webkit-scrollbar-track { background: #1f2937; }
+        .hide-scroll::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+
         @media print {
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
@@ -53,24 +56,31 @@
 </head>
 <body class="bg-gray-950 text-white min-h-screen p-2 md:p-4 select-none">
 
-    <!-- BƯỚC 1: ĐĂNG NHẬP GMAIL CSKV -->
-    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background-image: url('https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
-        <div class="absolute inset-0 bg-gray-950/85 backdrop-blur-sm"></div>
-        <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/30 relative z-10">
+    <!-- BƯỚC 1: ĐĂNG NHẬP CSKV -->
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background-image: url('689d77b0aa39bf3aed273721_2.jpg'); background-size: cover; background-position: center;">
+        <div class="absolute inset-0 bg-gray-950/75 backdrop-blur-sm"></div>
+        <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
-                <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/40 rounded-full p-2 border border-red-500/40 shadow-inner">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Vietnam_People%27s_Public_Security_emblem.svg/240px-Vietnam_People%27s_Public_Security_emblem.svg.png" alt="Huy hiệu CAND" class="w-full h-full object-contain drop-shadow-2xl">
+                <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/50 rounded-full p-2 border-2 border-amber-400/80 shadow-2xl">
+                    <svg viewBox="0 0 100 100" class="w-full h-full object-contain filter drop-shadow-lg">
+                        <circle cx="50" cy="50" r="46" fill="#dc2626" stroke="#facc15" stroke-width="2.5"/>
+                        <circle cx="50" cy="50" r="40" fill="#15803d" stroke="#facc15" stroke-width="1.5"/>
+                        <circle cx="50" cy="50" r="31" fill="#dc2626" stroke="#fef08a" stroke-width="1.5"/>
+                        <polygon points="50,21 54,34 67,34 56,42 60,54 50,46 40,54 44,42 33,34 46,34" fill="#facc15" stroke="#ca8a04" stroke-width="0.5"/>
+                        <path d="M 22 68 Q 50 82 78 68 Q 50 88 22 68 Z" fill="#eab308" stroke="#854d0e" stroke-width="0.5"/>
+                        <text x="50" y="77" font-size="9.5" font-weight="900" fill="#ffffff" text-anchor="middle" font-family="sans-serif" letter-spacing="1">CAND</text>
+                    </svg>
                 </div>
                 <div>
-                    <h2 class="text-base font-extrabold text-red-400 uppercase tracking-wider">Công An TP Cần Thơ - Phường Tân An</h2>
-                    <p class="text-[11px] text-emerald-400 font-semibold mt-0.5">(Sáp nhập từ Phường An Khánh & Phường Hưng Lợi)</p>
-                    <h3 class="text-lg font-bold text-white mt-1">Hệ Thống Quản Lý Địa Bàn CSKV</h3>
+                    <h2 class="text-lg font-black text-red-400 uppercase tracking-wide">Phần mềm Quản lý địa bàn CSKV</h2>
+                    <p class="text-[11px] text-emerald-400 font-semibold mt-0.5">Dành cho Cán bộ CSKV</p>
+                    <h3 class="text-sm font-bold text-gray-200 mt-1">Hệ Thống Điều Hành & Dân Cư</h3>
                 </div>
             </div>
-            <div class="space-y-4 bg-gray-900/70 p-4 rounded-xl border border-gray-800">
+            <div class="space-y-4 bg-gray-900/80 p-4 rounded-xl border border-gray-800">
                 <div>
                     <label class="block text-xs text-gray-300 mb-1 font-medium">Nhập Địa Chỉ Gmail Công Vụ:</label>
-                    <input type="email" id="gmailInput" placeholder="canbo.tanan@gmail.com" class="w-full bg-gray-950 border border-gray-600 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-red-500">
+                    <input type="email" id="gmailInput" placeholder="canbo@gmail.com" class="w-full bg-gray-950 border border-gray-600 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-red-500">
                 </div>
                 <button onclick="buoc1KiemTraGmail()" class="w-full bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 py-2.5 rounded-lg font-bold transition shadow text-xs text-white">Xác Thực & Tiếp Tục ➔</button>
             </div>
@@ -105,52 +115,31 @@
     <div id="mainApp" class="container mx-auto space-y-3 max-w-[98%] hidden mt-2">
         <header class="flex flex-col md:flex-row justify-between items-center glass-card p-3 rounded-xl shadow-xl gap-3">
             <div>
-                <div class="flex items-center gap-2">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Vietnam_People%27s_Public_Security_emblem.svg/240px-Vietnam_People%27s_Public_Security_emblem.svg.png" class="w-7 h-7 object-contain">
-                    <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">Điều Hành Địa Bàn CSKV & Bản Đồ Số GIS Phường Tân An</h1>
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 flex-shrink-0">
+                        <svg viewBox="0 0 100 100" class="w-full h-full filter drop-shadow">
+                            <circle cx="50" cy="50" r="46" fill="#dc2626" stroke="#facc15" stroke-width="3"/>
+                            <circle cx="50" cy="50" r="38" fill="#15803d" stroke="#facc15" stroke-width="2"/>
+                            <circle cx="50" cy="50" r="30" fill="#dc2626" stroke="#fef08a" stroke-width="1.5"/>
+                            <polygon points="50,21 54,34 67,34 56,42 60,54 50,46 40,54 44,42 33,34 46,34" fill="#facc15"/>
+                        </svg>
+                    </div>
+                    <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">Điều Hành Địa Bàn CSKV & Bản Đồ Số GIS</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900 text-red-200"></span>
                 </div>
-                <p class="text-[11px] text-gray-300 mt-0.5">Cán bộ: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Địa bàn: <strong class="text-amber-300">Phường Tân An</strong> (Sáp nhập từ Phường An Khánh & Phường Hưng Lợi) | <button onclick="moModalRBAC()" class="text-blue-400 underline ml-1 hover:text-blue-300">Phân quyền (RBAC)</button></p>
+                <p class="text-[11px] text-gray-300 mt-0.5">Cán bộ: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | <button onclick="moModalRBAC()" class="text-blue-400 underline ml-1 hover:text-blue-300">Phân quyền (RBAC)</button></p>
             </div>
             <div class="flex flex-wrap gap-1.5">
                 <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow flex items-center gap-1">
-                    <span>📂 Tải Excel Thường Trú Lên</span>
+                    <span>📂 Nhập Excel</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
-                <button onclick="moSoTayCongTac()" class="bg-purple-600 hover:bg-purple-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow">📔 Sổ Tay CSKV</button>
-                <button onclick="xuatBaoCaoExcelThongKeFull()" class="bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow">📊 Xuất Excel Dân Cư Chuẩn</button>
+                <button onclick="moSoTayCongTac()" class="bg-purple-600 hover:bg-purple-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow">📔 Sổ Tay</button>
+                <button onclick="xuatBaoCaoExcelKV2()" class="bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow">📊 Xuất Mẫu KV2</button>
                 <button onclick="xoaDuLieuExcel()" class="bg-rose-600 hover:bg-rose-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow">🗑️ Xóa DL</button>
                 <button onclick="dangXuat()" class="bg-red-600/80 hover:bg-red-600 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow">🔒 Thoát</button>
             </div>
         </header>
-
-        <!-- Thẻ thông tin Quy hoạch sáp nhập mới -->
-        <div class="glass-card p-3 rounded-xl border border-amber-500/30 bg-gray-900/90 text-xs grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-center">
-            <div class="p-1.5 bg-gray-950/60 rounded-lg border border-gray-800">
-                <span class="text-gray-400 block text-[10px]">Sáp nhập từ</span>
-                <strong class="text-amber-400 font-bold">An Khánh & Hưng Lợi</strong>
-            </div>
-            <div class="p-1.5 bg-gray-950/60 rounded-lg border border-gray-800">
-                <span class="text-gray-400 block text-[10px]">Trung tâm HC</span>
-                <strong class="text-blue-300 font-bold">UBND P. Hưng Lợi</strong>
-            </div>
-            <div class="p-1.5 bg-gray-950/60 rounded-lg border border-gray-800">
-                <span class="text-gray-400 block text-[10px]">Diện tích</span>
-                <strong class="text-emerald-400 font-bold">8,06 km²</strong>
-            </div>
-            <div class="p-1.5 bg-gray-950/60 rounded-lg border border-gray-800">
-                <span class="text-gray-400 block text-[10px]">Dân số</span>
-                <strong class="text-purple-300 font-bold">85.997 người</strong>
-            </div>
-            <div class="p-1.5 bg-gray-950/60 rounded-lg border border-gray-800">
-                <span class="text-gray-400 block text-[10px]">Mã số DVHC</span>
-                <strong class="text-rose-400 font-bold">31147</strong>
-            </div>
-            <div class="p-1.5 bg-gray-950/60 rounded-lg border border-gray-800">
-                <span class="text-gray-400 block text-[10px]">Căn cứ pháp lý</span>
-                <strong class="text-cyan-300 font-bold">NQ 1668/NQ-UBTVQH15</strong>
-            </div>
-        </div>
 
         <!-- Bản đồ GIS & Thống kê -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -166,9 +155,9 @@
                     </div>
                 </div>
 
-                <!-- BIỂU ĐỒ THỐNG KÊ TRỰC QUAN (CHART.JS) -->
+                <!-- BIỂU ĐỒ THỐNG KÊ -->
                 <div class="glass-card p-3 rounded-xl shadow space-y-2">
-                    <p class="font-semibold text-xs text-gray-200 border-b border-gray-700 pb-1">📈 Biểu Đồ Thống Kê Phân Bố Cư Trú</p>
+                    <p class="font-semibold text-xs text-gray-200 border-b border-gray-700 pb-1">📈 Phân Bố Cư Trú</p>
                     <div class="w-full flex justify-center py-1">
                         <canvas id="statChartCanvas" style="max-height: 140px;"></canvas>
                     </div>
@@ -185,7 +174,7 @@
                         <span id="cntTamTru" class="font-bold text-amber-400">0</span>
                     </div>
                     <div class="flex justify-between text-gray-300">
-                        <span>🔴 Khác / Theo dõi:</span>
+                        <span>🔴 NOHN / Khác:</span>
                         <span id="cntTrongDiem" class="font-bold text-rose-400">0</span>
                     </div>
                 </div>
@@ -196,20 +185,20 @@
                         <option value="">-- Tất cả Khu Vực / Tổ --</option>
                     </select>
                     <select id="filterDienNV" onchange="thucHienLocVaTimKiem()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-blue-300 font-medium">
-                        <option value="">-- Tất cả Loại Hình Cư Trú --</option>
+                        <option value="">-- Tất cả Diện Cư Trú --</option>
                         <option value="Thường trú">Thường trú</option>
                         <option value="Tạm trú">Tạm trú</option>
                         <option value="Lưu trú">Lưu trú</option>
+                        <option value="NOHN">NOHN (Nhà ở nhiều hộ)</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Mini-map tổng quan & Công cụ GIS Phường Tân An -->
+            <!-- Mini-map tổng quan -->
             <div class="glass-card p-3 rounded-xl shadow lg:col-span-3 flex flex-col space-y-2">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div>
-                        <h2 class="text-xs font-semibold text-gray-200">🗺️ Bản Đồ GIS Phường Tân An - TP. Cần Thơ (Sáp nhập An Khánh & Hưng Lợi)</h2>
-                        <p class="text-[10px] text-gray-400">Đã tích hợp Ranh giới hành chính mới, Trung tâm HC & Tự động gôm nhóm điểm (MarkerCluster)</p>
+                        <h2 class="text-xs font-semibold text-gray-200">🗺️ Bản Đồ Số GIS Khu Vực Phụ Trách</h2>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="xoaTuyenDuongTuanTra()" class="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-[11px]">Xóa tuyến</button>
@@ -225,7 +214,7 @@
         <!-- Bảng danh sách -->
         <div class="glass-card p-3 rounded-xl shadow flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center mb-3 gap-2">
-                <h2 class="text-xs font-semibold text-gray-200">Danh Sách Hộ Gia Đình & Nhân Khẩu Cư Trú Trên Địa Bàn</h2>
+                <h2 class="text-xs font-semibold text-gray-200">Danh Sách Hộ Gia Đình & Nhân Khẩu Cư Trú</h2>
                 <input type="text" id="searchInput" placeholder="Tìm tên chủ hộ, nhân khẩu, số nhà, hồ sơ, CCCD..." onkeyup="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-white w-full md:w-80 focus:outline-none focus:border-blue-500">
             </div>
             <div class="overflow-x-auto">
@@ -242,23 +231,23 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-gray-800">
-                        <tr><td colspan="7" class="text-center p-6 text-gray-400">Vui lòng tải file Excel dữ liệu dân cư để khởi động hệ thống.</td></tr>
+                        <tr><td colspan="7" class="text-center p-6 text-gray-400">Vui lòng bấm nút "Nhập Excel" để tải file dữ liệu lên.</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal Chi tiết Hộ Khẩu & Chữ ký số -->
+    <!-- Modal Chi tiết Hộ Khẩu -->
     <div id="detailModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-3 z-50">
-        <div class="glass-card w-full max-w-5xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-700">
+        <div class="glass-card w-full max-w-6xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-700">
             <div class="p-3 bg-gray-800/90 flex justify-between items-center border-b border-gray-700 no-print">
-                <h3 class="text-xs font-bold text-blue-400">Hồ Sơ Cư Trú Hộ Gia Đình & Xác Thực Chữ Ký - Phường Tân An</h3>
+                <h3 class="text-xs font-bold text-blue-400">Hồ Sơ Cư Trú Hộ Gia Đình</h3>
                 <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-base">&times;</button>
             </div>
 
             <div id="printArea" class="p-3 overflow-y-auto space-y-3 flex-grow text-xs bg-gray-900/50">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
                     <div class="space-y-2.5 bg-gray-900 p-3 rounded-lg border border-gray-700">
                         <p><strong class="text-gray-400">Số Hồ sơ:</strong> <span id="modalHsct" class="font-mono text-blue-300 font-bold"></span></p>
                         <div>
@@ -270,14 +259,18 @@
                             <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-0.5 font-semibold text-blue-300">Trạng Thái Cư Trú:</label>
-                            <select id="editDienNV" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full mb-1">
+                            <!-- Đổi tên: Trạng thái cư trú -> Diện cư trú -->
+                            <label class="text-gray-400 block mb-0.5 font-semibold text-blue-300">Diện Cư Trú:</label>
+                            <select id="editDienNV" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full mb-2">
                                 <option value="Thường trú">🟢 Thường trú (Ổn định)</option>
                                 <option value="Tạm trú">🟡 Tạm trú</option>
                                 <option value="Lưu trú">🟠 Lưu trú</option>
+                                <option value="NOHN">🔴 NOHN (Nhà ở nhiều hộ)</option>
                             </select>
-                            <label class="text-gray-400 block mb-0.5">Nhật ký kiểm tra hộ (Log Notes):</label>
-                            <textarea id="editGhiChu" rows="2" placeholder="Ghi nhận kiểm tra cư trú thực tế..." class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full"></textarea>
+                            
+                            <!-- Đổi tên: Nhật ký kiểm tra -> Ghi chú -->
+                            <label class="text-gray-400 block mb-0.5">Ghi chú (Bán nhà, chết, dời đi...):</label>
+                            <textarea id="editGhiChu" rows="2" placeholder="Ghi chú tay..." class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full"></textarea>
                         </div>
                     </div>
 
@@ -288,58 +281,71 @@
                         <input type="text" id="editGps" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-gray-400 w-full font-mono text-[10px]" onchange="capNhatBanDoLeaflet()">
                     </div>
 
-                    <!-- Chữ ký số / Xác nhận biên bản -->
-                    <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 flex flex-col justify-between no-print">
-                        <div>
-                            <label class="text-gray-400 block font-semibold text-emerald-300 mb-1">✍️ Chữ Ký Số / Xác Nhận Của Chủ Hộ:</label>
-                            <canvas id="signatureCanvas" class="signature-pad" width="300" height="110"></canvas>
+                    <!-- Thay thế Chữ ký số bằng Ảnh chụp nhà -->
+                    <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 flex flex-col no-print">
+                        <div class="flex-grow">
+                            <label class="text-gray-400 block font-semibold text-emerald-300 mb-2">📸 Ảnh chụp nhà / Hiện trạng (Không bắt buộc):</label>
+                            
+                            <div class="flex items-center gap-2 mb-2">
+                                <label class="cursor-pointer bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded text-xs text-white transition font-medium">
+                                    Tải ảnh / Chụp ảnh
+                                    <input type="file" id="uploadAnhNha" accept="image/*" capture="environment" class="hidden" onchange="xuLyTaiAnh(event)">
+                                </label>
+                                <button onclick="xoaAnhNha()" class="text-xs text-rose-400 underline hidden hover:text-rose-300" id="btnXoaAnh">Xóa ảnh</button>
+                            </div>
+                            
+                            <!-- Khung hiển thị ảnh -->
+                            <div id="khungAnhNha" class="w-full h-[180px] bg-gray-800 border-2 border-dashed border-gray-600 rounded flex items-center justify-center overflow-hidden">
+                                <span class="text-gray-500 text-xs text-center px-4">Chưa có ảnh.<br>Nhấn nút trên để chụp hoặc chọn ảnh gán vào hồ sơ.</span>
+                                <img id="previewAnhNha" src="" class="hidden w-full h-full object-cover">
+                            </div>
+                            <input type="hidden" id="base64AnhNha" value="">
                         </div>
-                        <div class="flex justify-between items-center mt-2">
-                            <button onclick="xoaChuKy()" class="text-xs text-rose-400 underline">Xóa chữ ký</button>
-                            <span id="trangThaiKy" class="text-[10px] text-gray-400">Chưa ký xác nhận</span>
-                        </div>
-                        <input type="hidden" id="base64ChuKy" value="">
                     </div>
                 </div>
                 
-                <!-- Bảng Nhân khẩu -->
+                <!-- Bảng Nhân khẩu (Cho phép chỉnh sửa Giới tính, Dân tộc, Tôn giáo) -->
                 <div class="mt-3 bg-gray-900 p-3 rounded-lg border border-gray-700">
-                    <h4 class="font-semibold text-gray-300 mb-2">Thành viên nhân khẩu trong hộ:</h4>
-                    <div class="overflow-x-auto border border-gray-700 rounded-lg">
-                        <table class="w-full text-left">
+                    <h4 class="font-semibold text-gray-300 mb-2">Thành viên nhân khẩu (Cập nhật để xuất Mẫu KV2):</h4>
+                    <div class="overflow-x-auto border border-gray-700 rounded-lg hide-scroll">
+                        <table class="w-full text-left min-w-[800px]">
                             <thead class="bg-gray-800 text-gray-300 text-[11px]">
                                 <tr>
                                     <th class="p-1.5 w-8 text-center">STT</th>
-                                    <th class="p-1.5">Họ và Tên</th>
-                                    <th class="p-1.5">Quan Hệ</th>
-                                    <th class="p-1.5">Ngày Sinh</th>
-                                    <th class="p-1.5">CCCD / Số Định Danh</th>
+                                    <th class="p-1.5 w-40">Họ và Tên</th>
+                                    <th class="p-1.5 w-24">Quan Hệ</th>
+                                    <th class="p-1.5 w-24">Ngày Sinh</th>
+                                    <th class="p-1.5 w-32">CCCD</th>
+                                    <th class="p-1.5 w-20">Giới Tính</th>
+                                    <th class="p-1.5 w-20">Dân Tộc</th>
+                                    <th class="p-1.5 w-20">Tôn Giáo</th>
                                 </tr>
                             </thead>
                             <tbody id="modalNhanKhauList" class="divide-y divide-gray-800 text-[11px]"></tbody>
                         </table>
                     </div>
+                    <p class="text-[10px] text-gray-500 mt-1 italic">* Mẹo: Có thể sửa trực tiếp thông tin vào các ô bên trên, dữ liệu sẽ tự động lưu vào báo cáo.</p>
                 </div>
             </div>
 
             <div class="p-3 bg-gray-800 flex justify-end gap-2 border-t border-gray-700 no-print">
                 <button onclick="dongModal()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded transition">Đóng</button>
-                <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-5 py-1.5 rounded transition font-bold shadow">Lưu Hồ Sơ & Chữ Ký</button>
+                <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-5 py-1.5 rounded transition font-bold shadow">Lưu Hồ Sơ</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Sổ Tay Công Tác CSKV -->
+    <!-- Modal Sổ Tay CSKV -->
     <div id="notebookModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-3 z-50">
         <div class="glass-card w-full max-w-2xl rounded-xl shadow-2xl p-4 space-y-3 border border-gray-700">
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                <h3 class="text-sm font-bold text-purple-400">📔 Sổ Tay Điện Tử CSKV Phường Tân An</h3>
+                <h3 class="text-sm font-bold text-purple-400">📔 Sổ Tay Điện Tử CSKV</h3>
                 <button onclick="dongSoTay()" class="text-gray-300 hover:text-white font-bold text-base">&times;</button>
             </div>
             <div class="space-y-2 text-xs">
                 <div>
                     <label class="text-gray-300 block mb-1">Nội dung công tác ca trực / kiểm tra địa bàn hôm nay:</label>
-                    <textarea id="notebookContent" rows="6" placeholder="Ghi nhận nhật ký tuần tra, tiếp dân, tình hình an ninh trật tự trên địa bàn Phường Tân An..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-purple-500"></textarea>
+                    <textarea id="notebookContent" rows="6" placeholder="Ghi nhận nhật ký tuần tra, tiếp dân..." class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-purple-500"></textarea>
                 </div>
             </div>
             <div class="flex justify-end gap-2">
@@ -349,18 +355,18 @@
         </div>
     </div>
 
-    <!-- Modal Dynamic RBAC Quản Lý Phân Quyền -->
+    <!-- Modal RBAC Phân Quyền -->
     <div id="rbacModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-3 z-50">
         <div class="glass-card w-full max-w-md rounded-xl shadow-2xl p-4 space-y-3 border border-gray-700 text-xs">
             <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                <h3 class="font-bold text-blue-400">🔐 Cấu Hình Phân Quyền CSKV</h3>
+                <h3 class="font-bold text-blue-400">🔐 Cấu Hình Phân Quyền</h3>
                 <button onclick="dongModalRBAC()" class="text-gray-300 hover:text-white font-bold text-base">&times;</button>
             </div>
             <div class="space-y-2">
                 <p class="text-gray-300">Tài khoản hiện tại:</p>
                 <input type="text" id="rbacUserEmail" readonly class="w-full bg-gray-900 border border-gray-700 rounded px-2.5 py-1.5 text-gray-400">
                 <select id="rbacRoleSelect" class="w-full bg-gray-900 border border-gray-700 rounded px-2.5 py-1.5 text-white">
-                    <option value="can_bo">Cán bộ CSKV (Quản lý khu vực)</option>
+                    <option value="can_bo">Cảnh sát khu vực (Quản lý KV riêng)</option>
                     <option value="admin">Chỉ huy / Quản trị viên (Toàn Phường)</option>
                 </select>
             </div>
@@ -372,45 +378,27 @@
     </div>
 
     <script>
-        const ADMIN_EMAIL = "vanthao3011@gmail.com";
+        const ADMIN_EMAIL = "admin@gmail.com"; // Đổi thành email của bạn
         
-        // Tọa độ chuẩn Phường Tân An mới (Trung tâm nối giữa An Khánh & Hưng Lợi)
-        const TAN_AN_CENTER = [10.0275, 105.7630]; 
-        const TAN_AN_BOUNDS = L.latLngBounds([10.0120, 105.7400], [10.0450, 105.7820]);
-        
-        // Vị trí Trung tâm Hành chính: UBND Phường Hưng Lợi (cũ)
-        const UBND_HUNG_LOI_COORDS = [10.0218, 105.7675];
-
-        // Polygon ranh giới Phường Tân An mới (Bao gồm An Khánh + Hưng Lợi)
-        const TAN_AN_ADMIN_POLYGON = [
-            [10.0380, 105.7480],
-            [10.0420, 105.7620],
-            [10.0330, 105.7760],
-            [10.0210, 105.7780],
-            [10.0150, 105.7650],
-            [10.0180, 105.7500],
-            [10.0280, 105.7440]
-        ];
+        // Tọa độ trung tâm mặc định (Cần Thơ) - Bạn có thể chỉnh theo Phường của bạn
+        const DEFAULT_CENTER = [10.0330, 105.7820]; 
+        const DEFAULT_BOUNDS = L.latLngBounds([10.0100, 105.7500], [10.0500, 105.8000]);
 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
-        let currentUser = { email: "", role: "can_bo", scope: "Phường Tân An" };
+        let currentUser = { email: "", role: "can_bo", scope: "Khu Vực" };
         let tamEmailDangNhap = "";
         
         let mapInstance = null;
         let markerInstance = null;
         let mainMiniMapInstance = null;
-        let markersLayer = null; // MarkerClusterGroup
+        let markersLayer = null; 
         let drawnItems = null;
         let routePolyline = null;
         let statChartInstance = null;
 
-        // Signature Pad logic
-        let isDrawing = false;
-        let sigCanvas, sigCtx;
-
         window.onload = function() {
-            const savedUser = localStorage.getItem("currentUserAuthGIS_TanAn");
+            const savedUser = localStorage.getItem("currentUserAuthGIS_V3");
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
                 kichHoatGiaoDienChinh();
@@ -418,39 +406,44 @@
                 document.getElementById('loginScreen').classList.remove('hidden');
             }
 
-            const savedData = localStorage.getItem("danhSachHoGiaDinhCacheGIS_TanAn");
+            const savedData = localStorage.getItem("danhSachHoGiaDinhCacheGIS_V3");
             if (savedData) {
                 danhSachHoGiaDinh = JSON.parse(savedData);
                 phanTichDuLieuPhanCap();
                 capNhatGiaoDienSauKhiTai();
             }
 
-            const savedNote = localStorage.getItem("notebookCSKV_TanAn");
+            const savedNote = localStorage.getItem("notebookCSKV_V3");
             if (savedNote) {
                 document.getElementById("notebookContent").value = savedNote;
             }
-
-            initSignaturePad();
         };
 
-        function initSignaturePad() {
-            sigCanvas = document.getElementById('signatureCanvas');
-            if(!sigCanvas) return;
-            sigCtx = sigCanvas.getContext('2d');
-            sigCtx.strokeStyle = '#38bdf8';
-            sigCtx.lineWidth = 2.5;
-
-            sigCanvas.addEventListener('mousedown', startDraw);
-            sigCanvas.addEventListener('mousemove', drawing);
-            sigCanvas.addEventListener('mouseup', stopDraw);
-            sigCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDraw(e.touches[0]); });
-            sigCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); drawing(e.touches[0]); });
-            sigCanvas.addEventListener('touchend', stopDraw);
+        // Hàm xử lý ảnh nhà (chuyển sang base64)
+        function xuLyTaiAnh(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Img = e.target.result;
+                    document.getElementById('previewAnhNha').src = base64Img;
+                    document.getElementById('previewAnhNha').classList.remove('hidden');
+                    document.getElementById('khungAnhNha').querySelector('span').classList.add('hidden');
+                    document.getElementById('base64AnhNha').value = base64Img;
+                    document.getElementById('btnXoaAnh').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
         }
-        function startDraw(e) { isDrawing = true; sigCtx.beginPath(); let rect = sigCanvas.getBoundingClientRect(); sigCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top); }
-        function drawing(e) { if (!isDrawing) return; let rect = sigCanvas.getBoundingClientRect(); sigCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top); sigCtx.stroke(); document.getElementById('base64ChuKy').value = sigCanvas.toDataURL(); document.getElementById('trangThaiKy').innerText = "Đã ký xác nhận ✓"; document.getElementById('trangThaiKy').className = "text-[10px] text-emerald-400 font-semibold"; }
-        function stopDraw() { isDrawing = false; }
-        function xoaChuKy() { if(!sigCtx) return; sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height); document.getElementById('base64ChuKy').value = ""; document.getElementById('trangThaiKy').innerText = "Chưa ký xác nhận"; document.getElementById('trangThaiKy').className = "text-[10px] text-gray-400"; }
+
+        function xoaAnhNha() {
+            document.getElementById('previewAnhNha').src = "";
+            document.getElementById('previewAnhNha').classList.add('hidden');
+            document.getElementById('khungAnhNha').querySelector('span').classList.remove('hidden');
+            document.getElementById('base64AnhNha').value = "";
+            document.getElementById('btnXoaAnh').classList.add('hidden');
+            document.getElementById('uploadAnhNha').value = "";
+        }
 
         function buoc1KiemTraGmail() { 
             tamEmailDangNhap = document.getElementById('gmailInput').value.trim();
@@ -460,7 +453,7 @@
             
             document.getElementById('qrcodeCanvas').innerHTML = '';
             new QRCode(document.getElementById("qrcodeCanvas"), {
-                text: "otpauth://totp/HT_CSKV_TanAn:" + tamEmailDangNhap + "?secret=JBSWY3DPEHPK3PXP&issuer=CongAnCanTho",
+                text: "otpauth://totp/QuanLyDiaBan:" + tamEmailDangNhap + "?secret=JBSWY3DPEHPK3PXP&issuer=CongAn",
                 width: 180,
                 height: 180
             });
@@ -470,12 +463,12 @@
         function quayLaiDangNhap() { document.getElementById('otpScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
         function xacThucOtp() {
             let role = tamEmailDangNhap === ADMIN_EMAIL ? 'admin' : 'can_bo';
-            currentUser = { email: tamEmailDangNhap, role: role, scope: 'Phường Tân An' };
-            localStorage.setItem("currentUserAuthGIS_TanAn", JSON.stringify(currentUser));
+            currentUser = { email: tamEmailDangNhap, role: role, scope: 'Khu Vực' };
+            localStorage.setItem("currentUserAuthGIS_V3", JSON.stringify(currentUser));
             document.getElementById('otpScreen').classList.add('hidden');
             kichHoatGiaoDienChinh();
         }
-        function dangXuat() { localStorage.removeItem("currentUserAuthGIS_TanAn"); location.reload(); }
+        function dangXuat() { localStorage.removeItem("currentUserAuthGIS_V3"); location.reload(); }
 
         function kichHoatGiaoDienChinh() {
             document.getElementById('mainApp').classList.remove('hidden');
@@ -484,59 +477,28 @@
             setTimeout(() => khoiTaoMainMiniMap(), 250);
         }
 
-        // --- BẢN ĐỒ GIS PHƯỜNG TÂN AN (CẦN THƠ) & MARKER CLUSTER ---
+        // --- BẢN ĐỒ GIS ---
         function khoiTaoMainMiniMap() {
             if (mainMiniMapInstance) return; 
 
             let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
-            let satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Tiles © Esri' });
+            let satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri Satellite' });
 
             mainMiniMapInstance = L.map('mainMiniMap', {
-                center: TAN_AN_CENTER,
+                center: DEFAULT_CENTER,
                 zoom: 15,
-                maxBounds: TAN_AN_BOUNDS,
+                maxBounds: DEFAULT_BOUNDS,
                 maxBoundsViscosity: 1.0,
                 minZoom: 13,
                 layers: [osm]
             });
 
             let baseMaps = {
-                "Đường Phố": osm,
-                "Vệ Tinh High-Res": satellite
+                "Đường Phố (OSM)": osm,
+                "Vệ Tinh (Esri)": satellite
             };
             L.control.layers(baseMaps).addTo(mainMiniMapInstance);
 
-            // Vẽ ranh giới hành chính chuẩn Phường Tân An mới
-            let ranhGioiTanAn = L.polygon(TAN_AN_ADMIN_POLYGON, {
-                color: '#ef4444',
-                weight: 2,
-                fillOpacity: 0.08,
-                dashArray: '6, 6'
-            }).addTo(mainMiniMapInstance);
-            
-            ranhGioiTanAn.bindTooltip(`
-                <b>Phường Tân An (Sáp nhập mới)</b><br>
-                • Đơn vị sáp nhập: P. An Khánh & P. Hưng Lợi<br>
-                • Trung tâm HC: UBND P. Hưng Lợi<br>
-                • Diện tích: 8,06 km² | Dân số: 85.997 người
-            `, { sticky: true });
-
-            // Ghim vị trí Trung tâm hành chính (UBND Phường Hưng Lợi cũ)
-            let adminIcon = L.divIcon({
-                className: 'admin-center-pin',
-                html: `<div style="background-color: #dc2626; color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid white; box-shadow: 0 0 8px rgba(220, 38, 38, 0.9);" class="custom-pin-pulse">🏛️</div>`,
-                iconSize: [22, 22]
-            });
-            L.marker(UBND_HUNG_LOI_COORDS, { icon: adminIcon }).addTo(mainMiniMapInstance).bindPopup(`
-                <div style="color: black; font-size: 12px;">
-                    <b style="color: #dc2626;">🏛️ TRUNG TÂM HÀNH CHÍNH</b><br>
-                    <b>UBND Phường Hưng Lợi (Mới: Phường Tân An)</b><br>
-                    • Mã DVHC: 31147<br>
-                    • Căn cứ: NQ 1668/NQ-UBTVQH15
-                </div>
-            `);
-
-            // Tích hợp MarkerClusterGroup để gôm nhóm điểm
             markersLayer = L.markerClusterGroup({
                 spiderfyOnMaxZoom: true,
                 showCoverageOnHover: false,
@@ -544,7 +506,6 @@
             });
             mainMiniMapInstance.addLayer(markersLayer);
 
-            // Leaflet Draw Plugin cho phép vẽ thêm vùng quản lý
             drawnItems = new L.FeatureGroup();
             mainMiniMapInstance.addLayer(drawnItems);
             let drawControl = new L.Control.Draw({
@@ -552,11 +513,6 @@
                 draw: { polygon: { allowIntersection: false, shapeOptions: { color: '#3b82f6' } }, marker: false, circle: false, rectangle: false, polyline: false, circlemarker: false }
             });
             mainMiniMapInstance.addControl(drawControl);
-
-            mainMiniMapInstance.on(L.Draw.Event.CREATED, function (e) {
-                drawnItems.addLayer(e.layer);
-                alert("Đã ghi nhận khu vực vẽ phân khu trên địa bàn!");
-            });
 
             capNhatCacDiemTrenMiniMap(danhSachHoGiaDinh);
         }
@@ -566,7 +522,7 @@
             markersLayer.clearLayers(); 
 
             data.forEach(ho => {
-                let coords = TAN_AN_CENTER;
+                let coords = DEFAULT_CENTER;
                 if (ho.gps && ho.gps.includes(',')) {
                     let parts = ho.gps.split(',');
                     let lat = parseFloat(parts[0]), lon = parseFloat(parts[1]);
@@ -576,6 +532,7 @@
                 let colorPin = '#10b981'; 
                 let dien = ho.dienNghiepVu || "Thường trú";
                 if (dien === 'Tạm trú' || dien === 'Lưu trú') colorPin = '#f59e0b';
+                else if (dien === 'NOHN') colorPin = '#f43f5e';
 
                 let customIcon = L.divIcon({
                     className: 'custom-pin',
@@ -605,7 +562,7 @@
                     let p = h.gps.split(',');
                     return [parseFloat(p[0]), parseFloat(p[1])];
                 }
-                return TAN_AN_CENTER;
+                return DEFAULT_CENTER;
             });
 
             if(routePolyline) mainMiniMapInstance.removeLayer(routePolyline);
@@ -613,7 +570,7 @@
             routePolyline = L.polyline(points, { color: '#3b82f6', weight: 4, opacity: 0.8, dashArray: '8, 8' }).addTo(mainMiniMapInstance);
             mainMiniMapInstance.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
 
-            alert(`✅ Đã thiết lập lộ trình kiểm tra địa bàn qua ${points.length} hộ dân!`);
+            alert(`✅ Đã thiết lập lộ trình kiểm tra qua ${points.length} hộ dân!`);
         }
 
         function xoaTuyenDuongTuanTra() {
@@ -623,20 +580,18 @@
             }
         }
 
+        // XỬ LÝ CHUẨN HÓA ĐỊA CHỈ (KHÔNG FIX CỨNG KHU VỰC 7 NỮA)
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc) {
-            let full = diaChiGoc || "";
-            let pX = phuongXaGoc || "";
-            if (pX && !full.toLowerCase().includes(pX.toLowerCase())) full += `, ` + pX;
-            if (!full.toLowerCase().includes("khu vực") && !full.toLowerCase().includes("kv")) full = `Khu Vực 1, ` + full;
+            let full = (diaChiGoc || "").trim();
+            let pX = (phuongXaGoc || "").trim();
             
-            // Tự động chuẩn hóa các tên phường cũ (An Khánh, Hưng Lợi) về Phường Tân An
-            if (!full.toLowerCase().includes("tân an")) {
-                full += `, Phường Tân An, Cần Thơ`;
+            if (pX && !full.toLowerCase().includes(pX.toLowerCase())) {
+                full += `, ` + pX;
             }
             return full;
         }
 
-        // --- NHẬN DIỆN EXCEL DÂN CƯ THÔNG MINH ---
+        // --- NHẬN DIỆN FILE EXCEL DÂN CƯ ---
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -647,27 +602,30 @@
                     const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                     
-                    let mapCol = { hsct: -1, hoTen: -1, ngaySinh: -1, quanHe: -1, diaChi: -1, phuongXa: -1, chuHo: -1, cccd: -1, gioiTinh: -1, danToc: -1, tonGiao: -1, ngheNghiep: -1 };
+                    let mapCol = { hsct: -1, hoTen: -1, ngaySinh: -1, quanHe: -1, diaChi: -1, phuongXa: -1, chuHo: -1, cccd: -1, gioiTinh: -1, dienNV: -1, danToc: -1, tonGiao: -1 };
                     
-                    for (let i = 0; i < Math.min(10, rows.length); i++) {
+                    for (let i = 0; i < Math.min(15, rows.length); i++) {
                         let r = rows[i] || [];
                         r.forEach((text, j) => {
                             let t = String(text).toLowerCase().replace(/\s+/g, '');
                             if (t.includes('hsct') || t.includes('hồsơ')) mapCol.hsct = j;
                             if (t.includes('họtên') || t === 'tên') mapCol.hoTen = j;
-                            if (t.includes('ngàysinh')) mapCol.ngaySinh = j;
+                            if (t.includes('ngàysinh') || t === 'ns') mapCol.ngaySinh = j;
                             if (t.includes('quanhệ')) mapCol.quanHe = j;
-                            if (t.includes('địachỉ') || t.includes('thườngtrú')) mapCol.diaChi = j;
+                            if (t.includes('địachỉ') || t.includes('thườngtrú') || t.includes('tạmtrú')) mapCol.diaChi = j;
                             if (t.includes('phường') || t.includes('xã')) mapCol.phuongXa = j;
                             if (t.includes('chủhộ')) mapCol.chuHo = j;
-                            if (t.includes('cccd') || t.includes('địnhdanh')) mapCol.cccd = j;
+                            if (t.includes('cccd') || t.includes('địnhdanh') || t.includes('cmnd')) mapCol.cccd = j;
                             if (t.includes('giới')) mapCol.gioiTinh = j;
+                            if (t.includes('diện') || t.includes('loại') || t.includes('trạngthái')) mapCol.dienNV = j;
+                            if (t.includes('dântộc')) mapCol.danToc = j;
+                            if (t.includes('tôngiáo')) mapCol.tonGiao = j;
                         });
                         if (mapCol.hoTen !== -1) break; 
                     }
 
                     if (mapCol.hoTen === -1) {
-                        mapCol = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, cccd: 4, diaChi: 5, phuongXa: 6, chuHo: 7 };
+                        mapCol = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, cccd: 4, diaChi: 5, phuongXa: 6, chuHo: 7, dienNV: 8 };
                     }
 
                     let mapHoMoi = {};
@@ -676,13 +634,14 @@
                         if (!r || !r[mapCol.hoTen]) continue;
                         
                         let hoTenVal = String(r[mapCol.hoTen] || '').trim();
-                        if (hoTenVal.toLowerCase() === 'họ và tên' || hoTenVal.toLowerCase() === 'tên') continue;
+                        if (hoTenVal.toLowerCase() === 'họ và tên' || hoTenVal.toLowerCase() === 'tên' || hoTenVal === '') continue;
 
                         let hsct = mapCol.hsct !== -1 ? String(r[mapCol.hsct] || '').trim() : '';
                         let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : 'Thành viên';
                         let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
                         let phuongXaGoc = mapCol.phuongXa !== -1 ? String(r[mapCol.phuongXa] || '').trim() : '';
                         let tenChuHoCol = mapCol.chuHo !== -1 ? String(r[mapCol.chuHo] || '').trim() : '';
+                        let dienNV = mapCol.dienNV !== -1 ? String(r[mapCol.dienNV] || 'Thường trú').trim() : 'Thường trú';
                         
                         let chuHoFinal = tenChuHoCol;
                         if (!chuHoFinal || quanHe.toLowerCase().includes('chủ hộ')) chuHoFinal = hoTenVal;
@@ -693,10 +652,11 @@
                                 hsct: hsct || 'HS-' + Math.floor(Math.random()*10000), 
                                 diaChi: chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc), 
                                 chuHo: chuHoFinal, 
-                                dienNghiepVu: 'Thường trú',
-                                ghiChu: 'Đã nhập dữ liệu',
+                                dienNghiepVu: dienNV,
+                                ghiChu: '', // Sẵn sàng để gõ vào
+                                anhNha: '', // Base64 ảnh
                                 thanhVien: [], 
-                                gps: `${TAN_AN_CENTER[0] + (Math.random() - 0.5)*0.015}, ${TAN_AN_CENTER[1] + (Math.random() - 0.5)*0.015}`
+                                gps: `${DEFAULT_CENTER[0] + (Math.random() - 0.5)*0.012}, ${DEFAULT_CENTER[1] + (Math.random() - 0.5)*0.012}`
                             };
                         }
                         
@@ -717,21 +677,21 @@
                             ngaySinh: ngaySinhStr, 
                             cccd: mapCol.cccd !== -1 ? String(r[mapCol.cccd] || '') : '',
                             gioiTinh: mapCol.gioiTinh !== -1 ? String(r[mapCol.gioiTinh] || 'Nam') : 'Nam',
-                            danToc: 'Kinh',
-                            tonGiao: 'Không',
-                            ngheNghiep: 'Tự do'
+                            danToc: mapCol.danToc !== -1 ? String(r[mapCol.danToc] || 'Kinh') : 'Kinh',
+                            tonGiao: mapCol.tonGiao !== -1 ? String(r[mapCol.tonGiao] || 'Không') : 'Không'
                         });
                     }
 
                     let danhSachMoi = Object.values(mapHoMoi);
                     if (danhSachMoi.length === 0) return alert("Không tìm thấy dữ liệu hợp lệ trong file Excel!");
 
-                    danhSachHoGiaDinh = danhSachMoi;
-                    localStorage.setItem("danhSachHoGiaDinhCacheGIS_TanAn", JSON.stringify(danhSachHoGiaDinh));
+                    // Gộp dữ liệu cũ với mới hoặc ghi đè
+                    danhSachHoGiaDinh = [...danhSachHoGiaDinh, ...danhSachMoi];
                     
+                    localStorage.setItem("danhSachHoGiaDinhCacheGIS_V3", JSON.stringify(danhSachHoGiaDinh));
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert(`✅ Đã nhập thành công ${danhSachHoGiaDinh.length} hộ dân Phường Tân An mới!`);
+                    alert(`✅ Đã nhập thành công ${danhSachMoi.length} hộ dân!`);
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -741,7 +701,7 @@
         function phanTichDuLieuPhanCap() {
             let setKhuVuc = new Set();
             danhSachHoGiaDinh.forEach(ho => {
-                let kvMatches = (ho.diaChi || "").match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Kv\s*\d+|An Khánh|Hưng Lợi)/gi);
+                let kvMatches = (ho.diaChi || "").match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Tổ\s*\d+|Kv\s*\d+)/gi);
                 if (kvMatches) kvMatches.forEach(kv => setKhuVuc.add(kv.trim()));
             });
             const selKv = document.getElementById('filterKhuVuc');
@@ -790,7 +750,6 @@
             thucHienLocVaTimKiem();
         }
 
-        // --- CẬP NHẬT BIỂU ĐỒ STAT (CHART.JS) ---
         function capNhatBieuDoStat(tt, tamt, khac) {
             const ctx = document.getElementById('statChartCanvas');
             if(!ctx) return;
@@ -800,7 +759,7 @@
             statChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Thường trú', 'Tạm/Lưu trú', 'Khác'],
+                    labels: ['Thường trú', 'Tạm/Lưu trú', 'NOHN/Khác'],
                     datasets: [{
                         data: [tt, tamt, khac],
                         backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
@@ -821,21 +780,24 @@
             tbody.innerHTML = '';
             if (data.length === 0) return tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp.</td></tr>`;
             
-            data.forEach((ho, index) => {
+            data.forEach((ho) => {
+                // Lấy index gốc từ mảng chính danhSachHoGiaDinh để khi sửa/lưu không bị nhầm
+                let originalIndex = danhSachHoGiaDinh.indexOf(ho);
                 let dien = ho.dienNghiepVu || 'Thường trú';
                 let styleNV = "bg-emerald-900/50 text-emerald-300 border-emerald-700";
                 if (dien === 'Tạm trú' || dien === 'Lưu trú') styleNV = "bg-amber-900/60 text-amber-300 border-amber-700";
+                else if (dien === 'NOHN') styleNV = "bg-rose-900/60 text-rose-300 border-rose-700";
 
                 let row = document.createElement('tr');
                 row.className = "hover:bg-gray-800/50 border-b border-gray-800 transition";
                 row.innerHTML = `
-                    <td class="p-2">${index + 1}</td>
+                    <td class="p-2">${originalIndex + 1}</td>
                     <td class="p-2 text-blue-300 font-mono">${ho.hsct}</td>
                     <td class="p-2 font-semibold text-white">${ho.chuHo}</td>
                     <td class="p-2 text-gray-300">${ho.diaChi}</td>
                     <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] border ${styleNV}">${dien}</span></td>
                     <td class="p-2 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 rounded-full font-bold">${ho.thanhVien ? ho.thanhVien.length : 0}</span></td>
-                    <td class="p-2 text-center"><button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded text-[11px] shadow">Chi tiết</button></td>
+                    <td class="p-2 text-center"><button onclick="xemChiTiet(${originalIndex})" class="bg-blue-600 hover:bg-blue-700 px-2.5 py-1 rounded text-[11px] shadow">Chi tiết</button></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -849,20 +811,33 @@
             document.getElementById('editChuHo').value = ho.chuHo;
             document.getElementById('editDiaChi').value = ho.diaChi;
             document.getElementById('editGhiChu').value = ho.ghiChu || '';
-            document.getElementById('editGps').value = ho.gps || `${TAN_AN_CENTER[0]}, ${TAN_AN_CENTER[1]}`;
+            document.getElementById('editGps').value = ho.gps || `${DEFAULT_CENTER[0]}, ${DEFAULT_CENTER[1]}`;
             document.getElementById('editDienNV').value = ho.dienNghiepVu || 'Thường trú';
 
-            xoaChuKy();
+            // Load Ảnh nhà nếu có
+            xoaAnhNha();
+            if (ho.anhNha) {
+                document.getElementById('previewAnhNha').src = ho.anhNha;
+                document.getElementById('previewAnhNha').classList.remove('hidden');
+                document.getElementById('khungAnhNha').querySelector('span').classList.add('hidden');
+                document.getElementById('base64AnhNha').value = ho.anhNha;
+                document.getElementById('btnXoaAnh').classList.remove('hidden');
+            }
+
             const tbody = document.getElementById('modalNhanKhauList');
             tbody.innerHTML = '';
             if(ho.thanhVien) {
                 ho.thanhVien.forEach((tv, i) => {
+                    // Dùng thẻ input để sửa trực tiếp trong bảng
                     tbody.innerHTML += `<tr>
                         <td class="p-1.5 text-center text-gray-400">${i+1}</td>
-                        <td class="p-1.5 text-white font-medium">${tv.hoTen}</td>
-                        <td class="p-1.5 text-gray-300">${tv.quanHe}</td>
-                        <td class="p-1.5 text-gray-400">${tv.ngaySinh || ''}</td>
-                        <td class="p-1.5 text-blue-300 font-mono">${tv.cccd || ''}</td>
+                        <td class="p-1.5"><input type="text" value="${tv.hoTen || ''}" onchange="capNhatTV(${i}, 'hoTen', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.quanHe || ''}" onchange="capNhatTV(${i}, 'quanHe', this.value)" class="bg-transparent border-b border-gray-600 w-full text-gray-300 px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.ngaySinh || ''}" onchange="capNhatTV(${i}, 'ngaySinh', this.value)" class="bg-transparent border-b border-gray-600 w-full text-gray-400 px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.cccd || ''}" onchange="capNhatTV(${i}, 'cccd', this.value)" class="bg-transparent border-b border-gray-600 w-full text-blue-300 font-mono px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.gioiTinh || 'Nam'}" onchange="capNhatTV(${i}, 'gioiTinh', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.danToc || 'Kinh'}" onchange="capNhatTV(${i}, 'danToc', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.tonGiao || 'Không'}" onchange="capNhatTV(${i}, 'tonGiao', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
                     </tr>`;
                 });
             }
@@ -871,9 +846,15 @@
             setTimeout(() => khoiTaoBanDoLeaflet(), 300);
         }
 
+        // Cập nhật giá trị nhân khẩu ngay khi sửa trên Modal
+        function capNhatTV(tvIndex, field, value) {
+            if (currentSelectedHoIndex === null) return;
+            danhSachHoGiaDinh[currentSelectedHoIndex].thanhVien[tvIndex][field] = value;
+        }
+
         function khoiTaoBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
-            let coords = TAN_AN_CENTER;
+            let coords = DEFAULT_CENTER;
             if (gpsVal.includes(',')) {
                 let parts = gpsVal.split(',');
                 let lat = parseFloat(parts[0]), lon = parseFloat(parts[1]);
@@ -881,7 +862,7 @@
             }
             
             if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-            mapInstance = L.map('mapContainer', { center: coords, zoom: 17, maxBounds: TAN_AN_BOUNDS, maxBoundsViscosity: 1.0, minZoom: 13 });
+            mapInstance = L.map('mapContainer', { center: coords, zoom: 17, maxBounds: DEFAULT_BOUNDS, maxBoundsViscosity: 1.0, minZoom: 13 });
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
             
             markerInstance = L.marker(coords, { draggable: true }).addTo(mapInstance);
@@ -914,12 +895,13 @@
             ho.ghiChu = document.getElementById('editGhiChu').value;
             ho.gps = document.getElementById('editGps').value;
             ho.dienNghiepVu = document.getElementById('editDienNV').value;
+            ho.anhNha = document.getElementById('base64AnhNha').value;
 
-            localStorage.setItem("danhSachHoGiaDinhCacheGIS_TanAn", JSON.stringify(danhSachHoGiaDinh));
+            localStorage.setItem("danhSachHoGiaDinhCacheGIS_V3", JSON.stringify(danhSachHoGiaDinh));
             phanTichDuLieuPhanCap();
             capNhatGiaoDienSauKhiTai();
             dongModal();
-            alert("✅ Đã cập nhật Hồ Sơ Cư Trú & Xác thực thành công!");
+            alert("✅ Đã cập nhật Hồ Sơ Cư Trú thành công!");
         }
 
         function dongModal() {
@@ -932,7 +914,7 @@
         function luuSoTay() {
             let note = document.getElementById('notebookContent').value;
             if(!note) return alert("Vui lòng nhập nội dung!");
-            localStorage.setItem("notebookCSKV_TanAn", note);
+            localStorage.setItem("notebookCSKV_V3", note);
             alert("✅ Đã lưu sổ tay điện tử thành công!");
             dongSoTay();
         }
@@ -945,7 +927,7 @@
         function dongModalRBAC() { document.getElementById('rbacModal').classList.add('hidden'); }
         function luuRBAC() {
             currentUser.role = document.getElementById('rbacRoleSelect').value;
-            localStorage.setItem("currentUserAuthGIS_TanAn", JSON.stringify(currentUser));
+            localStorage.setItem("currentUserAuthGIS_V3", JSON.stringify(currentUser));
             document.getElementById('userBadgeRole').innerText = currentUser.role === 'admin' ? 'Quyền: Admin' : 'CSKV';
             alert("✅ Đã cập nhật phân quyền thành công!");
             dongModalRBAC();
@@ -953,95 +935,87 @@
 
         function xoaDuLieuExcel() {
             if (confirm("Chắc chắn xóa TẤT CẢ dữ liệu trên hệ thống?")) {
-                localStorage.removeItem("danhSachHoGiaDinhCacheGIS_TanAn");
+                localStorage.removeItem("danhSachHoGiaDinhCacheGIS_V3");
                 danhSachHoGiaDinh = []; capNhatGiaoDienSauKhiTai();
             }
         }
 
-        // --- XUẤT EXCEL THỐNG KÊ ĐẦY ĐỦ CÁC CỘT TIÊU CHÍ ---
-        function xuatBaoCaoExcelThongKeFull() {
+        // --- XUẤT EXCEL THEO ĐÚNG MẪU KV2 ---
+        function xuatBaoCaoExcelKV2() {
             if (danhSachHoGiaDinh.length === 0) return alert("Không có dữ liệu để xuất!");
             const filteredData = thucHienLocVaTimKiem();
             
-            let headers = [
-                "STT", 
-                "Số HSCT/Hồ Sơ", 
-                "Họ Tên Chủ Hộ", 
-                "Họ Và Tên Nhân Khẩu", 
-                "Quan Hệ Với Chủ Hộ", 
-                "Ngày Tháng Năm Sinh", 
-                "Giới Tính", 
-                "Số CCCD / Mã Định Danh", 
-                "Dân Tộc", 
-                "Tôn Giáo", 
-                "Nghề Nghiệp", 
-                "Nơi Làm Việc", 
-                "Địa Chỉ Thường Trú/Cư Trú", 
-                "Khu Vực / Tổ", 
-                "Trạng Thái Cư Trú", 
-                "Ghi Chú Công Tác"
+            // Xây dựng Header 2 dòng giống hệt bảng KV2
+            let row1 = [
+                "TT", "Họ và tên", "Quan hệ với chủ hộ/ người đại diện", 
+                "Ngày, tháng, năm sinh", "", // Cột D và E dành cho Nam/Nữ
+                "Quê quán", "Số định danh cá nhân/căn cước/Số giấy tờ tùy thân khác còn giá trị sử dụng",
+                "Dân tộc", "Quốc tịch", "Tôn giáo", "Nghề nghiệp, nơi làm việc",
+                "Ở đâu đến, ngày đến, mục đích", "Chuyển đi đâu, ngày đi, mục đích",
+                "Thái độ chính trị", "Thực tế sinh sống nhưng không đủ điều kiện đăng ký thường trú, tạm trú, chưa khai báo thông tin cư trú",
+                "Quan hệ xã hội cần chú ý (nếu có)", "Số điện thoại", "Ghi chú"
+            ];
+            
+            let row2 = [
+                "(1)", "(2)", "(3)", 
+                "Nam (4)", "Nữ (5)", 
+                "(6)", "(7)", "(8)", "(9)", "(10)", "(11)", "(12)", "(13)", "(14)", "(15)", "(16)", "(17)", "(18)"
             ];
 
-            let rows = [headers];
+            let rows = [row1, row2];
             let sttCounter = 1;
 
             filteredData.forEach(ho => {
-                let kvMatch = ho.diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Kv\s*\d+|An Khánh|Hưng Lợi)/gi);
-                let khuVucStr = kvMatch ? kvMatch[0] : "Khu Vực 1";
+                let members = ho.thanhVien && ho.thanhVien.length > 0 ? ho.thanhVien : [{
+                    hoTen: ho.chuHo, quanHe: "Chủ hộ", gioiTinh: "Nam", danToc: "Kinh", tonGiao: "Không"
+                }];
 
-                if (ho.thanhVien && ho.thanhVien.length > 0) {
-                    ho.thanhVien.forEach(tv => {
-                        rows.push([
-                            sttCounter++,
-                            ho.hsct || "",
-                            ho.chuHo || "",
-                            tv.hoTen || "",
-                            tv.quanHe || "Thành viên",
-                            tv.ngaySinh || "",
-                            tv.gioiTinh || "Nam",
-                            tv.cccd || "",
-                            tv.danToc || "Kinh",
-                            tv.tonGiao || "Không",
-                            tv.ngheNghiep || "",
-                            tv.noiLamViec || "",
-                            ho.diaChi || "",
-                            khuVucStr,
-                            ho.dienNghiepVu || "Thường trú",
-                            ho.ghiChu || ""
-                        ]);
-                    });
-                } else {
+                members.forEach(tv => {
+                    let gt = (tv.gioiTinh || "").toLowerCase();
+                    let nsNam = (gt === "nam") ? (tv.ngaySinh || "") : "";
+                    let nsNu = (gt === "nữ" || gt === "nu") ? (tv.ngaySinh || "") : "";
+                    
                     rows.push([
-                        sttCounter++,
-                        ho.hsct || "",
-                        ho.chuHo || "",
-                        ho.chuHo || "",
-                        "Chủ hộ",
-                        "",
-                        "Nam",
-                        "",
-                        "Kinh",
-                        "Không",
-                        "",
-                        "",
-                        ho.diaChi || "",
-                        khuVucStr,
-                        ho.dienNghiepVu || "Thường trú",
-                        ho.ghiChu || ""
+                        sttCounter++, // (1)
+                        tv.hoTen || "", // (2)
+                        tv.quanHe || "", // (3)
+                        nsNam, // (4)
+                        nsNu,  // (5)
+                        tv.queQuan || "", // (6)
+                        tv.cccd || "", // (7)
+                        tv.danToc || "Kinh", // (8)
+                        tv.quocTich || "Việt Nam", // (9)
+                        tv.tonGiao || "Không", // (10)
+                        tv.ngheNghiep || "", // (11)
+                        "", // (12)
+                        "", // (13)
+                        "", // (14)
+                        ho.dienNghiepVu === "NOHN" ? "NOHN" : "", // (15)
+                        "", // (16)
+                        tv.sdt || "", // (17)
+                        ho.ghiChu || "" // (18)
                     ]);
-                }
+                });
             });
 
             const ws = XLSX.utils.aoa_to_sheet(rows);
+            
+            // Trộn ô (Merge Cells) cho Tiêu đề Ngày sinh (Cột D1 và E1 - index 3, 4)
+            ws['!merges'] = [
+                { s: {r:0, c:3}, e: {r:0, c:4} }
+            ];
+
+            // Định dạng độ rộng cột cho đẹp
             ws['!cols'] = [
-                { wch: 6 }, { wch: 15 }, { wch: 22 }, { wch: 22 }, { wch: 18 },
-                { wch: 15 }, { wch: 10 }, { wch: 18 }, { wch: 10 }, { wch: 10 },
-                { wch: 18 }, { wch: 20 }, { wch: 35 }, { wch: 15 }, { wch: 15 }, { wch: 25 }
+                { wch: 5 }, { wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, // 1-5
+                { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, // 6-10
+                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, // 11-15
+                { wch: 20 }, { wch: 15 }, { wch: 25 } // 16-18
             ];
 
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Dan_Cu_Tan_An_Moi");
-            XLSX.writeFile(wb, "Thong_Ke_Dan_Cu_Phuong_Tan_An_Full.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Bao_Cao_KV2");
+            XLSX.writeFile(wb, "Bao_Cao_Mau_KV2_CSKV.xlsx");
         }
     </script>
 </body>
