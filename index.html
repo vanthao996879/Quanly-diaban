@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Địa Bàn Cho CSKV & Bản Đồ Số GIS</title>
+    <title>Hệ Thống Quản Lý Địa Bàn CSKV & Báo Cáo Mẫu KV2, KV9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR / QR CODE -->
+    <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
             <div class="text-center space-y-1">
@@ -46,12 +46,12 @@
             
             <div class="space-y-3">
                 <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center space-y-3">
-                    <p class="text-[11px] text-gray-300">Mở ứng dụng <strong>Google Authenticator</strong> hoặc <strong>Authy</strong> trên điện thoại và quét mã QR khổ lớn bên dưới:</p>
+                    <p class="text-[11px] text-gray-300">Quét mã QR bằng Google Authenticator / Authy:</p>
                     <div id="qrcodeCanvas"></div>
                     <p id="systemGeneratedOtpNote" class="text-xs text-amber-400 font-mono font-bold"></p>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số từ ứng dụng:</label>
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số:</label>
                     <input type="text" id="otpCodeInput" maxlength="6" placeholder="------" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div class="flex gap-3">
@@ -80,8 +80,12 @@
                     <span>+ Tải Excel Lên</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
+                <!-- Nút Xuất Mẫu KV2 & KV9 tích hợp -->
                 <button onclick="xuatBaoCaoKV2()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
                     <span>📊 Xuất Mẫu KV2</span>
+                </button>
+                <button onclick="xuatBaoCaoKV9()" class="bg-teal-600 hover:bg-teal-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
+                    <span>📈 Xuất Mẫu KV9</span>
                 </button>
                 <button onclick="xoaDuLieuExcel()" class="bg-rose-600 hover:bg-rose-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
                     <span>🗑️ Xóa DL Toàn Cục</span>
@@ -152,7 +156,7 @@
         </div>
     </div>
 
-    <!-- Modal Phân Quyền Cán Bộ (Dành cho Admin) -->
+    <!-- Modal Phân Quyền Cán Bộ -->
     <div id="roleModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-gray-700 pb-3">
@@ -305,12 +309,7 @@
             document.getElementById('qrcodeCanvas').innerHTML = "";
             let otpAuthUrl = `otpauth://totp/GIS_CSKV:${emailInput}?secret=JBSWY3DPEHPK3PXP&issuer=QuanLyDiaBan`;
             new QRCode(document.getElementById('qrcodeCanvas'), {
-                text: otpAuthUrl,
-                width: 160,
-                height: 160,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.M
+                text: otpAuthUrl, width: 160, height: 160, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.M
             });
         }
 
@@ -321,9 +320,7 @@
 
         function xacThucOtp() {
             const otpInput = document.getElementById('otpCodeInput').value.trim();
-            if (otpInput !== generatedOtpCode) {
-                return alert("Mã OTP từ Google Authenticator không chính xác!");
-            }
+            if (otpInput !== generatedOtpCode) return alert("Mã OTP từ Google Authenticator không chính xác!");
             currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7' };
             kiemTraVaGanQuyenThucTe();
             sessionStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
@@ -367,7 +364,7 @@
         function themHoacSuaPhanQuyen() {
             let email = document.getElementById('newCbEmail').value.trim().toLowerCase();
             let scope = document.getElementById('newCbScope').value.trim();
-            if (!email || !scope) return alert("Vui lòng nhập đầy đủ Gmail và phân quyền khu vực!");
+            if (!email || !scope) return alert("Vui lòng nhập đầy đủ Gmail và phân quyền!");
 
             let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
             configMap[email] = { role: 'can_bo', scope: scope };
@@ -376,7 +373,7 @@
             document.getElementById('newCbEmail').value = '';
             document.getElementById('newCbScope').value = '';
             hienThiBangPhanQuyen();
-            alert("Đã phân quyền thành công cho cán bộ!");
+            alert("Đã phân quyền thành công!");
         }
 
         function xoaPhanQuyen(email) {
@@ -391,19 +388,14 @@
             tbody.innerHTML = '';
             let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
             let emails = Object.keys(configMap);
-            if (emails.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-400">Chưa có phân quyền bổ sung nào.</td></tr>`;
-                return;
-            }
+            if (emails.length === 0) return tbody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-400">Chưa có phân quyền bổ sung.</td></tr>`;
             emails.forEach(email => {
                 let info = configMap[email];
                 tbody.innerHTML += `
                     <tr class="border-b border-gray-700">
                         <td class="p-2 text-white font-medium">${email}</td>
                         <td class="p-2 text-amber-300 font-semibold">${info.scope}</td>
-                        <td class="p-2 text-center">
-                            <button onclick="xoaPhanQuyen('${email}')" class="bg-rose-600 hover:bg-rose-700 px-2 py-1 rounded text-[10px] text-white">Xóa</button>
-                        </td>
+                        <td class="p-2 text-center"><button onclick="xoaPhanQuyen('${email}')" class="bg-rose-600 hover:bg-rose-700 px-2 py-1 rounded text-[10px] text-white">Xóa</button></td>
                     </tr>
                 `;
             });
@@ -417,9 +409,7 @@
             const tuKhoaGiapRanh = ["giáp ranh", "tiếp giáp", "đường ranh", "ranh giới"];
             let laGiapRanh = tuKhoaGiapRanh.some(tu => full.toLowerCase().includes(tu));
 
-            if (laGiapRanh && !full.includes("[Giáp Ranh]")) {
-                full = `[Giáp Ranh KV${soKv}] ${full}`;
-            }
+            if (laGiapRanh && !full.includes("[Giáp Ranh]")) full = `[Giáp Ranh KV${soKv}] ${full}`;
             if (!full.toLowerCase().includes("tân an")) full += `, Phường Tân An`;
             return full;
         }
@@ -471,12 +461,7 @@
                         let key = hsct ? hsct : (diaChiFull || 'khong_ro_diachi');
 
                         if (!tempHoMap[key]) {
-                            tempHoMap[key] = {
-                                hsct: hsct || 'Chưa có',
-                                diaChi: diaChiFull,
-                                danhSachThanhVien: [],
-                                chuHoChinhXac: ""
-                            };
+                            tempHoMap[key] = { hsct: hsct || 'Chưa có', diaChi: diaChiFull, danhSachThanhVien: [], chuHoChinhXac: "" };
                         }
 
                         let qhLower = quanHe.toLowerCase();
@@ -487,21 +472,15 @@
                         tempHoMap[key].danhSachThanhVien.push({ hoTen: hoTen, quanHe: quanHe });
                     }
 
-                    // TỐI ƯU QUAN HỆ THEO YÊU CẦU:
-                    // - Nếu hộ chỉ có 1 người duy nhất -> tự động ép quan hệ là "Chủ hộ".
-                    // - Nếu có từ 2 người trở lên mà không tìm thấy từ khóa "Chủ hộ" rõ ràng -> để trống (hoặc giữ nguyên nếu file có sẵn).
+                    // Xử lý chuẩn quan hệ theo yêu cầu: 1 người tự động gán "Chủ hộ", nhiều người không rõ để trống
                     Object.keys(tempHoMap).forEach(key => {
                         let item = tempHoMap[key];
                         if (item.danhSachThanhVien.length === 1) {
                             item.chuHoChinhXac = item.danhSachThanhVien[0].hoTen;
                             item.danhSachThanhVien[0].quanHe = 'Chủ hộ';
                         } else {
-                            if (!item.chuHoChinhXac && item.danhSachThanhVien.length >  0) {
-                                // Lấy người đầu tiên làm chủ hộ tạm nếu không có chỉ định, hoặc để trống quan hệ
+                            if (!item.chuHoChinhXac && item.danhSachThanhVien.length > 0) {
                                 item.chuHoChinhXac = item.danhSachThanhVien[0].hoTen;
-                                if (!item.danhSachThanhVien[0].quanHe) {
-                                    item.danhSachThanhVien[0].quanHe = '';
-                                }
                             }
                         }
 
@@ -509,12 +488,7 @@
                         let finalKey = item.hsct !== 'Chưa có' ? item.hsct : (tenChuHo + "_" + item.diaChi);
 
                         mapHo[finalKey] = {
-                            hsct: item.hsct,
-                            chuHo: tenChuHo,
-                            diaChi: item.diaChi,
-                            bienDong: 'Ổn định',
-                            canBoPhuTrach: currentUser.email,
-                            thanhVien: item.danhSachThanhVien
+                            hsct: item.hsct, chuHo: tenChuHo, diaChi: item.diaChi, bienDong: 'Ổn định', canBoPhuTrach: currentUser.email, thanhVien: item.danhSachThanhVien
                         };
                     });
 
@@ -530,9 +504,9 @@
             event.target.value = null;
         }
 
+        // TÍCH HỢP XUẤT MẪU KV2 (Danh sách hộ, nhân khẩu)
         function xuatBaoCaoKV2() {
             if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu để xuất báo cáo!");
-            
             let exportData = [];
             let stt = 1;
             danhSachHoGiaDinh.forEach(ho => {
@@ -548,24 +522,42 @@
                     });
                 });
             });
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "DanhSachKV2");
+            XLSX.writeFile(wb, "BaoCao_MauKV2_ThongTu24_89.xlsx");
+        }
 
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachKV2");
-            XLSX.writeFile(workbook, "BaoCao_MauKV2_QuanLyDiaBan.xlsx");
+        // TÍCH HỢP XUẤT MẪU KV9 (Báo cáo thống kê tình hình địa bàn và CSKV)
+        function xuatBaoCaoKV9() {
+            if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu thống kê địa bàn!");
+            
+            let tongHo = danhSachHoGiaDinh.length;
+            let tongNhanKhau = 0;
+            danhSachHoGiaDinh.forEach(h => tongNhanKhau += h.thanhVien.length);
+
+            let summaryData = [
+                { "Nội dung thống kê": "BÁO CÁO THỐNG KÊ TÌNH HÌNH ĐỊA BÀN & LỰC LƯỢNG CSKV (MẪU KV9)", "Số liệu chi tiết": "" },
+                { "Nội dung thống kê": "1. Tổng số hộ gia đình", "Số liệu chi tiết": tongHo },
+                { "Nội dung thống kê": "1. Tổng số nhân khẩu", "Số liệu chi tiết": tongNhanKhau },
+                { "Nội dung thống kê": "2. Cán bộ lập biểu", "Số liệu chi tiết": currentUser.email },
+                { "Nội dung thống kê": "3. Đơn vị công tác", "Số liệu chi tiết": `Công an Phường Tân An - ${currentUser.scope}` },
+                { "Nội dung thống kê": "4. Thời gian báo cáo", "Số liệu chi tiết": new Date().toLocaleDateString('vi-VN') }
+            ];
+
+            const ws = XLSX.utils.json_to_sheet(summaryData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "BaoCao_KV9");
+            XLSX.writeFile(wb, "BaoCao_MauKV9_ThongKeDiaBan.xlsx");
         }
 
         function phanTichDuLieuPhanCap() {
             let setKhuVuc = new Set();
             let setCanBo = new Set();
-            
             danhSachHoGiaDinh.forEach(ho => {
                 let diaChi = ho.diaChi || "";
                 let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Kv\s*\d+|Kp\s*\d+)/gi);
-                if (kvMatches) kvMatches.forEach(kv => {
-                    let textKv = kv.trim().replace(/\s+/g, ' ').replace(/kv\s*(\d+)/i, 'Khu Vực $1');
-                    setKhuVuc.add(textKv);
-                });
+                if (kvMatches) kvMatches.forEach(kv => setKhuVuc.add(kv.trim().replace(/\s+/g, ' ').replace(/kv\s*(\d+)/i, 'Khu Vực $1')));
                 if (ho.canBoPhuTrach) setCanBo.add(ho.canBoPhuTrach);
             });
 
@@ -599,7 +591,6 @@
                 }
                 return matchKv && matchCb && matchBd && matchKw;
             });
-
             renderBangHo(filtered);
         }
 
@@ -618,9 +609,7 @@
             
             data.forEach((ho, index) => {
                 let badgeStyle = ho.bienDong !== 'Ổn định' ? "bg-red-900/60 text-red-300 border-red-700" : "bg-emerald-900/50 text-emerald-300";
-                let diaChiHtml = ho.diaChi.includes("[Giáp Ranh") ? 
-                    `<span class="text-amber-400 font-bold">⚠️ ${ho.diaChi}</span>` : 
-                    `<span class="text-gray-300">${ho.diaChi}</span>`;
+                let diaChiHtml = ho.diaChi.includes("[Giáp Ranh") ? `<span class="text-amber-400 font-bold">⚠️ ${ho.diaChi}</span>` : `<span class="text-gray-300">${ho.diaChi}</span>`;
 
                 let row = document.createElement('tr');
                 row.className = "hover:bg-gray-700/50 border-b border-gray-700 transition";
@@ -632,9 +621,7 @@
                     <td class="p-2.5 text-indigo-300 font-medium">${ho.canBoPhuTrach === currentUser.email ? 'Bạn' : (ho.canBoPhuTrach || 'Chưa rõ')}</td>
                     <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeStyle}">${ho.bienDong}</span></td>
                     <td class="p-2.5 text-center"><span class="bg-blue-900/60 text-blue-300 px-2 rounded-full font-bold">${ho.thanhVien.length}</span></td>
-                    <td class="p-2.5 text-center">
-                        <button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-[11px] shadow">Chi tiết</button>
-                    </td>
+                    <td class="p-2.5 text-center"><button onclick="xemChiTiet(${danhSachHoGiaDinh.indexOf(ho)})" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-[11px] shadow">Chi tiết</button></td>
                 `;
                 tbody.appendChild(row);
             });
@@ -707,7 +694,7 @@
 
         function xoaDuLieuExcel() {
             if (currentUser.role !== 'admin') return alert("Chỉ Admin Tổng mới có quyền xóa toàn cục!");
-            if (confirm("Chắc chắn xóa TẤT CẢ dữ liệu của mọi khu vực?")) {
+            if (confirm("Chắc chắn xóa TẤT CẢ dữ liệu?")) {
                 localStorage.removeItem("danhSachHoGiaDinhCacheGIS");
                 danhSachHoGiaDinh = []; 
                 capNhatGiaoDienSauKhiTai();
