@@ -13,9 +13,9 @@
         }
 
         body {
-            /* Hình nền tổng thể giao diện (có thể thay thế link ảnh nền tùy ý) */
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                        url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            /* Sử dụng ảnh nền chính xác do bạn cung cấp: 689d77b0aa39bf3aed273721_3.jpg */
+            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
+                        url('689d77b0aa39bf3aed273721_3.jpg') no-repeat center center fixed;
             background-size: cover;
             height: 100vh;
             display: flex;
@@ -24,33 +24,34 @@
         }
 
         .login-card {
-            background-color: #1a2234;
+            background-color: rgba(26, 34, 52, 0.92);
             border: 1px solid #2a344d;
             border-radius: 12px;
             width: 100%;
             max-width: 420px;
             padding: 40px 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
             text-align: center;
             position: relative;
+            backdrop-filter: blur(5px);
         }
 
         /* Khu vực hiển thị Huy hiệu CAND */
         .badge-container {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             margin: 0 auto 20px auto;
-            background: #252d42;
+            background: #ffffff;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             border: 2px solid #e53935;
-            box-shadow: 0 0 15px rgba(229, 57, 53, 0.4);
+            box-shadow: 0 0 15px rgba(229, 57, 53, 0.5);
             overflow: hidden;
         }
 
-        .badge-container img, .badge-container svg {
+        .badge-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -126,12 +127,9 @@
 <body>
 
     <div class="login-card">
-        <!-- Huy hiệu CAND chuẩn dạng SVG nhúng trực tiếp, đảm bảo luôn hiển thị hình ảnh sắc nét không sợ lỗi link -->
+        <!-- Logo huy hiệu CAND chính xác do bạn cung cấp -->
         <div class="badge-container">
-            <svg viewBox="0 0 24 24" fill="#e53935" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 2.18l7 2.33v4.54c0 4.54-3.2 8.79-7 9.82-3.8-1.03-7-5.28-7-9.82V6.51l7-2.33z"/>
-                <path d="M12 7l-2.5 3h2v4h1v-4h2L12 7z" fill="#ffffff"/>
-            </svg>
+            <img src="logo-cong-an_3.jpg" alt="Huy hiệu CAND">
         </div>
 
         <div class="system-title">CÔNG AN NHÂN DÂN VIỆT NAM</div>
