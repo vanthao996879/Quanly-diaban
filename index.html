@@ -259,7 +259,6 @@
                             <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full">
                         </div>
                         <div>
-                            <!-- Đổi tên: Trạng thái cư trú -> Diện cư trú -->
                             <label class="text-gray-400 block mb-0.5 font-semibold text-blue-300">Diện Cư Trú:</label>
                             <select id="editDienNV" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full mb-2">
                                 <option value="Thường trú">🟢 Thường trú (Ổn định)</option>
@@ -268,7 +267,6 @@
                                 <option value="NOHN">🔴 NOHN (Nhà ở nhiều hộ)</option>
                             </select>
                             
-                            <!-- Đổi tên: Nhật ký kiểm tra -> Ghi chú -->
                             <label class="text-gray-400 block mb-0.5">Ghi chú (Bán nhà, chết, dời đi...):</label>
                             <textarea id="editGhiChu" rows="2" placeholder="Ghi chú tay..." class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white w-full"></textarea>
                         </div>
@@ -281,7 +279,7 @@
                         <input type="text" id="editGps" class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-gray-400 w-full font-mono text-[10px]" onchange="capNhatBanDoLeaflet()">
                     </div>
 
-                    <!-- Thay thế Chữ ký số bằng Ảnh chụp nhà -->
+                    <!-- Ảnh chụp nhà -->
                     <div class="bg-gray-900 p-3 rounded-lg border border-gray-700 flex flex-col no-print">
                         <div class="flex-grow">
                             <label class="text-gray-400 block font-semibold text-emerald-300 mb-2">📸 Ảnh chụp nhà / Hiện trạng (Không bắt buộc):</label>
@@ -294,7 +292,6 @@
                                 <button onclick="xoaAnhNha()" class="text-xs text-rose-400 underline hidden hover:text-rose-300" id="btnXoaAnh">Xóa ảnh</button>
                             </div>
                             
-                            <!-- Khung hiển thị ảnh -->
                             <div id="khungAnhNha" class="w-full h-[180px] bg-gray-800 border-2 border-dashed border-gray-600 rounded flex items-center justify-center overflow-hidden">
                                 <span class="text-gray-500 text-xs text-center px-4">Chưa có ảnh.<br>Nhấn nút trên để chụp hoặc chọn ảnh gán vào hồ sơ.</span>
                                 <img id="previewAnhNha" src="" class="hidden w-full h-full object-cover">
@@ -304,18 +301,21 @@
                     </div>
                 </div>
                 
-                <!-- Bảng Nhân khẩu (Cho phép chỉnh sửa Giới tính, Dân tộc, Tôn giáo) -->
+                <!-- Bảng Nhân khẩu (Hỗ trợ đầy đủ các trường Mẫu KV2) -->
                 <div class="mt-3 bg-gray-900 p-3 rounded-lg border border-gray-700">
-                    <h4 class="font-semibold text-gray-300 mb-2">Thành viên nhân khẩu (Cập nhật để xuất Mẫu KV2):</h4>
+                    <h4 class="font-semibold text-gray-300 mb-2">Thành viên nhân khẩu (Cập nhật để xuất Mẫu KV2 chuẩn xác):</h4>
                     <div class="overflow-x-auto border border-gray-700 rounded-lg hide-scroll">
-                        <table class="w-full text-left min-w-[800px]">
+                        <table class="w-full text-left min-w-[1050px]">
                             <thead class="bg-gray-800 text-gray-300 text-[11px]">
                                 <tr>
                                     <th class="p-1.5 w-8 text-center">STT</th>
-                                    <th class="p-1.5 w-40">Họ và Tên</th>
+                                    <th class="p-1.5 w-36">Họ và Tên</th>
                                     <th class="p-1.5 w-24">Quan Hệ</th>
                                     <th class="p-1.5 w-24">Ngày Sinh</th>
-                                    <th class="p-1.5 w-32">CCCD</th>
+                                    <th class="p-1.5 w-28">CCCD</th>
+                                    <th class="p-1.5 w-28">Quê Quán</th>
+                                    <th class="p-1.5 w-28">Nghề Nghiệp</th>
+                                    <th class="p-1.5 w-24">SĐT</th>
                                     <th class="p-1.5 w-20">Giới Tính</th>
                                     <th class="p-1.5 w-20">Dân Tộc</th>
                                     <th class="p-1.5 w-20">Tôn Giáo</th>
@@ -378,9 +378,7 @@
     </div>
 
     <script>
-        const ADMIN_EMAIL = "admin@gmail.com"; // Đổi thành email của bạn
-        
-        // Tọa độ trung tâm mặc định (Cần Thơ) - Bạn có thể chỉnh theo Phường của bạn
+        const ADMIN_EMAIL = "admin@gmail.com";
         const DEFAULT_CENTER = [10.0330, 105.7820]; 
         const DEFAULT_BOUNDS = L.latLngBounds([10.0100, 105.7500], [10.0500, 105.8000]);
 
@@ -419,7 +417,6 @@
             }
         };
 
-        // Hàm xử lý ảnh nhà (chuyển sang base64)
         function xuLyTaiAnh(event) {
             const file = event.target.files[0];
             if (file) {
@@ -477,7 +474,6 @@
             setTimeout(() => khoiTaoMainMiniMap(), 250);
         }
 
-        // --- BẢN ĐỒ GIS ---
         function khoiTaoMainMiniMap() {
             if (mainMiniMapInstance) return; 
 
@@ -580,7 +576,6 @@
             }
         }
 
-        // XỬ LÝ CHUẨN HÓA ĐỊA CHỈ (KHÔNG FIX CỨNG KHU VỰC 7 NỮA)
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc) {
             let full = (diaChiGoc || "").trim();
             let pX = (phuongXaGoc || "").trim();
@@ -591,7 +586,6 @@
             return full;
         }
 
-        // --- NHẬN DIỆN FILE EXCEL DÂN CƯ ---
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -602,7 +596,7 @@
                     const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                     
-                    let mapCol = { hsct: -1, hoTen: -1, ngaySinh: -1, quanHe: -1, diaChi: -1, phuongXa: -1, chuHo: -1, cccd: -1, gioiTinh: -1, dienNV: -1, danToc: -1, tonGiao: -1 };
+                    let mapCol = { hsct: -1, hoTen: -1, ngaySinh: -1, quanHe: -1, diaChi: -1, phuongXa: -1, chuHo: -1, cccd: -1, gioiTinh: -1, dienNV: -1, danToc: -1, tonGiao: -1, queQuan: -1, ngheNghiep: -1, sdt: -1, quocTich: -1 };
                     
                     for (let i = 0; i < Math.min(15, rows.length); i++) {
                         let r = rows[i] || [];
@@ -620,6 +614,10 @@
                             if (t.includes('diện') || t.includes('loại') || t.includes('trạngthái')) mapCol.dienNV = j;
                             if (t.includes('dântộc')) mapCol.danToc = j;
                             if (t.includes('tôngiáo')) mapCol.tonGiao = j;
+                            if (t.includes('quequan') || t.includes('que')) mapCol.queQuan = j;
+                            if (t.includes('nghenghiep') || t.includes('noilamviec')) mapCol.ngheNghiep = j;
+                            if (t.includes('sdt') || t.includes('dienthoai') || t.includes('phone')) mapCol.sdt = j;
+                            if (t.includes('quoctich')) mapCol.quocTich = j;
                         });
                         if (mapCol.hoTen !== -1) break; 
                     }
@@ -653,8 +651,8 @@
                                 diaChi: chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc), 
                                 chuHo: chuHoFinal, 
                                 dienNghiepVu: dienNV,
-                                ghiChu: '', // Sẵn sàng để gõ vào
-                                anhNha: '', // Base64 ảnh
+                                ghiChu: '', 
+                                anhNha: '', 
                                 thanhVien: [], 
                                 gps: `${DEFAULT_CENTER[0] + (Math.random() - 0.5)*0.012}, ${DEFAULT_CENTER[1] + (Math.random() - 0.5)*0.012}`
                             };
@@ -676,16 +674,19 @@
                             quanHe: quanHe, 
                             ngaySinh: ngaySinhStr, 
                             cccd: mapCol.cccd !== -1 ? String(r[mapCol.cccd] || '') : '',
+                            queQuan: mapCol.queQuan !== -1 ? String(r[mapCol.queQuan] || '') : '',
+                            ngheNghiep: mapCol.ngheNghiep !== -1 ? String(r[mapCol.ngheNghiep] || '') : '',
+                            sdt: mapCol.sdt !== -1 ? String(r[mapCol.sdt] || '') : '',
                             gioiTinh: mapCol.gioiTinh !== -1 ? String(r[mapCol.gioiTinh] || 'Nam') : 'Nam',
                             danToc: mapCol.danToc !== -1 ? String(r[mapCol.danToc] || 'Kinh') : 'Kinh',
-                            tonGiao: mapCol.tonGiao !== -1 ? String(r[mapCol.tonGiao] || 'Không') : 'Không'
+                            tonGiao: mapCol.tonGiao !== -1 ? String(r[mapCol.tonGiao] || 'Không') : 'Không',
+                            quocTich: mapCol.quocTich !== -1 ? String(r[mapCol.quocTich] || 'Việt Nam') : 'Việt Nam'
                         });
                     }
 
                     let danhSachMoi = Object.values(mapHoMoi);
                     if (danhSachMoi.length === 0) return alert("Không tìm thấy dữ liệu hợp lệ trong file Excel!");
 
-                    // Gộp dữ liệu cũ với mới hoặc ghi đè
                     danhSachHoGiaDinh = [...danhSachHoGiaDinh, ...danhSachMoi];
                     
                     localStorage.setItem("danhSachHoGiaDinhCacheGIS_V3", JSON.stringify(danhSachHoGiaDinh));
@@ -781,7 +782,6 @@
             if (data.length === 0) return tbody.innerHTML = `<tr><td colspan="7" class="text-center p-6 text-gray-400">Không tìm thấy dữ liệu phù hợp.</td></tr>`;
             
             data.forEach((ho) => {
-                // Lấy index gốc từ mảng chính danhSachHoGiaDinh để khi sửa/lưu không bị nhầm
                 let originalIndex = danhSachHoGiaDinh.indexOf(ho);
                 let dien = ho.dienNghiepVu || 'Thường trú';
                 let styleNV = "bg-emerald-900/50 text-emerald-300 border-emerald-700";
@@ -814,7 +814,6 @@
             document.getElementById('editGps').value = ho.gps || `${DEFAULT_CENTER[0]}, ${DEFAULT_CENTER[1]}`;
             document.getElementById('editDienNV').value = ho.dienNghiepVu || 'Thường trú';
 
-            // Load Ảnh nhà nếu có
             xoaAnhNha();
             if (ho.anhNha) {
                 document.getElementById('previewAnhNha').src = ho.anhNha;
@@ -828,13 +827,15 @@
             tbody.innerHTML = '';
             if(ho.thanhVien) {
                 ho.thanhVien.forEach((tv, i) => {
-                    // Dùng thẻ input để sửa trực tiếp trong bảng
                     tbody.innerHTML += `<tr>
                         <td class="p-1.5 text-center text-gray-400">${i+1}</td>
                         <td class="p-1.5"><input type="text" value="${tv.hoTen || ''}" onchange="capNhatTV(${i}, 'hoTen', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
                         <td class="p-1.5"><input type="text" value="${tv.quanHe || ''}" onchange="capNhatTV(${i}, 'quanHe', this.value)" class="bg-transparent border-b border-gray-600 w-full text-gray-300 px-1"></td>
                         <td class="p-1.5"><input type="text" value="${tv.ngaySinh || ''}" onchange="capNhatTV(${i}, 'ngaySinh', this.value)" class="bg-transparent border-b border-gray-600 w-full text-gray-400 px-1"></td>
                         <td class="p-1.5"><input type="text" value="${tv.cccd || ''}" onchange="capNhatTV(${i}, 'cccd', this.value)" class="bg-transparent border-b border-gray-600 w-full text-blue-300 font-mono px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.queQuan || ''}" onchange="capNhatTV(${i}, 'queQuan', this.value)" class="bg-transparent border-b border-gray-600 w-full text-gray-300 px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.ngheNghiep || ''}" onchange="capNhatTV(${i}, 'ngheNghiep', this.value)" class="bg-transparent border-b border-gray-600 w-full text-gray-300 px-1"></td>
+                        <td class="p-1.5"><input type="text" value="${tv.sdt || ''}" onchange="capNhatTV(${i}, 'sdt', this.value)" class="bg-transparent border-b border-gray-600 w-full text-emerald-300 font-mono px-1"></td>
                         <td class="p-1.5"><input type="text" value="${tv.gioiTinh || 'Nam'}" onchange="capNhatTV(${i}, 'gioiTinh', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
                         <td class="p-1.5"><input type="text" value="${tv.danToc || 'Kinh'}" onchange="capNhatTV(${i}, 'danToc', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
                         <td class="p-1.5"><input type="text" value="${tv.tonGiao || 'Không'}" onchange="capNhatTV(${i}, 'tonGiao', this.value)" class="bg-transparent border-b border-gray-600 w-full text-white px-1"></td>
@@ -846,7 +847,6 @@
             setTimeout(() => khoiTaoBanDoLeaflet(), 300);
         }
 
-        // Cập nhật giá trị nhân khẩu ngay khi sửa trên Modal
         function capNhatTV(tvIndex, field, value) {
             if (currentSelectedHoIndex === null) return;
             danhSachHoGiaDinh[currentSelectedHoIndex].thanhVien[tvIndex][field] = value;
@@ -940,15 +940,13 @@
             }
         }
 
-        // --- XUẤT EXCEL THEO ĐÚNG MẪU KV2 ---
         function xuatBaoCaoExcelKV2() {
             if (danhSachHoGiaDinh.length === 0) return alert("Không có dữ liệu để xuất!");
             const filteredData = thucHienLocVaTimKiem();
             
-            // Xây dựng Header 2 dòng giống hệt bảng KV2
             let row1 = [
                 "TT", "Họ và tên", "Quan hệ với chủ hộ/ người đại diện", 
-                "Ngày, tháng, năm sinh", "", // Cột D và E dành cho Nam/Nữ
+                "Ngày, tháng, năm sinh", "", 
                 "Quê quán", "Số định danh cá nhân/căn cước/Số giấy tờ tùy thân khác còn giá trị sử dụng",
                 "Dân tộc", "Quốc tịch", "Tôn giáo", "Nghề nghiệp, nơi làm việc",
                 "Ở đâu đến, ngày đến, mục đích", "Chuyển đi đâu, ngày đi, mục đích",
@@ -967,7 +965,7 @@
 
             filteredData.forEach(ho => {
                 let members = ho.thanhVien && ho.thanhVien.length > 0 ? ho.thanhVien : [{
-                    hoTen: ho.chuHo, quanHe: "Chủ hộ", gioiTinh: "Nam", danToc: "Kinh", tonGiao: "Không"
+                    hoTen: ho.chuHo, quanHe: "Chủ hộ", gioiTinh: "Nam", danToc: "Kinh", tonGiao: "Không", quocTich: "Việt Nam"
                 }];
 
                 members.forEach(tv => {
@@ -976,41 +974,39 @@
                     let nsNu = (gt === "nữ" || gt === "nu") ? (tv.ngaySinh || "") : "";
                     
                     rows.push([
-                        sttCounter++, // (1)
-                        tv.hoTen || "", // (2)
-                        tv.quanHe || "", // (3)
-                        nsNam, // (4)
-                        nsNu,  // (5)
-                        tv.queQuan || "", // (6)
-                        tv.cccd || "", // (7)
-                        tv.danToc || "Kinh", // (8)
-                        tv.quocTich || "Việt Nam", // (9)
-                        tv.tonGiao || "Không", // (10)
-                        tv.ngheNghiep || "", // (11)
-                        "", // (12)
-                        "", // (13)
-                        "", // (14)
-                        ho.dienNghiepVu === "NOHN" ? "NOHN" : "", // (15)
-                        "", // (16)
-                        tv.sdt || "", // (17)
-                        ho.ghiChu || "" // (18)
+                        sttCounter++, 
+                        tv.hoTen || "", 
+                        tv.quanHe || "", 
+                        nsNam, 
+                        nsNu,  
+                        tv.queQuan || "", 
+                        tv.cccd || "", 
+                        tv.danToc || "Kinh", 
+                        tv.quocTich || "Việt Nam", 
+                        tv.tonGiao || "Không", 
+                        tv.ngheNghiep || "", 
+                        "", 
+                        "", 
+                        "", 
+                        ho.dienNghiepVu === "NOHN" ? "NOHN" : "", 
+                        "", 
+                        tv.sdt || "", 
+                        ho.ghiChu || "" 
                     ]);
                 });
             });
 
             const ws = XLSX.utils.aoa_to_sheet(rows);
             
-            // Trộn ô (Merge Cells) cho Tiêu đề Ngày sinh (Cột D1 và E1 - index 3, 4)
             ws['!merges'] = [
                 { s: {r:0, c:3}, e: {r:0, c:4} }
             ];
 
-            // Định dạng độ rộng cột cho đẹp
             ws['!cols'] = [
-                { wch: 5 }, { wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, // 1-5
-                { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, // 6-10
-                { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, // 11-15
-                { wch: 20 }, { wch: 15 }, { wch: 25 } // 16-18
+                { wch: 5 }, { wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, 
+                { wch: 18 }, { wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, 
+                { wch: 22 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, 
+                { wch: 20 }, { wch: 15 }, { wch: 25 } 
             ];
 
             const wb = XLSX.utils.book_new();
