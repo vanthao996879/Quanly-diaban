@@ -13,19 +13,22 @@
         }
 
         body {
-            /* Nếu không tìm thấy file ảnh nền nội bộ, trang sẽ hiển thị màu xám đen dự phòng */
-            background-color: #2b3240;
-            background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
-                              url('689d77b0aa39bf3aed273721_3.jpg');
+            background-color: #111827;
+            /* Đường dẫn ảnh nền linh hoạt */
+            background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.75)), 
+                              url('./689d77b0aa39bf3aed273721_3.jpg'),
+                              url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center center;
             background-attachment: fixed;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            color: #ffffff;
         }
 
+        /* KHUNG ĐĂNG NHẬP */
         .login-card {
             background-color: rgba(26, 34, 52, 0.95);
             border: 1px solid #2a344d;
@@ -33,23 +36,24 @@
             width: 100%;
             max-width: 420px;
             padding: 40px 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
             text-align: center;
-            position: relative;
+            backdrop-filter: blur(8px);
         }
 
         .badge-container {
-            width: 85px;
-            height: 85px;
+            width: 90px;
+            height: 90px;
             margin: 0 auto 20px auto;
             background: #ffffff;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 2px solid #e53935;
-            box-shadow: 0 0 15px rgba(229, 57, 53, 0.5);
+            border: 3px solid #e53935;
+            box-shadow: 0 0 20px rgba(229, 57, 53, 0.5);
             overflow: hidden;
+            position: relative;
         }
 
         .badge-container img {
@@ -58,20 +62,27 @@
             object-fit: cover;
         }
 
+        /* SVG Backup nếu không tải được ảnh logo */
+        .badge-svg-fallback {
+            width: 70%;
+            height: 70%;
+            display: none;
+        }
+
         .system-title {
             color: #ff5252;
             font-size: 14px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
         .system-subtitle {
             color: #ffffff;
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .form-group {
@@ -89,8 +100,8 @@
         .form-input {
             width: 100%;
             padding: 12px 15px;
-            background-color: #111827;
-            border: 1px solid #374151;
+            background-color: #0f172a;
+            border: 1px solid #334155;
             border-radius: 6px;
             color: #ffffff;
             font-size: 14px;
@@ -112,57 +123,184 @@
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;
-            transition: opacity 0.3s, transform 0.1s;
+            transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
         }
 
         .submit-btn:hover {
-            opacity: 0.9;
+            opacity: 0.95;
+            box-shadow: 0 6px 15px rgba(229, 57, 53, 0.5);
         }
 
-        .submit-btn:active {
-            transform: scale(0.98);
+        /* GIAO DIỆN SAU KHI ĐĂNG NHẬP (DASHBOARD) */
+        .dashboard-card {
+            display: none; /* Mặc định ẩn, hiện lên khi đăng nhập thành công */
+            background-color: rgba(26, 34, 52, 0.95);
+            border: 1px solid #2a344d;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logout-btn {
+            background-color: #374151;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .logout-btn:hover {
+            background-color: #ef4444;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff5252;
+            margin-top: 5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
+    <!-- SECTION 1: MAN HINH DANG NHAP -->
+    <div class="login-card" id="loginSection">
         <div class="badge-container">
-            <!-- Thêm thuộc tính onerror: Nếu không tìm thấy file nội bộ, trình duyệt sẽ tự động lấy ảnh từ mạng để thay thế -->
-            <img src="logo-cong-an_3.jpg" alt="Huy hiệu CAND" 
-                 onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/200px-Vietnam_People%27s_Police_emblem.svg.png';">
+            <!-- Thử tải logo file cục bộ. Nếu lỗi sẽ chuyển sang hiển thị SVG chuẩn -->
+            <img src="./logo-cong-an_3.jpg" id="badgeImg" alt="Huy hiệu CAND" 
+                 onerror="handleBadgeError()">
+            
+            <svg id="badgeSvg" class="badge-svg-fallback" viewBox="0 0 24 24" fill="#e53935">
+                <path d="M12 2L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-3zm0 2.18l7 2.33v4.54c0 4.54-3.2 8.79-7 9.82-3.8-1.03-7-5.28-7-9.82V6.51l7-2.33z"/>
+                <path d="M12 7l-2.5 3h2v4h1v-4h2L12 7z" fill="#f59e0b"/>
+            </svg>
         </div>
 
         <div class="system-title">CÔNG AN NHÂN DÂN VIỆT NAM</div>
         <div class="system-subtitle">Hệ Thống Quản Lý Địa Bàn CSKV</div>
 
-        <!-- Thêm sự kiện onsubmit để kích hoạt tính năng đăng nhập -->
         <form onsubmit="xulyDangNhap(event)">
             <div class="form-group">
                 <label class="form-label">Nhập Địa Chỉ Gmail Công Vụ</label>
                 <input type="email" id="emailInput" class="form-input" value="canbo.cskv@gmail.com" required>
             </div>
-            <button type="submit" class="submit-btn">Xác Thực & Tiếp Tục &rarr;</button>
+            <button type="submit" id="submitBtn" class="submit-btn">Xác Thực & Tiếp Tục &rarr;</button>
         </form>
     </div>
 
-    <!-- Script xử lý đăng nhập -->
+    <!-- SECTION 2: MAN HINH QUAN LY SAU KHI DANG NHAP -->
+    <div class="dashboard-card" id="dashboardSection">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div>
+                    <h3 style="color: #ff5252; font-size: 16px;">CÔNG AN CƠ SỞ - CẢNH SÁT KHU VỰC</h3>
+                    <p style="color: #94a3b8; font-size: 13px;" id="userDisplay">Tài khoản: canbo.cskv@gmail.com</p>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="dangXuat()">Đăng xuất</button>
+        </div>
+
+        <h2 style="font-size: 20px; margin-bottom: 15px;">Bảng Điều Khiển Quản Lý Địa Bàn</h2>
+        <span class="status-badge">Hệ thống đang hoạt động ổn định</span>
+
+        <div class="stats-grid" style="margin-top: 20px;">
+            <div class="stat-card">
+                <div style="color: #94a3b8; font-size: 13px;">Hộ Khẩu Quản Lý</div>
+                <div class="stat-number">1,245</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #94a3b8; font-size: 13px;">Nhân Khẩu Thường Trú</div>
+                <div class="stat-number">4,890</div>
+            </div>
+            <div class="stat-card">
+                <div style="color: #94a3b8; font-size: 13px;">Tạm Trú / Tạm Vắng</div>
+                <div class="stat-number">312</div>
+            </div>
+        </div>
+
+        <div style="background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; text-align: center; color: #94a3b8; font-size: 13px;">
+            Chào mừng Cán bộ CSKV đã đăng nhập thành công vào Hệ thống Quản lý Địa bàn.
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT XỬ LÝ -->
     <script>
+        // Xử lý khi ảnh logo bị lỗi đường dẫn
+        function handleBadgeError() {
+            document.getElementById('badgeImg').style.display = 'none';
+            document.getElementById('badgeSvg').style.display = 'block';
+        }
+
+        // Xử lý Đăng nhập
         function xulyDangNhap(event) {
-            // Ngăn chặn form tải lại trang (chặn hành vi mặc định)
             event.preventDefault(); 
-            
-            // Lấy email người dùng nhập
             const email = document.getElementById('emailInput').value;
-            
-            if (email) {
-                // Hiển thị thông báo xác nhận thành công
-                alert('Đang xác thực hệ thống cho cán bộ: ' + email + '\n\nXác thực thành công! Bắt đầu chuyển hướng...');
-                
-                // HƯỚNG DẪN: Để chuyển sang trang quản lý chính, bạn hãy xóa dấu "//" ở dòng code bên dưới và thay "trang_chu.html" bằng tên file trang đích của bạn.
-                // window.location.href = "trang_chu.html";
-            }
+            const btn = document.getElementById('submitBtn');
+
+            // Tạo hiệu ứng chờ xác thực
+            btn.innerText = "Đang xác thực hệ thống...";
+            btn.style.opacity = "0.7";
+
+            setTimeout(() => {
+                // Ẩn màn hình đăng nhập, hiện màn hình quản lý
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                document.getElementById('userDisplay').innerText = 'Tài khoản: ' + email;
+            }, 800);
+        }
+
+        // Xử lý Đăng xuất
+        function dangXuat() {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('submitBtn').innerHTML = "Xác Thực & Tiếp Tục &rarr;";
+            document.getElementById('submitBtn').style.opacity = "1";
         }
     </script>
 </body>
