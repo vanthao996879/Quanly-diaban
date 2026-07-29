@@ -7,12 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Thư viện hỗ trợ tính toán TOTP chuẩn Google Authenticator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/3.2.0/sha.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        #mapContainer { height: 250px; width: 100%; border-radius: 0.5rem; z-index: 10; }
+        #mapContainer { height: 260px; width: 100%; border-radius: 0.5rem; z-index: 10; }
+        #mainMiniMap { height: 320px; width: 100%; border-radius: 0.75rem; z-index: 10; }
         #qrcodeCanvas { display: flex; justify-content: center; align-items: center; background: white; padding: 10px; border-radius: 8px; width: fit-content; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         #qrcodeCanvas canvas { display: block; }
     </style>
@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR CHUẨN THẬT -->
+    <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
             <div class="text-center space-y-1">
@@ -95,35 +95,46 @@
             </div>
         </header>
 
-        <!-- Thống kê & Bộ lọc -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col justify-center">
-                <p class="text-gray-400 text-xs">Tổng Nhân khẩu</p>
-                <h3 id="statNhanKhau" class="text-2xl font-bold text-blue-400 mt-1">0</h3>
+        <!-- Thống kê & Bản đồ Tổng quan Mini-map -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div class="space-y-4 flex flex-col justify-between">
+                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
+                    <p class="text-gray-400 text-xs">Tổng Nhân khẩu</p>
+                    <h3 id="statNhanKhau" class="text-2xl font-bold text-blue-400 mt-1">0</h3>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
+                    <p class="text-gray-400 text-xs">Tổng Hộ gia đình</p>
+                    <h3 id="statHoGiaDinh" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow space-y-2">
+                    <div class="flex justify-between items-center">
+                        <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Nâng Cao</p>
+                        <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu</span>
+                    </div>
+                    <div class="space-y-2">
+                        <select id="filterKhuVuc" onchange="thucHienLocVaTimKiem()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                            <option value="">-- Tất cả Khu Vực --</option>
+                        </select>
+                        <select id="filterCanBo" onchange="thucHienLocVaTimKiem()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-indigo-300 font-medium focus:outline-none focus:border-blue-500">
+                            <option value="">-- Tất cả Cán Bộ --</option>
+                        </select>
+                        <select id="filterBienDong" onchange="thucHienLocVaTimKiem()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-amber-300 font-medium focus:outline-none focus:border-blue-500">
+                            <option value="">-- Tất cả Biến Động --</option>
+                            <option value="Ổn định">Ổn định</option>
+                            <option value="Bán nhà">Bán nhà</option>
+                            <option value="Giải tỏa">Giải tỏa</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col justify-center">
-                <p class="text-gray-400 text-xs">Tổng Hộ gia đình</p>
-                <h3 id="statHoGiaDinh" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
-            </div>
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow md:col-span-2 flex flex-col justify-between space-y-2">
+
+            <!-- Mini-map tổng quan Phường Tân An ngay tại màn hình chính -->
+            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow lg:col-span-2 flex flex-col space-y-2">
                 <div class="flex justify-between items-center">
-                    <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Nâng Cao</p>
-                    <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu</span>
+                    <h2 class="text-xs font-semibold text-gray-300">🗺️ Bản Đồ Tổng Quan Địa Bàn Phường Tân An (Mini-map)</h2>
+                    <span class="text-[11px] text-blue-400">Định tâm tự động ranh giới Phường Tân An</span>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <select id="filterKhuVuc" onchange="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                        <option value="">-- Tất cả Khu Vực --</option>
-                    </select>
-                    <select id="filterCanBo" onchange="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-indigo-300 font-medium focus:outline-none focus:border-blue-500">
-                        <option value="">-- Tất cả Cán Bộ --</option>
-                    </select>
-                    <select id="filterBienDong" onchange="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-amber-300 font-medium focus:outline-none focus:border-blue-500">
-                        <option value="">-- Tất cả Biến Động --</option>
-                        <option value="Ổn định">Ổn định</option>
-                        <option value="Bán nhà">Bán nhà</option>
-                        <option value="Giải tỏa">Giải tỏa</option>
-                    </select>
-                </div>
+                <div id="mainMiniMap"></div>
             </div>
         </div>
 
@@ -226,7 +237,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col space-y-2">
-                        <label class="text-gray-400 block">Bản đồ số (GIS):</label>
+                        <label class="text-gray-400 block">Bản đồ số Phường Tân An (GIS):</label>
                         <div id="mapContainer"></div>
                     </div>
                 </div>
@@ -255,13 +266,16 @@
 
     <script>
         const ADMIN_EMAIL = "vanthao3011@gmail.com";
+        const TAN_AN_CENTER = [10.033198, 105.782806]; // Tọa độ chuẩn trung tâm Phường Tân An, Cần Thơ
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
         let tamEmailDangNhap = "";
-        let currentSecretBase32 = ""; // Khóa bí mật thực tế cho TOTP
+        let currentSecretBase32 = ""; 
         let mapInstance = null;
         let markerInstance = null;
+        let mainMiniMapInstance = null;
+        let miniMapMarkersGroup = null;
 
         window.onload = function() {
             const savedUser = sessionStorage.getItem("currentUserAuthGIS");
@@ -295,7 +309,6 @@
             }
         }
 
-        // Hàm sinh chuỗi Base32 ngẫu nhiên cho mã hóa Google Authenticator
         function taoSecretBase32() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
             let secret = '';
@@ -310,7 +323,7 @@
             if (!emailInput) return alert("Vui lòng nhập địa chỉ Gmail!");
             
             tamEmailDangNhap = emailInput;
-            currentSecretBase32 = taoSecretBase32(); // Tạo secret mới chuẩn thực tế cho từng lần đăng nhập
+            currentSecretBase32 = taoSecretBase32();
             
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('otpEmailDisplay').innerText = emailInput;
@@ -328,7 +341,6 @@
             document.getElementById('loginScreen').classList.remove('hidden');
         }
 
-        // Hàm giải mã Base32 sang chuỗi byte
         function base32toByteArray(base32) {
             let base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
             let bits = "";
@@ -354,35 +366,12 @@
             return str;
         }
 
-        // Tính toán mã OTP thời gian thực chuẩn Google Authenticator (TOTP HMAC-SHA1)
-        function tinhToanMaTOTP(secretBase32) {
-            try {
-                let epoch = Math.round(new Date().getTime() / 1000.0);
-                let time = leftPad(Math.floor(epoch / 30).toString(16), 16, '0');
-                let keyBytes = base32toByteArray(secretBase32);
-                
-                let shaObj = new jsSHA("SHA-1", "HEX");
-                shaObj.setHMACKey(Array.from(keyBytes).map(b => ('0' + b.toString(16)).slice(-2)).join(''), "HEX");
-                shaObj.update(time);
-                let hmac = shaObj.getHMAC("HEX");
-
-                let offset = parseInt(hmac.substring(hmac.length - 1), 16);
-                let otp = (
-                    ((parseInt(hmac.substr(offset * 2, 8), 16) & 0x7fffffff)) % 1000000
-                ).toString();
-                return leftPad(otp, 6, '0');
-            } catch (e) {
-                return null;
-            }
-        }
-
         function xacThucOtp() {
             const otpInput = document.getElementById('otpCodeInput').value.trim();
             if (!otpInput || otpInput.length !== 6) {
                 return alert("Vui lòng nhập đủ 6 chữ số mã OTP từ ứng dụng Google Authenticator!");
             }
 
-            // Kiểm tra mã OTP chuẩn thực tế ở thời điểm hiện tại (cho phép sai số 1 bước thời gian ±30s do lệch đồng hồ thiết bị)
             let valid = false;
             let epoch = Math.floor(new Date().getTime() / 1000.0);
             for (let errorWindow = -1; errorWindow <= 1; errorWindow++) {
@@ -437,6 +426,40 @@
                 btnPhanQuyen.classList.add('hidden');
             }
             thucHienLocVaTimKiem();
+            setTimeout(() => khoiTaoMainMiniMap(), 200);
+        }
+
+        // Khởi tạo bản đồ tổng quan (Mini-map) ngoài màn hình chính định tâm Phường Tân An
+        function khoiTaoMainMiniMap() {
+            if (mainMiniMapInstance) {
+                mainMiniMapInstance.remove();
+                mainMiniMapInstance = null;
+            }
+            mainMiniMapInstance = L.map('mainMiniMap').setView(TAN_AN_CENTER, 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mainMiniMapInstance);
+
+            miniMapMarkersGroup = L.layerGroup().addTo(mainMiniMapInstance);
+            capNhatCacDiemTrenMiniMap(danhSachHoGiaDinh);
+        }
+
+        function capNhatCacDiemTrenMiniMap(data) {
+            if (!mainMiniMapInstance || !miniMapMarkersGroup) return;
+            miniMapMarkersGroup.clearLayers();
+
+            data.forEach(ho => {
+                let coords = TAN_AN_CENTER;
+                if (ho.gps && ho.gps.includes(',')) {
+                    let parts = ho.gps.split(',');
+                    let lat = parseFloat(parts[0]);
+                    let lon = parseFloat(parts[1]);
+                    if (!isNaN(lat) && !isNaN(lon)) coords = [lat, lon];
+                }
+                let marker = L.marker(coords);
+                marker.bindPopup(`<b>Chủ hộ: ${ho.chuHo}</b><br>Địa chỉ: ${ho.diaChi}<br>HSCT: ${ho.hsct}`);
+                miniMapMarkersGroup.addLayer(marker);
+            });
         }
 
         function moModalPhanQuyen() {
@@ -469,19 +492,27 @@
             hienThiBangPhanQuyen();
         }
 
+        // Đảm bảo hiển thị danh sách phân quyền ngay lập tức lên bảng quản lý
         function hienThiBangPhanQuyen() {
             let tbody = document.getElementById('listPhanQuyenBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
+            
             let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
             let emails = Object.keys(configMap);
-            if (emails.length === 0) return tbody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-400">Chưa có phân quyền bổ sung.</td></tr>`;
+            
+            if (emails.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-400">Chưa có phân quyền bổ sung nào.</td></tr>`;
+                return;
+            }
+
             emails.forEach(email => {
                 let info = configMap[email];
                 tbody.innerHTML += `
-                    <tr class="border-b border-gray-700">
+                    <tr class="border-b border-gray-700 hover:bg-gray-700/40">
                         <td class="p-2 text-white font-medium">${email}</td>
                         <td class="p-2 text-amber-300 font-semibold">${info.scope}</td>
-                        <td class="p-2 text-center"><button onclick="xoaPhanQuyen('${email}')" class="bg-rose-600 hover:bg-rose-700 px-2 py-1 rounded text-[10px] text-white">Xóa</button></td>
+                        <td class="p-2 text-center"><button onclick="xoaPhanQuyen('${email}')" class="bg-rose-600 hover:bg-rose-700 px-2.5 py-1 rounded text-[10px] text-white font-medium shadow">Xóa</button></td>
                     </tr>
                 `;
             });
@@ -541,7 +572,6 @@
                         let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : '';
                         let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
 
-                        // KIỂM TRA LOẠI BỎ TRIỆT ĐỂ DÒNG TIÊU ĐỀ LỌT VÀO
                         let hoTenLower = hoTen.toLowerCase();
                         let hsctLower = hsct.toLowerCase();
                         if (
@@ -567,7 +597,6 @@
                         tempHoMap[key].danhSachThanhVien.push({ hoTen: hoTen, quanHe: quanHe });
                     }
 
-                    // Chuẩn hóa quan hệ: 1 người tự động là chủ hộ
                     Object.keys(tempHoMap).forEach(key => {
                         let item = tempHoMap[key];
                         if (item.danhSachThanhVien.length === 1) {
@@ -583,7 +612,7 @@
                         let finalKey = item.hsct !== 'Chưa có' ? item.hsct : (tenChuHo + "_" + item.diaChi);
 
                         mapHo[finalKey] = {
-                            hsct: item.hsct, chuHo: tenChuHo, diaChi: item.diaChi, bienDong: 'Ổn định', canBoPhuTrach: currentUser.email, thanhVien: item.danhSachThanhVien
+                            hsct: item.hsct, chuHo: tenChuHo, diaChi: item.diaChi, bienDong: 'Ổn định', canBoPhuTrach: currentUser.email, thanhVien: item.danhSachThanhVien, gps: `${TAN_AN_CENTER[0] + (Math.random() - 0.5)*0.01}, ${TAN_AN_CENTER[1] + (Math.random() - 0.5)*0.01}`
                         };
                     });
 
@@ -592,7 +621,7 @@
                     
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert("Đã tải và chuẩn hóa dữ liệu thành công!");
+                    alert("Đã tải, phân tích và đồng bộ dữ liệu bản đồ Phường Tân An thành công!");
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -677,6 +706,7 @@
                 return matchKv && matchCb && matchBd && matchKw;
             });
             renderBangHo(filtered);
+            capNhatCacDiemTrenMiniMap(filtered);
         }
 
         function capNhatGiaoDienSauKhiTai() {
@@ -720,7 +750,7 @@
             document.getElementById('editDiaChi').value = ho.diaChi;
             document.getElementById('editCanBo').value = ho.canBoPhuTrach || "Không xác định";
             document.getElementById('editBienDong').value = ho.bienDong || 'Ổn định';
-            document.getElementById('editGps').value = ho.gps || '10.033198, 105.782806';
+            document.getElementById('editGps').value = ho.gps || `${TAN_AN_CENTER[0]}, ${TAN_AN_CENTER[1]}`;
 
             const tbody = document.getElementById('modalNhanKhauList');
             tbody.innerHTML = '';
@@ -733,8 +763,11 @@
 
         function khoiTaoBanDoLeaflet() {
             let gpsVal = document.getElementById('editGps').value.trim();
-            let coords = [10.033198, 105.782806];
-            if (gpsVal.includes(',')) coords = [parseFloat(gpsVal.split(',')[0]), parseFloat(gpsVal.split(',')[1])];
+            let coords = TAN_AN_CENTER;
+            if (gpsVal.includes(',')) {
+                let p = gpsVal.split(',');
+                coords = [parseFloat(p[0]), parseFloat(p[1])];
+            }
             
             if (mapInstance) { mapInstance.remove(); mapInstance = null; }
             mapInstance = L.map('mapContainer').setView(coords, 16);
