@@ -15,8 +15,8 @@
     <style>
         #mapContainer { height: 280px; width: 100%; border-radius: 0.5rem; z-index: 10; cursor: crosshair; }
         #mainMiniMap { height: 350px; width: 100%; border-radius: 0.75rem; z-index: 10; }
-        #qrcodeCanvas { display: flex; justify-content: center; align-items: center; background: white; padding: 10px; border-radius: 8px; width: fit-content; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        #qrcodeCanvas canvas { display: block; }
+        #qrcodeCanvas { display: flex; justify-content: center; align-items: center; background: white; padding: 15px; border-radius: 12px; width: fit-content; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        #qrcodeCanvas img, #qrcodeCanvas canvas { display: block; width: 180px !important; height: 180px !important; }
         
         .glass-card {
             background: linear-gradient(135deg, rgba(31, 41, 55, 0.85), rgba(17, 24, 39, 0.95));
@@ -38,16 +38,16 @@
 </head>
 <body class="bg-gray-950 text-white min-h-screen p-2 md:p-4">
 
-    <!-- BƯỚC 1: ĐĂNG NHẬP GMAIL -->
-    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background-image: url('https://media.chinhphu.vn/2022/8/16/z36495572573216893c5d648218080f5c4013401fbbe4b-1660613296464522437633.jpg'); background-size: cover; background-position: center;">
+    <!-- BƯỚC 1: ĐĂNG NHẬP GMAIL (Đã tích hợp ảnh nền CAND & Huy hiệu chuẩn) -->
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background-image: url('https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
         <div class="absolute inset-0 bg-gray-950/85 backdrop-blur-sm"></div>
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/30 relative z-10">
             <div class="text-center space-y-3">
-                <div class="w-20 h-20 flex items-center justify-center mx-auto mb-2 relative">
+                <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/40 rounded-full p-2 border border-red-500/40 shadow-inner">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Vietnam_People%27s_Public_Security_emblem.svg/240px-Vietnam_People%27s_Public_Security_emblem.svg.png" alt="Huy hiệu CAND" class="w-full h-full object-contain drop-shadow-2xl">
                 </div>
                 <div>
-                    <h2 class="text-base font-extrabold text-red-400 uppercase">Công An Nhân Dân Việt Nam</h2>
+                    <h2 class="text-base font-extrabold text-red-400 uppercase tracking-wider">Công An Nhân Dân Việt Nam</h2>
                     <h3 class="text-lg font-bold text-white mt-1">Hệ Thống Quản Lý Địa Bàn CSKV</h3>
                 </div>
             </div>
@@ -61,7 +61,7 @@
         </div>
     </div>
 
-    <!-- BƯỚC 2: OTP -->
+    <!-- BƯỚC 2: OTP (Đã phóng to mã QR) -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-4">
             <div class="text-center space-y-1">
@@ -71,7 +71,8 @@
             </div>
             <div class="space-y-3">
                 <div class="text-center">
-                    <div id="qrcodeCanvas" class="bg-white p-2 rounded-lg mx-auto w-fit"></div>
+                    <p class="text-[11px] text-gray-400 mb-2">Quét mã QR bằng ứng dụng Authenticator:</p>
+                    <div id="qrcodeCanvas" class="bg-white p-3 rounded-xl mx-auto w-fit flex justify-center items-center"></div>
                 </div>
                 <div>
                     <input type="text" id="otpCodeInput" maxlength="6" placeholder="------" class="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 text-center tracking-[1em] text-base font-mono text-white focus:outline-none">
@@ -89,6 +90,7 @@
         <header class="flex flex-col md:flex-row justify-between items-center glass-card p-3 rounded-xl shadow-xl gap-3">
             <div>
                 <div class="flex items-center gap-2">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Vietnam_People%27s_Public_Security_emblem.svg/240px-Vietnam_People%27s_Public_Security_emblem.svg.png" class="w-7 h-7 object-contain">
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">Điều Hành Địa Bàn CSKV & GIS Tân An</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900 text-red-200"></span>
                 </div>
@@ -96,7 +98,7 @@
             </div>
             <div class="flex flex-wrap gap-1.5">
                 <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow flex items-center gap-1">
-                    <span>📂 Tải Excel Lên (Diff Check)</span>
+                    <span>📂 Tải Excel Thường Trú Lên</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
                 <button onclick="moSoTayCongTac()" class="bg-purple-600 hover:bg-purple-700 px-2.5 py-1.5 rounded-lg text-xs font-medium transition shadow">📔 Sổ Tay CSKV</button>
@@ -368,8 +370,8 @@
             document.getElementById('qrcodeCanvas').innerHTML = '';
             new QRCode(document.getElementById("qrcodeCanvas"), {
                 text: "otpauth://totp/HT_CSKV:" + tamEmailDangNhap + "?secret=JBSWY3DPEHPK3PXP&issuer=CongAn",
-                width: 100,
-                height: 100
+                width: 180,
+                height: 180
             });
             document.getElementById('otpScreen').classList.remove('hidden');
         }
@@ -403,7 +405,6 @@
             });
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMiniMapInstance);
             
-            // Tích hợp công cụ vẽ đa giác (Polygon Drawing) ranh giới khu vực phụ trách
             drawnItems = new L.FeatureGroup();
             mainMiniMapInstance.addLayer(drawnItems);
             let drawControl = new L.Control.Draw({
@@ -430,11 +431,10 @@
                     coords = [parseFloat(parts[0]), parseFloat(parts[1])];
                 }
                 
-                // Heatmap & Zoning màu sắc theo trạng thái biến động/ANNT
-                let colorPin = '#10b981'; // Xanh: Ổn định
+                let colorPin = '#10b981'; 
                 let dien = ho.dienNghiepVu || "Thường trú";
-                if (dien === 'Tạm trú') colorPin = '#f59e0b'; // Vàng
-                else if (dien.includes('Trọng điểm') || dien.includes('Khác')) colorPin = '#ef4444'; // Đỏ
+                if (dien === 'Tạm trú') colorPin = '#f59e0b'; 
+                else if (dien.includes('Trọng điểm') || dien.includes('Khác')) colorPin = '#ef4444'; 
 
                 let customIcon = L.divIcon({
                     className: 'custom-pin',
@@ -446,20 +446,27 @@
             });
         }
 
-        // Tính đường đi tuần tra nhanh (Route Planning)
         function tinhTuyenDuongTuanTra() {
             if(danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu hộ gia đình để lập tuyến tuần tra!");
             alert("Đã tối ưu hóa lộ trình tuần tra ngắn nhất qua các điểm trọng điểm và hộ dân trên bản đồ số!");
         }
 
-        function chuanHoaDiaChiVaKhuVuc(diaChiGoc) {
+        function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc) {
             let full = diaChiGoc || "";
-            if (!full.toLowerCase().includes("khu vực") && !full.toLowerCase().includes("kv")) full = `Khu Vực 7, ` + full;
-            if (!full.toLowerCase().includes("tân an")) full += `, Phường Tân An`;
+            let pX = phuongXaGoc || "";
+            if (pX && !full.toLowerCase().includes(pX.toLowerCase())) {
+                full += `, ` + pX;
+            }
+            if (!full.toLowerCase().includes("khu vực") && !full.toLowerCase().includes("kv")) {
+                full = `Khu Vực 7, ` + full;
+            }
+            if (!full.toLowerCase().includes("tân an")) {
+                full += `, Phường Tân An`;
+            }
             return full;
         }
 
-        // --- NHẬN DIỆN EXCEL & CẢNH BÁO BIẾN ĐỘNG THỜI GIAN THỰC (DIFF CHECKER) ---
+        // --- NHẬN DIỆN EXCEL THƯỜNG TRÚ THÔNG MINH (Đã tối ưu hóa cho file thường trú KV7) ---
         function nhapFileExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -470,64 +477,90 @@
                     const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                     
-                    let mapCol = { hsct: -1, hoTen: -1, diaChi: -1, quanHe: -1, ngaySinh: -1, cccd: -1 };
+                    let mapCol = { hsct: -1, hoTen: -1, ngaySinh: -1, quanHe: -1, diaChi: -1, phuongXa: -1, chuHo: -1 };
+                    
                     for (let i = 0; i < Math.min(10, rows.length); i++) {
                         let r = rows[i] || [];
                         r.forEach((text, j) => {
                             let t = String(text).toLowerCase().replace(/\s+/g, '');
-                            if (t.includes('hsct')) mapCol.hsct = j;
+                            if (t.includes('hsct') || t.includes('hồsơ')) mapCol.hsct = j;
                             if (t.includes('họtên') || t === 'tên') mapCol.hoTen = j;
-                            if (t.includes('địachỉ')) mapCol.diaChi = j;
-                            if (t.includes('quanhệ')) mapCol.quanHe = j;
                             if (t.includes('ngàysinh')) mapCol.ngaySinh = j;
-                            if (t.includes('cccd') || t.includes('địnhdanh')) mapCol.cccd = j;
+                            if (t.includes('quanhệ') || t.includes('quanhechuhộ')) mapCol.quanHe = j;
+                            if (t.includes('địachỉ') || t.includes('thườngtrú')) mapCol.diaChi = j;
+                            if (t.includes('phường') || t.includes('xã')) mapCol.phuongXa = j;
+                            if (t.includes('chủhộ')) mapCol.chuHo = j;
                         });
                         if (mapCol.hoTen !== -1) break; 
                     }
 
-                    if (mapCol.hoTen === -1) return alert("Không tìm thấy cột Tên trong file!");
+                    if (mapCol.hoTen === -1) {
+                        // Fallback mặc định theo vị trí cột chuẩn file mẫu thường trú
+                        mapCol = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, diaChi: 5, phuongXa: 6, chuHo: 8 };
+                    }
 
                     let mapHoMoi = {};
                     for (let i = 0; i < rows.length; i++) {
                         let r = rows[i];
                         if (!r || !r[mapCol.hoTen]) continue;
-                        let hsct = mapCol.hsct !== -1 ? String(r[mapCol.hsct] || '').trim() : '';
-                        let hoTen = String(r[mapCol.hoTen] || '').trim();
-                        let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : '';
-                        let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
                         
-                        let key = hsct !== '' ? hsct : hoTen.replace(/\s+/g, ''); 
+                        let hoTenVal = String(r[mapCol.hoTen] || '').trim();
+                        if (hoTenVal.toLowerCase() === 'họ và tên' || hoTenVal.toLowerCase() === 'tên') continue; // Bỏ qua dòng tiêu đề
+
+                        let hsct = mapCol.hsct !== -1 ? String(r[mapCol.hsct] || '').trim() : '';
+                        let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : 'Thành viên';
+                        let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
+                        let phuongXaGoc = mapCol.phuongXa !== -1 ? String(r[mapCol.phuongXa] || '').trim() : '';
+                        let tenChuHoCol = mapCol.chuHo !== -1 ? String(r[mapCol.chuHo] || '').trim() : '';
+                        
+                        // Xác định tên chủ hộ chính xác
+                        let chuHoFinal = tenChuHoCol;
+                        if (!chuHoFinal || quanHe.toLowerCase().includes('chủ hộ')) {
+                            chuHoFinal = hoTenVal;
+                        }
+
+                        let key = hsct !== '' ? hsct : chuHoFinal.replace(/\s+/g, ''); 
                         if (!mapHoMoi[key]) {
                             mapHoMoi[key] = { 
                                 hsct: hsct || 'HS-' + Math.floor(Math.random()*10000), 
-                                diaChi: chuanHoaDiaChiVaKhuVuc(diaChiGoc), 
-                                chuHo: hoTen, 
+                                diaChi: chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc), 
+                                chuHo: chuHoFinal, 
                                 dienNghiepVu: 'Thường trú',
-                                ghiChu: '',
+                                ghiChu: 'Đã nhập từ file Excel thường trú',
                                 thanhVien: [], 
                                 gps: `${TAN_AN_CENTER[0] + (Math.random() - 0.5)*0.01}, ${TAN_AN_CENTER[1] + (Math.random() - 0.5)*0.01}`
                             };
                         }
-                        mapHoMoi[key].thanhVien.push({ hoTen: hoTen, quanHe: quanHe, ngaySinh: r[mapCol.ngaySinh] || '', cccd: r[mapCol.cccd] || '' });
+                        
+                        let ngaySinhRaw = r[mapCol.ngaySinh];
+                        let ngaySinhStr = '';
+                        if (ngaySinhRaw) {
+                            if (typeof ngaySinhRaw === 'number') {
+                                // Excel serial date conversion or standard string
+                                let dateObj = new Date((ngaySinhRaw - (25567 + 2)) * 86400 * 1000);
+                                ngaySinhStr = dateObj.toLocaleDateString('vi-VN');
+                            } else {
+                                ngaySinhStr = String(ngaySinhRaw);
+                            }
+                        }
+
+                        mapHoMoi[key].thanhVien.push({ 
+                            hoTen: hoTenVal, 
+                            quanHe: quanHe, 
+                            ngaySinh: ngaySinhStr, 
+                            cccd: r[4] || '' 
+                        });
                     }
 
                     let danhSachMoi = Object.values(mapHoMoi);
-
-                    // THUẬT TOÁN DIFF CHECKER (Cảnh báo biến động thời gian thực)
-                    if (danhSachHoGiaDinh.length > 0) {
-                        let soHoMoiChuyenDen = 0;
-                        danhSachMoi.forEach(hm => {
-                            if (!danhSachHoGiaDinh.some(hc => hc.hsct === hm.hsct)) soHoMoiChuyenDen++;
-                        });
-                        alert(`🚨 CẢNH BÁO BIẾN ĐỘNG NHÂN KHẨU THỜI GIAN THỰC:\n- Phát hiện: Có ${soHoMoiChuyenDen} hộ mới chuyển đến.\n- Có ${Math.floor(Math.random()*3)} nhân khẩu thay đổi quan hệ / biến động.`);
-                    }
+                    if (danhSachMoi.length === 0) return alert("Không tìm thấy dữ liệu hợp lệ trong file Excel!");
 
                     danhSachHoGiaDinh = danhSachMoi;
                     localStorage.setItem("danhSachHoGiaDinhCacheGIS_v2", JSON.stringify(danhSachHoGiaDinh));
                     
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert("Tải và cập nhật dữ liệu thành công!");
+                    alert(`✅ Đã nhập thành công ${danhSachHoGiaDinh.length} hộ khẩu thường trú vào hệ thống GIS!`);
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -554,7 +587,7 @@
                 let matchKv = !kv || ho.diaChi.toLowerCase().includes(kv);
                 let dien = ho.dienNghiepVu || "Thường trú";
                 let matchNv = !nv || dien.includes(nv);
-                let matchKw = !kw || ho.chuHo.toLowerCase().includes(kw) || ho.hsct.toLowerCase().includes(kw) || (ho.thanhVien && ho.thanhVien.some(tv => (tv.cccd && tv.cccd.includes(kw))));
+                let matchKw = !kw || ho.chuHo.toLowerCase().includes(kw) || ho.hsct.toLowerCase().includes(kw) || (ho.thanhVien && ho.thanhVien.some(tv => (tv.cccd && tv.cccd.toLowerCase().includes(kw)) || (tv.hoTen && tv.hoTen.toLowerCase().includes(kw))));
                 return matchKv && matchNv && matchKw;
             });
             renderBangHo(filtered);
@@ -673,8 +706,7 @@
             if (mapInstance) { mapInstance.remove(); mapInstance = null; }
         }
 
-        // Số hóa sổ tay công tác
-        function moSoTay() { document.getElementById('notebookModal').classList.remove('hidden'); }
+        function moSoTayCongTac() { document.getElementById('notebookModal').classList.remove('hidden'); }
         function dongSoTay() { document.getElementById('notebookModal').classList.add('hidden'); }
         function luuSoTay() {
             let note = document.getElementById('notebookContent').value;
@@ -684,7 +716,6 @@
             dongSoTay();
         }
 
-        // Dynamic RBAC Modal
         function moModalRBAC() {
             document.getElementById('rbacUserEmail').value = currentUser.email;
             document.getElementById('rbacRoleSelect').value = currentUser.role;
@@ -706,7 +737,6 @@
             }
         }
 
-        // Xuất mẫu KV2 chuẩn CAND
         function xuatBaoCaoKV2() {
             if (danhSachHoGiaDinh.length === 0) return alert("Không có dữ liệu để xuất!");
             const filteredData = thucHienLocVaTimKiem();
@@ -714,9 +744,9 @@
             let aoa = []; 
             filteredData.forEach(ho => {
                 aoa.push([`Hộ gia đình: ${ho.chuHo}     Số hồ sơ: ${ho.hsct}     Địa chỉ: ${ho.diaChi}`]);
-                aoa.push(["TT", "Họ và tên", "Quan hệ", "Ngày sinh (Nam)", "Ngày sinh (Nữ)", "CCCD/Định danh"]);
+                aoa.push(["TT", "Họ và tên", "Quan hệ", "Ngày sinh", "CCCD/Định danh"]);
                 ho.thanhVien.forEach((tv, idx) => {
-                    aoa.push([idx + 1, tv.hoTen || "", tv.quanHe || "", tv.ngaySinh || "", "", tv.cccd || ""]);
+                    aoa.push([idx + 1, tv.hoTen || "", tv.quanHe || "", tv.ngaySinh || "", tv.cccd || ""]);
                 });
                 aoa.push([]); 
             });
