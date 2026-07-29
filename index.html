@@ -13,10 +13,13 @@
         }
 
         body {
-            /* Sử dụng ảnh nền chính xác do bạn cung cấp: 689d77b0aa39bf3aed273721_3.jpg */
-            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
-                        url('689d77b0aa39bf3aed273721_3.jpg') no-repeat center center fixed;
+            /* Nếu không tìm thấy file ảnh nền nội bộ, trang sẽ hiển thị màu xám đen dự phòng */
+            background-color: #2b3240;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), 
+                              url('689d77b0aa39bf3aed273721_3.jpg');
             background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,7 +27,7 @@
         }
 
         .login-card {
-            background-color: rgba(26, 34, 52, 0.92);
+            background-color: rgba(26, 34, 52, 0.95);
             border: 1px solid #2a344d;
             border-radius: 12px;
             width: 100%;
@@ -33,10 +36,8 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
             text-align: center;
             position: relative;
-            backdrop-filter: blur(5px);
         }
 
-        /* Khu vực hiển thị Huy hiệu CAND */
         .badge-container {
             width: 85px;
             height: 85px;
@@ -127,22 +128,42 @@
 <body>
 
     <div class="login-card">
-        <!-- Logo huy hiệu CAND chính xác do bạn cung cấp -->
         <div class="badge-container">
-            <img src="logo-cong-an_3.jpg" alt="Huy hiệu CAND">
+            <!-- Thêm thuộc tính onerror: Nếu không tìm thấy file nội bộ, trình duyệt sẽ tự động lấy ảnh từ mạng để thay thế -->
+            <img src="logo-cong-an_3.jpg" alt="Huy hiệu CAND" 
+                 onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/200px-Vietnam_People%27s_Police_emblem.svg.png';">
         </div>
 
         <div class="system-title">CÔNG AN NHÂN DÂN VIỆT NAM</div>
         <div class="system-subtitle">Hệ Thống Quản Lý Địa Bàn CSKV</div>
 
-        <form>
+        <!-- Thêm sự kiện onsubmit để kích hoạt tính năng đăng nhập -->
+        <form onsubmit="xulyDangNhap(event)">
             <div class="form-group">
                 <label class="form-label">Nhập Địa Chỉ Gmail Công Vụ</label>
-                <input type="email" class="form-input" value="canbo.cskv@gmail.com" required>
+                <input type="email" id="emailInput" class="form-input" value="canbo.cskv@gmail.com" required>
             </div>
             <button type="submit" class="submit-btn">Xác Thực & Tiếp Tục &rarr;</button>
         </form>
     </div>
 
+    <!-- Script xử lý đăng nhập -->
+    <script>
+        function xulyDangNhap(event) {
+            // Ngăn chặn form tải lại trang (chặn hành vi mặc định)
+            event.preventDefault(); 
+            
+            // Lấy email người dùng nhập
+            const email = document.getElementById('emailInput').value;
+            
+            if (email) {
+                // Hiển thị thông báo xác nhận thành công
+                alert('Đang xác thực hệ thống cho cán bộ: ' + email + '\n\nXác thực thành công! Bắt đầu chuyển hướng...');
+                
+                // HƯỚNG DẪN: Để chuyển sang trang quản lý chính, bạn hãy xóa dấu "//" ở dòng code bên dưới và thay "trang_chu.html" bằng tên file trang đích của bạn.
+                // window.location.href = "trang_chu.html";
+            }
+        }
+    </script>
 </body>
 </html>
