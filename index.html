@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Địa Bàn CSKV & Báo Cáo Mẫu KV2, KV9</title>
+    <title>Hệ Thống Quản Lý Địa Bàn CSKV & Bản Đồ Số GIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Thư viện hỗ trợ tính toán TOTP chuẩn Google Authenticator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/3.2.0/sha.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -35,7 +37,7 @@
         </div>
     </div>
 
-    <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR -->
+    <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR CHUẨN THẬT -->
     <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
         <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
             <div class="text-center space-y-1">
@@ -46,12 +48,12 @@
             
             <div class="space-y-3">
                 <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center space-y-3">
-                    <p class="text-[11px] text-gray-300">Quét mã QR bằng Google Authenticator / Authy:</p>
+                    <p class="text-[11px] text-gray-300">Quét mã QR bằng ứng dụng <strong>Google Authenticator</strong> hoặc <strong>Authy</strong>:</p>
                     <div id="qrcodeCanvas"></div>
-                    <p id="systemGeneratedOtpNote" class="text-xs text-amber-400 font-mono font-bold"></p>
+                    <p class="text-[11px] text-emerald-400 font-medium">Mã OTP tự động đồng bộ theo thời gian thực từ ứng dụng.</p>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số:</label>
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số từ ứng dụng:</label>
                     <input type="text" id="otpCodeInput" maxlength="6" placeholder="------" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div class="flex gap-3">
@@ -80,7 +82,6 @@
                     <span>+ Tải Excel Lên</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden" onchange="nhapFileExcel(event)">
                 </label>
-                <!-- Nút Xuất Mẫu KV2 & KV9 tích hợp -->
                 <button onclick="xuatBaoCaoKV2()" class="bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow text-white">
                     <span>📊 Xuất Mẫu KV2</span>
                 </button>
@@ -258,7 +259,7 @@
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
         let tamEmailDangNhap = "";
-        let generatedOtpCode = "";
+        let currentSecretBase32 = ""; // Khóa bí mật thực tế cho TOTP
         let mapInstance = null;
         let markerInstance = null;
 
@@ -294,20 +295,29 @@
             }
         }
 
+        // Hàm sinh chuỗi Base32 ngẫu nhiên cho mã hóa Google Authenticator
+        function taoSecretBase32() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+            let secret = '';
+            for (let i = 0; i < 16; i++) {
+                secret += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return secret;
+        }
+
         function buoc1KiemTraGmail() {
             const emailInput = document.getElementById('gmailInput').value.trim().toLowerCase();
             if (!emailInput) return alert("Vui lòng nhập địa chỉ Gmail!");
             
             tamEmailDangNhap = emailInput;
-            generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            currentSecretBase32 = taoSecretBase32(); // Tạo secret mới chuẩn thực tế cho từng lần đăng nhập
             
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('otpEmailDisplay').innerText = emailInput;
-            document.getElementById('systemGeneratedOtpNote').innerText = `[Mã OTP mô phỏng: ${generatedOtpCode}]`;
             document.getElementById('otpScreen').classList.remove('hidden');
 
             document.getElementById('qrcodeCanvas').innerHTML = "";
-            let otpAuthUrl = `otpauth://totp/GIS_CSKV:${emailInput}?secret=JBSWY3DPEHPK3PXP&issuer=QuanLyDiaBan`;
+            let otpAuthUrl = `otpauth://totp/GIS_CSKV:${emailInput}?secret=${currentSecretBase32}&issuer=QuanLyDiaBan`;
             new QRCode(document.getElementById('qrcodeCanvas'), {
                 text: otpAuthUrl, width: 160, height: 160, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.M
             });
@@ -318,9 +328,85 @@
             document.getElementById('loginScreen').classList.remove('hidden');
         }
 
+        // Hàm giải mã Base32 sang chuỗi byte
+        function base32toByteArray(base32) {
+            let base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+            let bits = "";
+            let hex = "";
+            for (let i = 0; i < base32.length; i++) {
+                let val = base32Chars.indexOf(base32.charAt(i).toUpperCase());
+                if (val === -1) continue;
+                bits += leftPad(val.toString(2), 5, '0');
+            }
+            for (let i = 0; i + 4 <= bits.length; i += 4) {
+                let chunk = bits.substr(i, 4);
+                hex += parseInt(chunk, 2).toString(16);
+            }
+            let byteArray = [];
+            for (let i = 0; i < hex.length; i += 2) {
+                byteArray.push(parseInt(hex.substr(i, 2), 16));
+            }
+            return new Uint8Array(byteArray);
+        }
+
+        function leftPad(str, len, pad) {
+            while (str.length < len) str = pad + str;
+            return str;
+        }
+
+        // Tính toán mã OTP thời gian thực chuẩn Google Authenticator (TOTP HMAC-SHA1)
+        function tinhToanMaTOTP(secretBase32) {
+            try {
+                let epoch = Math.round(new Date().getTime() / 1000.0);
+                let time = leftPad(Math.floor(epoch / 30).toString(16), 16, '0');
+                let keyBytes = base32toByteArray(secretBase32);
+                
+                let shaObj = new jsSHA("SHA-1", "HEX");
+                shaObj.setHMACKey(Array.from(keyBytes).map(b => ('0' + b.toString(16)).slice(-2)).join(''), "HEX");
+                shaObj.update(time);
+                let hmac = shaObj.getHMAC("HEX");
+
+                let offset = parseInt(hmac.substring(hmac.length - 1), 16);
+                let otp = (
+                    ((parseInt(hmac.substr(offset * 2, 8), 16) & 0x7fffffff)) % 1000000
+                ).toString();
+                return leftPad(otp, 6, '0');
+            } catch (e) {
+                return null;
+            }
+        }
+
         function xacThucOtp() {
             const otpInput = document.getElementById('otpCodeInput').value.trim();
-            if (otpInput !== generatedOtpCode) return alert("Mã OTP từ Google Authenticator không chính xác!");
+            if (!otpInput || otpInput.length !== 6) {
+                return alert("Vui lòng nhập đủ 6 chữ số mã OTP từ ứng dụng Google Authenticator!");
+            }
+
+            // Kiểm tra mã OTP chuẩn thực tế ở thời điểm hiện tại (cho phép sai số 1 bước thời gian ±30s do lệch đồng hồ thiết bị)
+            let valid = false;
+            let epoch = Math.floor(new Date().getTime() / 1000.0);
+            for (let errorWindow = -1; errorWindow <= 1; errorWindow++) {
+                let timeStep = Math.floor(epoch / 30) + errorWindow;
+                let timeHex = leftPad(timeStep.toString(16), 16, '0');
+                let keyBytes = base32toByteArray(currentSecretBase32);
+                
+                let shaObj = new jsSHA("SHA-1", "HEX");
+                shaObj.setHMACKey(Array.from(keyBytes).map(b => ('0' + b.toString(16)).slice(-2)).join(''), "HEX");
+                shaObj.update(timeHex);
+                let hmac = shaObj.getHMAC("HEX");
+                let offset = parseInt(hmac.substring(hmac.length - 1), 16);
+                let calculatedOtp = leftPad((((parseInt(hmac.substr(offset * 2, 8), 16) & 0x7fffffff)) % 1000000).toString(), 6, '0');
+
+                if (otpInput === calculatedOtp) {
+                    valid = true;
+                    break;
+                }
+            }
+
+            if (!valid) {
+                return alert("Mã OTP không chính xác hoặc đã hết hiệu lực. Vui lòng kiểm tra lại ứng dụng Google Authenticator!");
+            }
+
             currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7' };
             kiemTraVaGanQuyenThucTe();
             sessionStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
@@ -455,7 +541,16 @@
                         let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : '';
                         let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
 
-                        if (hoTen.toLowerCase() === 'họ và tên' || hsct.toLowerCase() === 'số hsct') continue;
+                        // KIỂM TRA LOẠI BỎ TRIỆT ĐỂ DÒNG TIÊU ĐỀ LỌT VÀO
+                        let hoTenLower = hoTen.toLowerCase();
+                        let hsctLower = hsct.toLowerCase();
+                        if (
+                            hoTenLower === 'họ và tên' || hoTenLower === 'họ tên' || 
+                            hsctLower === 'số hsct' || hsctLower === 'hsct' ||
+                            hoTenLower.includes('chủ hộ') || !hoTen
+                        ) {
+                            continue;
+                        }
                         
                         let diaChiFull = chuanHoaDiaChiVaKhuVuc(diaChiGoc);
                         let key = hsct ? hsct : (diaChiFull || 'khong_ro_diachi');
@@ -472,7 +567,7 @@
                         tempHoMap[key].danhSachThanhVien.push({ hoTen: hoTen, quanHe: quanHe });
                     }
 
-                    // Xử lý chuẩn quan hệ theo yêu cầu: 1 người tự động gán "Chủ hộ", nhiều người không rõ để trống
+                    // Chuẩn hóa quan hệ: 1 người tự động là chủ hộ
                     Object.keys(tempHoMap).forEach(key => {
                         let item = tempHoMap[key];
                         if (item.danhSachThanhVien.length === 1) {
@@ -504,7 +599,6 @@
             event.target.value = null;
         }
 
-        // TÍCH HỢP XUẤT MẪU KV2 (Danh sách hộ, nhân khẩu)
         function xuatBaoCaoKV2() {
             if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu để xuất báo cáo!");
             let exportData = [];
@@ -512,13 +606,7 @@
             danhSachHoGiaDinh.forEach(ho => {
                 ho.thanhVien.forEach(tv => {
                     exportData.push({
-                        "STT": stt++,
-                        "Số HSCT": ho.hsct,
-                        "Họ và tên": tv.hoTen,
-                        "Quan hệ với chủ hộ": tv.quanHe,
-                        "Địa chỉ cư trú": ho.diaChi,
-                        "Cán bộ quản lý": ho.canBoPhuTrach,
-                        "Biến động": ho.bienDong
+                        "STT": stt++, "Số HSCT": ho.hsct, "Họ và tên": tv.hoTen, "Quan hệ với chủ hộ": tv.quanHe, "Địa chỉ cư trú": ho.diaChi, "Cán bộ quản lý": ho.canBoPhuTrach, "Biến động": ho.bienDong
                     });
                 });
             });
@@ -528,10 +616,8 @@
             XLSX.writeFile(wb, "BaoCao_MauKV2_ThongTu24_89.xlsx");
         }
 
-        // TÍCH HỢP XUẤT MẪU KV9 (Báo cáo thống kê tình hình địa bàn và CSKV)
         function xuatBaoCaoKV9() {
             if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu thống kê địa bàn!");
-            
             let tongHo = danhSachHoGiaDinh.length;
             let tongNhanKhau = 0;
             danhSachHoGiaDinh.forEach(h => tongNhanKhau += h.thanhVien.length);
@@ -544,7 +630,6 @@
                 { "Nội dung thống kê": "3. Đơn vị công tác", "Số liệu chi tiết": `Công an Phường Tân An - ${currentUser.scope}` },
                 { "Nội dung thống kê": "4. Thời gian báo cáo", "Số liệu chi tiết": new Date().toLocaleDateString('vi-VN') }
             ];
-
             const ws = XLSX.utils.json_to_sheet(summaryData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "BaoCao_KV9");
