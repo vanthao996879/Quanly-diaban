@@ -148,11 +148,11 @@
                 </div>
             </div>
 
-            <!-- Mini-map tổng quan Phường Tân An -->
+            <!-- Mini-map tổng quan Phường Tân An (Sau sáp nhập: An Khánh + Hưng Lợi) -->
             <div class="glass-card p-4 rounded-xl shadow lg:col-span-2 flex flex-col space-y-2">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xs font-semibold text-gray-300">🗺️ Bản Đồ Tổng Quan Phường Tân An - Quận Ninh Kiều (GIS)</h2>
-                    <span class="text-[11px] text-blue-400 font-medium bg-blue-900/40 px-2 py-0.5 rounded border border-blue-700/50">📍 Tâm hành chính Phường Tân An</span>
+                    <h2 class="text-xs font-semibold text-gray-300">🗺️ Bản Đồ Phường Tân An (Sáp nhập An Khánh & Hưng Lợi - GIS)</h2>
+                    <span class="text-[11px] text-blue-400 font-medium bg-blue-900/40 px-2 py-0.5 rounded border border-blue-700/50">📍 Tâm HC: Phường Tân An mới</span>
                 </div>
                 <div id="mainMiniMap"></div>
             </div>
@@ -237,7 +237,7 @@
                     <p class="font-semibold text-xs">Độc lập - Tự do - Hạnh phúc</p>
                     <p class="text-[11px] italic mt-2">-------------------o0o-------------------</p>
                     <h3 class="font-bold text-base uppercase mt-3">PHIẾU THÔNG TIN HỘ KHẨU XÁC MINH ĐỊA BÀN</h3>
-                    <p class="text-xs font-medium">Công an Phường Tân An - Quận Ninh Kiều - TP. Cần Thơ</p>
+                    <p class="text-xs font-medium">Công an Phường Tân An (Sáp nhập An Khánh & Hưng Lợi) - TP. Cần Thơ</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-900 p-4 rounded-lg border border-gray-700">
@@ -315,8 +315,8 @@
 
     <script>
         const ADMIN_EMAIL = "vanthao3011@gmail.com";
-        // Tọa độ chuẩn xác tâm Phường Tân An, Quận Ninh Kiều, TP. Cần Thơ
-        const TAN_AN_CENTER = [10.034500, 105.784500]; 
+        // Tọa độ chuẩn xác tâm Phường Tân An mới (sáp nhập từ An Khánh & Hưng Lợi) theo bản đồ số quy hoạch
+        const TAN_AN_CENTER = [10.021500, 105.757500]; 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
@@ -484,19 +484,19 @@
                 mainMiniMapInstance.remove();
                 mainMiniMapInstance = null;
             }
-            mainMiniMapInstance = L.map('mainMiniMap').setView(TAN_AN_CENTER, 15);
+            mainMiniMapInstance = L.map('mainMiniMap').setView(TAN_AN_CENTER, 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(mainMiniMapInstance);
 
-            // Vẽ ranh giới/vùng định vị Phường Tân An trực quan
+            // Vẽ ranh giới/vùng định vị Phường Tân An mới (sáp nhập từ An Khánh & Hưng Lợi)
             let boundaryPolygon = L.polygon([
-                [10.0410, 105.7780],
-                [10.0410, 105.7910],
-                [10.0280, 105.7910],
-                [10.0280, 105.7780]
+                [10.0330, 105.7480],
+                [10.0330, 105.7680],
+                [10.0100, 105.7680],
+                [10.0100, 105.7480]
             ], { color: '#3b82f6', weight: 2, fillColor: '#1d4ed8', fillOpacity: 0.15 }).addTo(mainMiniMapInstance);
-            boundaryPolygon.bindPopup("<b>Trung tâm Phường Tân An</b><br>Quận Ninh Kiều, TP. Cần Thơ");
+            boundaryPolygon.bindPopup("<b>Phường Tân An (Mới)</b><br>Sáp nhập từ An Khánh và Hưng Lợi");
 
             miniMapMarkersGroup = L.layerGroup().addTo(mainMiniMapInstance);
             capNhatCacDiemTrenMiniMap(danhSachHoGiaDinh);
