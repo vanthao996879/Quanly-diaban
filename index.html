@@ -72,11 +72,11 @@
                     <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Địa Bàn & Bản Đồ Số</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
-                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền: <span id="userScopeDisplay" class="text-amber-300 font-semibold"></span>.</p>
+                <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền (19 CSKV / 12 Khu Vực): <span id="userScopeDisplay" class="text-amber-300 font-semibold"></span>.</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <button id="btnQuanLyQuyen" onclick="moModalPhanQuyen()" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-xs font-medium transition hidden flex items-center gap-1 shadow">
-                    <span>👥 Phân Quyền CSKV</span>
+                    <span>👥 Phân Quyền CSKV (Ô1, Ô2)</span>
                 </button>
                 <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-xs font-medium transition flex items-center gap-1 shadow">
                     <span>+ Tải Excel Lên</span>
@@ -113,7 +113,7 @@
                     </div>
                     <div class="space-y-2">
                         <select id="filterKhuVuc" onchange="thucHienLocVaTimKiem()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                            <option value="">-- Tất cả Khu Vực --</option>
+                            <option value="">-- Tất cả Khu Vực / Ô --</option>
                         </select>
                         <select id="filterCanBo" onchange="thucHienLocVaTimKiem()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-indigo-300 font-medium focus:outline-none focus:border-blue-500">
                             <option value="">-- Tất cả Cán Bộ --</option>
@@ -151,7 +151,7 @@
                             <th class="p-2.5 border-b border-gray-600">STT</th>
                             <th class="p-2.5 border-b border-gray-600">Số HSCT</th>
                             <th class="p-2.5 border-b border-gray-600">Chủ Hộ (Nhà)</th>
-                            <th class="p-2.5 border-b border-gray-600">Địa Chỉ & Khu Vực</th>
+                            <th class="p-2.5 border-b border-gray-600">Địa Chỉ & Phân Khúc Ô</th>
                             <th class="p-2.5 border-b border-gray-600">CB Phụ Trách</th>
                             <th class="p-2.5 border-b border-gray-600">Biến Động</th>
                             <th class="p-2.5 border-b border-gray-600 text-center">Thành Viên</th>
@@ -168,18 +168,18 @@
         </div>
     </div>
 
-    <!-- Modal Phân Quyền Cán Bộ -->
+    <!-- Modal Phân Quyền Cán Bộ (Hỗ trợ 19 CSKV / 12 Khu Vực bao gồm Ô1, Ô2) -->
     <div id="roleModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-gray-700 pb-3">
-                <h3 class="text-sm font-bold text-blue-400">Quản Lý Phân Quyền Cán Bộ CSKV / Chỉ Huy</h3>
+                <h3 class="text-sm font-bold text-blue-400">Quản Lý Phân Quyền Cán Bộ CSKV / Chỉ Huy (19 CSKV / 12 Khu Vực)</h3>
                 <button onclick="dongModalPhanQuyen()" class="text-gray-300 hover:text-white font-bold text-lg">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
-                <p class="text-gray-300">Nhập Gmail của cán bộ và gán khu vực quản lý hoặc quyền Chỉ huy toàn phường:</p>
+                <p class="text-gray-300">Nhập Gmail của cán bộ và gán khu vực quản lý chi tiết (ví dụ: <strong>Khu Vực 7 - Ô1</strong> hoặc <strong>Khu Vực 7 - Ô2</strong>):</p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <input type="email" id="newCbEmail" placeholder="Nhập Gmail cán bộ..." class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
-                    <input type="text" id="newCbScope" placeholder="Khu Vực 7 hoặc Chỉ Huy..." class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
+                    <input type="text" id="newCbScope" placeholder="vd: Khu Vực 7 - Ô1..." class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
                     <button onclick="themHoacSuaPhanQuyen()" class="bg-emerald-600 hover:bg-emerald-700 rounded py-2 font-medium transition text-white shadow">Lưu Phân Quyền</button>
                 </div>
                 <div class="overflow-x-auto border border-gray-700 rounded-lg max-h-60 mt-2">
@@ -187,7 +187,7 @@
                         <thead class="bg-gray-700 text-gray-300">
                             <tr>
                                 <th class="p-2">Gmail Cán Bộ</th>
-                                <th class="p-2">Khu Vực / Chức Vụ Phụ Trách</th>
+                                <th class="p-2">Khu Vực / Ô / Chức Vụ Phụ Trách</th>
                                 <th class="p-2 text-center">Thao tác</th>
                             </tr>
                         </thead>
@@ -218,8 +218,8 @@
                             <input type="text" id="editCanBo" readonly class="bg-gray-800 border border-gray-600 text-indigo-300 font-semibold rounded px-2 py-1.5 w-full cursor-not-allowed">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-1">Địa chỉ (Tự động phát hiện giáp ranh):</label>
-                            <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full">
+                            <label class="text-gray-400 block mb-1">Địa chỉ & Phân khu Ô (Hỗ trợ Ô1, Ô2...):</label>
+                            <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full" placeholder="VD: Khu Vực 7 - Ô1, Số nhà...">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -304,7 +304,7 @@
                     currentUser.scope = userCfg.scope; 
                 } else { 
                     currentUser.role = 'can_bo'; 
-                    currentUser.scope = 'Khu Vực 7'; 
+                    currentUser.scope = 'Khu Vực 7 - Ô1'; 
                 }
             }
         }
@@ -396,7 +396,7 @@
                 return alert("Mã OTP không chính xác hoặc đã hết hiệu lực. Vui lòng kiểm tra lại ứng dụng Google Authenticator!");
             }
 
-            currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7' };
+            currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7 - Ô1' };
             kiemTraVaGanQuyenThucTe();
             sessionStorage.setItem("currentUserAuthGIS", JSON.stringify(currentUser));
             document.getElementById('otpScreen').classList.add('hidden');
@@ -429,7 +429,6 @@
             setTimeout(() => khoiTaoMainMiniMap(), 200);
         }
 
-        // Khởi tạo bản đồ tổng quan (Mini-map) ngoài màn hình chính định tâm Phường Tân An
         function khoiTaoMainMiniMap() {
             if (mainMiniMapInstance) {
                 mainMiniMapInstance.remove();
@@ -473,7 +472,7 @@
         function themHoacSuaPhanQuyen() {
             let email = document.getElementById('newCbEmail').value.trim().toLowerCase();
             let scope = document.getElementById('newCbScope').value.trim();
-            if (!email || !scope) return alert("Vui lòng nhập đầy đủ Gmail và phân quyền!");
+            if (!email || !scope) return alert("Vui lòng nhập đầy đủ Gmail và phân quyền Ô / Khu vực!");
 
             let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
             configMap[email] = { role: 'can_bo', scope: scope };
@@ -482,7 +481,7 @@
             document.getElementById('newCbEmail').value = '';
             document.getElementById('newCbScope').value = '';
             hienThiBangPhanQuyen();
-            alert("Đã phân quyền thành công!");
+            alert("Đã phân quyền Ô thành công!");
         }
 
         function xoaPhanQuyen(email) {
@@ -517,15 +516,24 @@
             });
         }
 
+        // Tinh chỉnh chuẩn hóa địa chỉ tích hợp nhận diện linh hoạt Ô1, Ô2 (Hỗ trợ Khu vực 7 có 2 CSKV)
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc) {
             let full = diaChiGoc || "";
             const matchKv = full.match(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*(\d+)/i);
             let soKv = matchKv && matchKv[2] ? matchKv[2] : "7";
 
+            // Kiểm tra xem có ghi chú Ô1 hoặc Ô2 hay không
+            const matchO = full.match(/(ô|ô số)\s*[-_\.]?\s*([12])/i);
+            let soO = matchO && matchO[2] ? ` - Ô${matchO[2]}` : "";
+
+            if (!full.toLowerCase().includes("khu vực") && !full.toLowerCase().includes("kv")) {
+                full = `Khu Vực ${soKv}${soO}, ` + full;
+            }
+
             const tuKhoaGiapRanh = ["giáp ranh", "tiếp giáp", "đường ranh", "ranh giới"];
             let laGiapRanh = tuKhoaGiapRanh.some(tu => full.toLowerCase().includes(tu));
 
-            if (laGiapRanh && !full.includes("[Giáp Ranh]")) full = `[Giáp Ranh KV${soKv}] ${full}`;
+            if (laGiapRanh && !full.includes("[Giáp Ranh]")) full = `[Giáp Ranh KV${soKv}${soO}] ${full}`;
             if (!full.toLowerCase().includes("tân an")) full += `, Phường Tân An`;
             return full;
         }
@@ -620,7 +628,7 @@
                     
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert("Đã tải, phân tích và đồng bộ dữ liệu bản đồ Phường Tân An thành công!");
+                    alert("Đã tải, phân tích và đồng bộ dữ liệu bản đồ Phường Tân An (chia tách Ô thành công)!");
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -634,7 +642,7 @@
             danhSachHoGiaDinh.forEach(ho => {
                 ho.thanhVien.forEach(tv => {
                     exportData.push({
-                        "STT": stt++, "Số HSCT": ho.hsct, "Họ và tên": tv.hoTen, "Quan hệ với chủ hộ": tv.quanHe, "Địa chỉ cư trú": ho.diaChi, "Cán bộ quản lý": ho.canBoPhuTrach, "Biến động": ho.bienDong
+                        "STT": stt++, "Số HSCT": ho.hsct, "Họ và tên": tv.hoTen, "Quan hệ với chủ hộ": tv.quanHe, "Địa chỉ cư trú & Ô": ho.diaChi, "Cán bộ quản lý": ho.canBoPhuTrach, "Biến động": ho.bienDong
                     });
                 });
             });
@@ -651,7 +659,7 @@
             danhSachHoGiaDinh.forEach(h => tongNhanKhau += h.thanhVien.length);
 
             let summaryData = [
-                { "Nội dung thống kê": "BÁO CÁO THỐNG KÊ TÌNH HÌNH ĐỊA BÀN & LỰC LƯỢNG CSKV (MẪU KV9)", "Số liệu chi tiết": "" },
+                { "Nội dung thống kê": "BÁO CÁO THỐNG KÊ TÌNH HÌNH ĐỊA BÀN & LỰC LƯỢNG CSKV (MẪU KV9 - 19 CSKV/12 KV)", "Số liệu chi tiết": "" },
                 { "Nội dung thống kê": "1. Tổng số hộ gia đình", "Số liệu chi tiết": tongHo },
                 { "Nội dung thống kê": "1. Tổng số nhân khẩu", "Số liệu chi tiết": tongNhanKhau },
                 { "Nội dung thống kê": "2. Cán bộ lập biểu", "Số liệu chi tiết": currentUser.email },
@@ -669,13 +677,13 @@
             let setCanBo = new Set();
             danhSachHoGiaDinh.forEach(ho => {
                 let diaChi = ho.diaChi || "";
-                let kvMatches = diaChi.match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Kv\s*\d+|Kp\s*\d+)/gi);
-                if (kvMatches) kvMatches.forEach(kv => setKhuVuc.add(kv.trim().replace(/\s+/g, ' ').replace(/kv\s*(\d+)/i, 'Khu Vực $1')));
+                let kvMatches = diaChi.match(/(Khu Vực\s*\d+(\s*-\s*Ô\s*\d+)?|Khu Phố\s*\d+|Kv\s*\d+|Kp\s*\d+)/gi);
+                if (kvMatches) kvMatches.forEach(kv => setKhuVuc.add(kv.trim().replace(/\s+/g, ' ')));
                 if (ho.canBoPhuTrach) setCanBo.add(ho.canBoPhuTrach);
             });
 
             const selKv = document.getElementById('filterKhuVuc');
-            selKv.innerHTML = '<option value="">-- Tất cả Khu Vực --</option>';
+            selKv.innerHTML = '<option value="">-- Tất cả Khu Vực / Ô --</option>';
             Array.from(setKhuVuc).sort().forEach(kv => selKv.innerHTML += `<option value="${kv}">${kv}</option>`);
 
             const selCb = document.getElementById('filterCanBo');
@@ -699,7 +707,7 @@
                 let matchKw = !kw || ho.chuHo.toLowerCase().includes(kw) || ho.diaChi.toLowerCase().includes(kw);
                 
                 if (currentUser.role === 'can_bo' && currentUser.scope !== 'Toàn Phường (Admin)' && !currentUser.scope.toLowerCase().includes('chỉ huy')) {
-                     let myScope = currentUser.scope.toLowerCase().replace('khu vực', '').trim();
+                     let myScope = currentUser.scope.toLowerCase().trim();
                      if (!ho.diaChi.toLowerCase().includes(myScope)) return false;
                 }
                 return matchKv && matchCb && matchBd && matchKw;
@@ -801,7 +809,7 @@
             phanTichDuLieuPhanCap();
             thucHienLocVaTimKiem();
             dongModal();
-            alert("Lưu thành công!");
+            alert("Lưu thay đổi thành công!");
         }
 
         function dongModal() {
