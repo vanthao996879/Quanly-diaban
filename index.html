@@ -15,17 +15,37 @@
         #mainMiniMap { height: 320px; width: 100%; border-radius: 0.75rem; z-index: 10; }
         #qrcodeCanvas { display: flex; justify-content: center; align-items: center; background: white; padding: 10px; border-radius: 8px; width: fit-content; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         #qrcodeCanvas canvas { display: block; }
+        
+        /* Hiệu ứng kính mờ Smart Operation Center */
+        .glass-card {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.7), rgba(17, 24, 39, 0.8));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(75, 85, 99, 0.4);
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        .animate-pulse-slow { animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        }
+
+        /* Định dạng trang in chuyên nghiệp */
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4">
+<body class="bg-gray-950 text-white min-h-screen p-4">
 
     <!-- BƯỚC 1: ĐĂNG NHẬP GMAIL -->
-    <div id="loginScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4">
-        <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
+    <div id="loginScreen" class="fixed inset-0 bg-gray-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6">
             <div class="text-center space-y-2">
                 <div class="bg-blue-600/20 text-blue-400 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl font-bold border border-blue-500/30">🗺️</div>
                 <h2 class="text-xl font-bold text-white">Quản Lý Địa Bàn Cho CSKV</h2>
-                <p class="text-xs text-gray-400">Nhập Gmail công vụ để tiếp tục:</p>
+                <p class="text-xs text-gray-400">Nhập Gmail công vụ để tiếp tục[cite: 5]:</p>
             </div>
             <div class="space-y-4">
                 <div>
@@ -38,8 +58,8 @@
     </div>
 
     <!-- BƯỚC 2: XÁC THỰC GOOGLE AUTHENTICATOR -->
-    <div id="otpScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50 p-4 hidden">
-        <div class="bg-gray-800 border border-gray-700 w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
+    <div id="otpScreen" class="fixed inset-0 bg-gray-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
+        <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-5">
             <div class="text-center space-y-1">
                 <div class="bg-emerald-600/20 text-emerald-400 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-lg font-bold border border-emerald-500/30">🛡️</div>
                 <h2 class="text-lg font-bold text-white">Xác Thực Google Authenticator</h2>
@@ -47,13 +67,13 @@
             </div>
             
             <div class="space-y-3">
-                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-center space-y-3">
-                    <p class="text-[11px] text-gray-300">Quét mã QR bằng ứng dụng <strong>Google Authenticator</strong> hoặc <strong>Authy</strong>:</p>
+                <div class="bg-gray-900/80 p-4 rounded-lg border border-gray-700 text-center space-y-3">
+                    <p class="text-[11px] text-gray-300">Quét mã QR bằng ứng dụng <strong>Google Authenticator</strong> hoặc <strong>Authy</strong>[cite: 5]:</p>
                     <div id="qrcodeCanvas"></div>
-                    <p class="text-[11px] text-emerald-400 font-medium">Mã OTP tự động đồng bộ theo thời gian thực từ ứng dụng.</p>
+                    <p class="text-[11px] text-emerald-400 font-medium">Mã OTP tự động đồng bộ theo thời gian thực từ ứng dụng[cite: 5].</p>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số từ ứng dụng:</label>
+                    <label class="block text-xs text-gray-400 mb-1">Nhập mã OTP 6 số từ ứng dụng[cite: 5]:</label>
                     <input type="text" id="otpCodeInput" maxlength="6" placeholder="------" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-center tracking-[1em] text-lg font-mono text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div class="flex gap-3">
@@ -64,12 +84,12 @@
         </div>
     </div>
 
-    <!-- GIAO DIỆN CHÍNH -->
+    <!-- GIAO DIỆN CHÍNH (SMART OPERATION CENTER) -->
     <div id="mainApp" class="container mx-auto space-y-6 max-w-[95%] hidden mt-4">
-        <header class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 gap-4">
+        <header class="flex flex-col md:flex-row justify-between items-center glass-card p-4 rounded-xl shadow-xl gap-4">
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-bold text-blue-400">Hệ Thống Quản Lý Địa Bàn & Bản Đồ Số</h1>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">Trung Tâm Điều Hành & Quản Lý Địa Bàn CSKV</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase"></span>
                 </div>
                 <p class="text-xs text-gray-300 mt-1">Tài khoản: <span id="userNameDisplay" class="text-emerald-400 font-semibold"></span> | Phân quyền (19 CSKV / 12 Khu Vực): <span id="userScopeDisplay" class="text-amber-300 font-semibold"></span>.</p>
@@ -98,18 +118,20 @@
         <!-- Thống kê & Bản đồ Tổng quan Mini-map -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div class="space-y-4 flex flex-col justify-between">
-                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
+                <div class="glass-card p-4 rounded-xl shadow relative overflow-hidden">
+                    <div class="absolute right-2 top-2 text-blue-500/10 text-4xl font-black">👥</div>
                     <p class="text-gray-400 text-xs">Tổng Nhân khẩu</p>
                     <h3 id="statNhanKhau" class="text-2xl font-bold text-blue-400 mt-1">0</h3>
                 </div>
-                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow">
+                <div class="glass-card p-4 rounded-xl shadow relative overflow-hidden">
+                    <div class="absolute right-2 top-2 text-emerald-500/10 text-4xl font-black">🏠</div>
                     <p class="text-gray-400 text-xs">Tổng Hộ gia đình</p>
                     <h3 id="statHoGiaDinh" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
                 </div>
-                <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow space-y-2">
+                <div class="glass-card p-4 rounded-xl shadow space-y-2">
                     <div class="flex justify-between items-center">
                         <p class="text-gray-400 text-xs font-semibold">🔍 Bộ Lọc Nâng Cao</p>
-                        <span id="statTrangThai" class="text-xs text-amber-400 font-medium">Chưa tải dữ liệu</span>
+                        <span id="statTrangThai" class="text-xs text-amber-400 font-medium animate-pulse">Chưa tải dữ liệu</span>
                     </div>
                     <div class="space-y-2">
                         <select id="filterKhuVuc" onchange="thucHienLocVaTimKiem()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
@@ -128,18 +150,18 @@
                 </div>
             </div>
 
-            <!-- Mini-map tổng quan Phường Tân An ngay tại màn hình chính -->
-            <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow lg:col-span-2 flex flex-col space-y-2">
+            <!-- Mini-map tổng quan Phường Tân An -->
+            <div class="glass-card p-4 rounded-xl shadow lg:col-span-2 flex flex-col space-y-2">
                 <div class="flex justify-between items-center">
                     <h2 class="text-xs font-semibold text-gray-300">🗺️ Bản Đồ Tổng Quan Địa Bàn Phường Tân An (Mini-map)</h2>
-                    <span class="text-[11px] text-blue-400">Định tâm tự động ranh giới Phường Tân An</span>
+                    <span class="text-[11px] text-blue-400 font-medium">Định tâm ranh giới Phường Tân An</span>
                 </div>
                 <div id="mainMiniMap"></div>
             </div>
         </div>
 
         <!-- Bảng danh sách Hộ gia đình -->
-        <div class="bg-gray-800 p-4 rounded-xl border border-gray-700 shadow flex flex-col">
+        <div class="glass-card p-4 rounded-xl shadow flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-3">
                 <h2 class="text-sm font-semibold text-gray-200">Danh Sách Hộ Khẩu & Biến Động</h2>
                 <input type="text" id="searchInput" placeholder="Tìm tên chủ hộ, số nhà, SĐT, giáp ranh..." onkeyup="thucHienLocVaTimKiem()" class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full md:w-80">
@@ -147,20 +169,20 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
-                        <tr class="bg-gray-700 text-gray-200">
-                            <th class="p-2.5 border-b border-gray-600">STT</th>
-                            <th class="p-2.5 border-b border-gray-600">Số HSCT</th>
-                            <th class="p-2.5 border-b border-gray-600">Chủ Hộ (Nhà)</th>
-                            <th class="p-2.5 border-b border-gray-600">Địa Chỉ & Phân Khúc Ô</th>
-                            <th class="p-2.5 border-b border-gray-600">CB Phụ Trách</th>
-                            <th class="p-2.5 border-b border-gray-600">Biến Động</th>
-                            <th class="p-2.5 border-b border-gray-600 text-center">Thành Viên</th>
-                            <th class="p-2.5 border-b border-gray-600 text-center">Thao Tác</th>
+                        <tr class="bg-gray-800 text-gray-300 border-b border-gray-700">
+                            <th class="p-2.5">STT</th>
+                            <th class="p-2.5">Số HSCT</th>
+                            <th class="p-2.5">Chủ Hộ (Nhà)</th>
+                            <th class="p-2.5">Địa Chỉ & Phân Khúc Ô</th>
+                            <th class="p-2.5">CB Phụ Trách</th>
+                            <th class="p-2.5">Biến Động</th>
+                            <th class="p-2.5 text-center">Thành Viên</th>
+                            <th class="p-2.5 text-center">Thao Tác</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-gray-700">
+                    <tbody id="tableBody" class="divide-y divide-gray-800">
                         <tr>
-                            <td colspan="8" class="text-center p-6 text-gray-400">Vui lòng tải file dữ liệu lên.</td>
+                            <td colspan="8" class="text-center p-6 text-gray-400">Vui lòng tải file dữ liệu lên[cite: 5].</td>
                         </tr>
                     </tbody>
                 </table>
@@ -168,15 +190,15 @@
         </div>
     </div>
 
-    <!-- Modal Phân Quyền Cán Bộ (Hỗ trợ 19 CSKV / 12 Khu Vực bao gồm Ô1, Ô2) -->
+    <!-- Modal Phân Quyền Cán Bộ -->
     <div id="roleModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 w-full max-w-2xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col p-6 space-y-4">
+        <div class="glass-card w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col p-6 space-y-4 border border-gray-700">
             <div class="flex justify-between items-center border-b border-gray-700 pb-3">
                 <h3 class="text-sm font-bold text-blue-400">Quản Lý Phân Quyền Cán Bộ CSKV / Chỉ Huy (19 CSKV / 12 Khu Vực)</h3>
                 <button onclick="dongModalPhanQuyen()" class="text-gray-300 hover:text-white font-bold text-lg">&times;</button>
             </div>
             <div class="space-y-3 text-xs">
-                <p class="text-gray-300">Nhập Gmail của cán bộ và gán khu vực quản lý chi tiết (ví dụ: <strong>Khu Vực 7 - Ô1</strong> hoặc <strong>Khu Vực 7 - Ô2</strong>):</p>
+                <p class="text-gray-300">Nhập Gmail của cán bộ và gán khu vực quản lý chi tiết[cite: 5]:</p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <input type="email" id="newCbEmail" placeholder="Nhập Gmail cán bộ..." class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
                     <input type="text" id="newCbScope" placeholder="vd: Khu Vực 7 - Ô1..." class="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white">
@@ -184,31 +206,47 @@
                 </div>
                 <div class="overflow-x-auto border border-gray-700 rounded-lg max-h-60 mt-2">
                     <table class="w-full text-left">
-                        <thead class="bg-gray-700 text-gray-300">
+                        <thead class="bg-gray-800 text-gray-300">
                             <tr>
                                 <th class="p-2">Gmail Cán Bộ</th>
                                 <th class="p-2">Khu Vực / Ô / Chức Vụ Phụ Trách</th>
                                 <th class="p-2 text-center">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody id="listPhanQuyenBody" class="divide-y divide-gray-700"></tbody>
+                        <tbody id="listPhanQuyenBody" class="divide-y divide-gray-800"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal Chi tiết Hộ Khẩu -->
-    <div id="detailModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 w-full max-w-4xl rounded-xl border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
-            <div class="p-4 bg-gray-700 flex justify-between items-center border-b border-gray-600">
-                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu & Bản Đồ</h3>
-                <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
+    <!-- Modal Chi tiết Hộ Khẩu & Tích Hợp In Phiếu Nhanh -->
+    <div id="detailModal" class="fixed inset-0 bg-black/85 hidden flex items-center justify-center p-4 z-50">
+        <div class="glass-card w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] border border-gray-700">
+            <div class="p-4 bg-gray-800/80 flex justify-between items-center border-b border-gray-700 no-print">
+                <h3 class="text-sm font-bold text-blue-400">Chi Tiết Sổ Hộ Khẩu & Xác Minh Địa Bàn</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="inPhieuThongTinHo()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-medium flex items-center gap-1 shadow">
+                        <span>🖨️ In Phiếu Hộ Khẩu</span>
+                    </button>
+                    <button onclick="dongModal()" class="text-gray-300 hover:text-white font-bold text-lg px-2">&times;</button>
+                </div>
             </div>
-            <div class="p-4 overflow-y-auto space-y-4 flex-grow text-xs">
+
+            <!-- Khu vực nội dung hiển thị trực quan và dùng cho lệnh In -->
+            <div id="printArea" class="p-6 overflow-y-auto space-y-4 flex-grow text-xs bg-gray-900/50">
+                <!-- Tiêu đề khi In hành chính -->
+                <div class="hidden print:block text-center space-y-1 mb-4">
+                    <h4 class="font-bold uppercase text-sm">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h4>
+                    <p class="font-semibold text-xs">Độc lập - Tự do - Hạnh phúc</p>
+                    <p class="text-[11px] italic mt-2">-------------------o0o-------------------</p>
+                    <h3 class="font-bold text-base uppercase mt-3">PHIẾU THÔNG TIN HỘ KHẨU XÁC MINH ĐỊA BÀN</h3>
+                    <p class="text-xs font-medium">Công an Phường Tân An - Quận Ninh Kiều - TP. Cần Thơ</p>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-900 p-4 rounded-lg border border-gray-700">
                     <div class="space-y-3">
-                        <p><strong class="text-gray-400">Số HSCT:</strong> <span id="modalHsct" class="font-mono text-blue-300"></span></p>
+                        <p><strong class="text-gray-400">Số HSCT:</strong> <span id="modalHsct" class="font-mono text-blue-300 font-bold"></span></p>
                         <div>
                             <label class="text-gray-400 block mb-1">Chủ hộ:</label>
                             <input type="text" id="editChuHo" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full">
@@ -218,8 +256,8 @@
                             <input type="text" id="editCanBo" readonly class="bg-gray-800 border border-gray-600 text-indigo-300 font-semibold rounded px-2 py-1.5 w-full cursor-not-allowed">
                         </div>
                         <div>
-                            <label class="text-gray-400 block mb-1">Địa chỉ & Phân khu Ô (Hỗ trợ Ô1, Ô2...):</label>
-                            <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full" placeholder="VD: Khu Vực 7 - Ô1, Số nhà...">
+                            <label class="text-gray-400 block mb-1">Địa chỉ & Phân khu Ô:</label>
+                            <input type="text" id="editDiaChi" class="bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-white w-full" placeholder="VD: Khu Vực 7 - Ô1...">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -236,7 +274,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex flex-col space-y-2">
+                    <div class="flex flex-col space-y-2 no-print">
                         <label class="text-gray-400 block">Bản đồ số Phường Tân An (GIS):</label>
                         <div id="mapContainer"></div>
                     </div>
@@ -246,19 +284,35 @@
                     <h4 class="font-semibold text-gray-300 mb-2">Nhân khẩu trong hộ:</h4>
                     <div class="overflow-x-auto border border-gray-700 rounded-lg">
                         <table class="w-full text-left">
-                            <thead class="bg-gray-700 text-gray-300">
+                            <thead class="bg-gray-800 text-gray-300">
                                 <tr>
                                     <th class="p-2">Họ và Tên</th>
                                     <th class="p-2">Quan Hệ Với Chủ Hộ</th>
                                 </tr>
                             </thead>
-                            <tbody id="modalNhanKhauList" class="divide-y divide-gray-700"></tbody>
+                            <tbody id="modalNhanKhauList" class="divide-y divide-gray-800"></tbody>
                         </table>
                     </div>
                 </div>
+
+                <!-- Chữ ký khi in -->
+                <div class="hidden print:grid grid-cols-2 gap-4 mt-8 pt-4 text-center">
+                    <div>
+                        <p class="font-semibold">XÁC NHẬN CỦA CHỦ HỘ</p>
+                        <p class="text-[10px] italic">(Ký, ghi rõ họ tên)</p>
+                        <div class="h-20"></div>
+                    </div>
+                    <div>
+                        <p class="font-semibold">CÁN BỘ CÔNG AN PHỤ TRÁCH ĐỊA BÀN</p>
+                        <p class="text-[10px] italic">(Ký, ghi rõ họ tên)</p>
+                        <div class="h-20"></div>
+                        <p class="font-semibold text-xs"><span id="printCanBoName"></span></p>
+                    </div>
+                </div>
             </div>
-            <div class="p-4 bg-gray-700 flex justify-end gap-3 border-t border-gray-600">
-                <button onclick="dongModal()" class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded transition">Đóng</button>
+
+            <div class="p-4 bg-gray-800/80 flex justify-end gap-3 border-t border-gray-700 no-print">
+                <button onclick="dongModal()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded transition">Đóng</button>
                 <button onclick="luuThongTinHo()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition font-medium shadow">Lưu Thay Đổi</button>
             </div>
         </div>
@@ -266,7 +320,7 @@
 
     <script>
         const ADMIN_EMAIL = "vanthao3011@gmail.com";
-        const TAN_AN_CENTER = [10.033198, 105.782806]; // Tọa độ chuẩn trung tâm Phường Tân An, Cần Thơ
+        const TAN_AN_CENTER = [10.033198, 105.782806]; 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
         let currentUser = { email: "", role: "can_bo", scope: "Khu Vực 7" };
@@ -369,7 +423,7 @@
         function xacThucOtp() {
             const otpInput = document.getElementById('otpCodeInput').value.trim();
             if (!otpInput || otpInput.length !== 6) {
-                return alert("Vui lòng nhập đủ 6 chữ số mã OTP từ ứng dụng Google Authenticator!");
+                return alert("Vui lòng nhập đủ 6 chữ số mã OTP từ ứng dụng Google Authenticator[cite: 5]!");
             }
 
             let valid = false;
@@ -393,7 +447,7 @@
             }
 
             if (!valid) {
-                return alert("Mã OTP không chính xác hoặc đã hết hiệu lực. Vui lòng kiểm tra lại ứng dụng Google Authenticator!");
+                return alert("Mã OTP không chính xác hoặc đã hết hiệu lực. Vui lòng kiểm tra lại ứng dụng Google Authenticator[cite: 5]!");
             }
 
             currentUser = { email: tamEmailDangNhap, role: 'can_bo', scope: 'Khu Vực 7 - Ô1' };
@@ -418,11 +472,11 @@
 
             if (currentUser.role === 'admin') {
                 badge.innerText = "Quyền: Admin Tổng";
-                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-600 text-white";
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-600 text-white shadow";
                 btnPhanQuyen.classList.remove('hidden');
             } else {
                 badge.innerText = `CSKV / Chỉ Huy (${currentUser.scope})`;
-                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-600 text-white";
+                badge.className = "px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-600 text-white shadow";
                 btnPhanQuyen.classList.add('hidden');
             }
             thucHienLocVaTimKiem();
@@ -472,7 +526,7 @@
         function themHoacSuaPhanQuyen() {
             let email = document.getElementById('newCbEmail').value.trim().toLowerCase();
             let scope = document.getElementById('newCbScope').value.trim();
-            if (!email || !scope) return alert("Vui lòng nhập đầy đủ Gmail và phân quyền Ô / Khu vực!");
+            if (!email || !scope) return alert("Vui lòng nhập đầy đủ Gmail và phân quyền Ô / Khu vực[cite: 5]!");
 
             let configMap = JSON.parse(localStorage.getItem("danhSachConfigUserGIS") || "{}");
             configMap[email] = { role: 'can_bo', scope: scope };
@@ -507,7 +561,7 @@
             emails.forEach(email => {
                 let info = configMap[email];
                 tbody.innerHTML += `
-                    <tr class="border-b border-gray-700 hover:bg-gray-700/40">
+                    <tr class="border-b border-gray-800 hover:bg-gray-800/40">
                         <td class="p-2 text-white font-medium">${email}</td>
                         <td class="p-2 text-amber-300 font-semibold">${info.scope}</td>
                         <td class="p-2 text-center"><button onclick="xoaPhanQuyen('${email}')" class="bg-rose-600 hover:bg-rose-700 px-2.5 py-1 rounded text-[10px] text-white font-medium shadow">Xóa</button></td>
@@ -516,13 +570,11 @@
             });
         }
 
-        // Tinh chỉnh chuẩn hóa địa chỉ tích hợp nhận diện linh hoạt Ô1, Ô2 (Hỗ trợ Khu vực 7 có 2 CSKV)
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc) {
             let full = diaChiGoc || "";
             const matchKv = full.match(/(khu\s*vực|khu\s*phố|kv|kp)\s*[-_\.]?\s*(\d+)/i);
             let soKv = matchKv && matchKv[2] ? matchKv[2] : "7";
 
-            // Kiểm tra xem có ghi chú Ô1 hoặc Ô2 hay không
             const matchO = full.match(/(ô|ô số)\s*[-_\.]?\s*([12])/i);
             let soO = matchO && matchO[2] ? ` - Ô${matchO[2]}` : "";
 
@@ -628,7 +680,7 @@
                     
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert("Đã tải, phân tích và đồng bộ dữ liệu bản đồ Phường Tân An (chia tách Ô thành công)!");
+                    alert("Đã tải, phân tích và đồng bộ dữ liệu bản đồ Phường Tân An thành công!");
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -636,7 +688,7 @@
         }
 
         function xuatBaoCaoKV2() {
-            if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu để xuất báo cáo!");
+            if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu để xuất báo cáo[cite: 5]!");
             let exportData = [];
             let stt = 1;
             danhSachHoGiaDinh.forEach(ho => {
@@ -653,7 +705,7 @@
         }
 
         function xuatBaoCaoKV9() {
-            if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu thống kê địa bàn!");
+            if (danhSachHoGiaDinh.length === 0) return alert("Chưa có dữ liệu thống kê địa bàn[cite: 5]!");
             let tongHo = danhSachHoGiaDinh.length;
             let tongNhanKhau = 0;
             danhSachHoGiaDinh.forEach(h => tongNhanKhau += h.thanhVien.length);
@@ -721,6 +773,7 @@
             document.getElementById('statNhanKhau').innerText = tong;
             document.getElementById('statHoGiaDinh').innerText = danhSachHoGiaDinh.length;
             document.getElementById('statTrangThai').innerText = "Đã đồng bộ";
+            document.getElementById('statTrangThai').classList.remove('animate-pulse');
             thucHienLocVaTimKiem();
         }
 
@@ -730,11 +783,11 @@
             if (data.length === 0) return tbody.innerHTML = `<tr><td colspan="8" class="text-center p-6 text-gray-400">Không có dữ liệu phù hợp.</td></tr>`;
             
             data.forEach((ho, index) => {
-                let badgeStyle = ho.bienDong !== 'Ổn định' ? "bg-red-900/60 text-red-300 border-red-700" : "bg-emerald-900/50 text-emerald-300";
-                let diaChiHtml = ho.diaChi.includes("[Giáp Ranh") ? `<span class="text-amber-400 font-bold">⚠️ ${ho.diaChi}</span>` : `<span class="text-gray-300">${ho.diaChi}</span>`;
+                let badgeStyle = ho.bienDong !== 'Ổn định' ? "bg-red-900/60 text-red-300 border-red-700 animate-pulse-slow" : "bg-emerald-900/50 text-emerald-300";
+                let diaChiHtml = ho.diaChi.includes("[Giáp Ranh") ? `<span class="text-amber-400 font-bold animate-pulse-slow">⚠️ ${ho.diaChi}</span>` : `<span class="text-gray-300">${ho.diaChi}</span>`;
 
                 let row = document.createElement('tr');
-                row.className = "hover:bg-gray-700/50 border-b border-gray-700 transition";
+                row.className = "hover:bg-gray-800/50 border-b border-gray-800 transition";
                 row.innerHTML = `
                     <td class="p-2.5">${index + 1}</td>
                     <td class="p-2.5 text-blue-300 font-mono">${ho.hsct}</td>
@@ -756,6 +809,7 @@
             document.getElementById('editChuHo').value = ho.chuHo;
             document.getElementById('editDiaChi').value = ho.diaChi;
             document.getElementById('editCanBo').value = ho.canBoPhuTrach || "Không xác định";
+            document.getElementById('printCanBoName').innerText = ho.canBoPhuTrach || currentUser.email;
             document.getElementById('editBienDong').value = ho.bienDong || 'Ổn định';
             document.getElementById('editGps').value = ho.gps || `${TAN_AN_CENTER[0]}, ${TAN_AN_CENTER[1]}`;
 
@@ -766,6 +820,11 @@
             });
             document.getElementById('detailModal').classList.remove('hidden');
             setTimeout(() => khoiTaoBanDoLeaflet(), 300);
+        }
+
+        // Tính năng In Phiếu Thông Tin Hộ Khẩu Nhanh
+        function inPhieuThongTinHo() {
+            window.print();
         }
 
         function khoiTaoBanDoLeaflet() {
@@ -818,7 +877,7 @@
         }
 
         function xoaDuLieuExcel() {
-            if (currentUser.role !== 'admin') return alert("Chỉ Admin Tổng mới có quyền xóa toàn cục!");
+            if (currentUser.role !== 'admin') return alert("Chỉ Admin Tổng mới có quyền xóa toàn cục[cite: 5]!");
             if (confirm("Chắc chắn xóa TẤT CẢ dữ liệu?")) {
                 localStorage.removeItem("danhSachHoGiaDinhCacheGIS");
                 danhSachHoGiaDinh = []; 
