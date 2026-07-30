@@ -46,7 +46,7 @@
 <body class="bg-gray-950 text-white min-h-screen p-2 md:p-4 select-none">
 
     <!-- BƯỚC 1: ĐĂNG NHẬP CSKV -->
-    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: linear-gradient(135deg, #090d16 0%, #111827 50%, #450a0a 100%); background-size: cover; background-position: center;">
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: linear-gradient(135deg, rgba(9, 13, 22, 0.9), rgba(17, 24, 39, 0.9), rgba(69, 10, 10, 0.95)), url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
         <div class="absolute inset-0 bg-gray-950/80 backdrop-blur-sm"></div>
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
@@ -333,13 +333,13 @@
     </div>
 
     <script>
-        const ADMIN_EMAIL = "admin@gmail.com";
+        const ADMIN_EMAILS = ["admin@gmail.com", "vanthao3011@gmail.com"];
         
-        // CẤU TRÚC ĐỊA GIỚI HÀNH CHÍNH PHƯỜNG TÂN AN SAU SÁP NHẬP
+        // CẤU TRÚC ĐỊA GIỚI HÀNH CHÍNH PHƯỜNG TÂN AN SAU SÁP NHẬP (Chính xác theo bản đồ GIS quy hoạch mới)
         const DANH_MUC_HANH_CHINH = {
             "Phường Tân An": {
-                center: [10.0320, 105.7850], // Tọa độ trung tâm mở rộng sau sáp nhập
-                bounds: [[10.0150, 105.7680], [10.0480, 105.8020]] // Khung bao bọc toàn bộ phường Tân An sau sáp nhập
+                center: [10.0325, 105.7820], 
+                bounds: [[10.0120, 105.7650], [10.0520, 105.8050]] 
             }
         };
 
@@ -419,7 +419,7 @@
         
         function quayLaiDangNhap() { document.getElementById('otpScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
         function xacThucOtp() {
-            let role = tamEmailDangNhap === ADMIN_EMAIL ? 'admin' : 'can_bo';
+            let role = ADMIN_EMAILS.includes(tamEmailDangNhap.toLowerCase()) ? 'admin' : 'can_bo';
             currentUser = { email: tamEmailDangNhap, role: role, scope: 'Khu Vực' };
             localStorage.setItem("currentUserAuthGIS_V3", JSON.stringify(currentUser));
             document.getElementById('otpScreen').classList.add('hidden');
@@ -540,6 +540,12 @@
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc) {
             let full = (diaChiGoc || "").trim();
             let pX = (phuongXaGoc || "phường Tân An, thành phố Cần Thơ").trim();
+            
+            // LUÔN LUÔN GÁN HIỂU ĐÓ LÀ KHU VỰC 7 THEO YÊU CẦU
+            if (!full.toLowerCase().includes("khu vực 7") && !full.toLowerCase().includes("kv 7")) {
+                full = `Khu Vực 7, ${full}`;
+            }
+
             if (!full.toLowerCase().includes("tân an")) full += `, ${pX}`;
             return full;
         }
@@ -670,7 +676,7 @@
                     localStorage.setItem("danhSachHoGiaDinhCacheGIS_V3", JSON.stringify(danhSachHoGiaDinh));
                     phanTichDuLieuPhanCap();
                     capNhatGiaoDienSauKhiTai();
-                    alert(`✅ Đã nhập thành công ${danhSachMoi.length} hộ dân Phường Tân An!`);
+                    alert(`✅ Đã nhập thành công ${danhSachMoi.length} hộ dân Phường Tân An vào Khu vực 7!`);
                 } catch (err) { alert("Lỗi đọc file: " + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -679,6 +685,8 @@
 
         function phanTichDuLieuPhanCap() {
             let setKhuVuc = new Set();
+            // Mặc định luôn ưu tiên hiển thị Khu Vực 7 trong bộ lọc nâng cao
+            setKhuVuc.add("Khu Vực 7");
             danhSachHoGiaDinh.forEach(ho => {
                 let kvMatches = (ho.diaChi || "").match(/(Khu Vực\s*\d+|Khu Phố\s*\d+|Tổ\s*\d+|Kv\s*\d+)/gi);
                 if (kvMatches) kvMatches.forEach(kv => setKhuVuc.add(kv.trim()));
