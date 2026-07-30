@@ -51,8 +51,7 @@
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
                 <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/50 rounded-full p-2 border-2 border-amber-400/80 shadow-2xl overflow-hidden">
-                    <!-- FIX LOGO CAND -->
-                    <img src="image_29d137.jpg" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg">
+                    <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/9/91/Huy_hieu_Cong_an_Nhan_dan_Viet_Nam.svg/200px-Huy_hieu_Cong_an_Nhan_dan_Viet_Nam.svg.png" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg p-1">
                 </div>
                 <div>
                     <h2 class="text-lg font-black text-red-400 uppercase tracking-wide">Phần mềm Quản lý địa bàn CSKV</h2>
@@ -99,9 +98,8 @@
         <header class="flex flex-col md:flex-row justify-between items-center glass-card p-3 rounded-xl shadow-xl gap-3">
             <div>
                 <div class="flex items-center gap-2.5">
-                    <div class="w-7 h-7 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/60">
-                        <!-- FIX LOGO CAND -->
-                        <img src="image_29d137.jpg" alt="Logo CAND" class="w-full h-full object-contain">
+                    <div class="w-7 h-7 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/60 bg-white">
+                        <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/9/91/Huy_hieu_Cong_an_Nhan_dan_Viet_Nam.svg/200px-Huy_hieu_Cong_an_Nhan_dan_Viet_Nam.svg.png" alt="Logo CAND" class="w-full h-full object-contain p-0.5">
                     </div>
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">CSKV Phường Tân An - Bản Đồ GIS & Dân Cư</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900 text-red-200"></span>
@@ -336,9 +334,10 @@
 
     <script>
         const ADMIN_EMAIL = "admin@gmail.com";
-        // FIX BẢN ĐỒ: Tọa độ chuẩn xác 100% tâm Phường Tân An, Quận Ninh Kiều, TP. Cần Thơ (khu vực Bến Ninh Kiều / Chợ Tân An)
-        const DEFAULT_CENTER = [10.03050, 105.78500]; 
-        const DEFAULT_BOUNDS = L.latLngBounds([10.0200, 105.7750], [10.0400, 105.7950]);
+        
+        // TỌA ĐỘ VÀ BOUNDS CHÍNH XÁC PHƯỜNG TÂN AN, QUẬN NINH KIỀU, TP. CẦN THƠ
+        const DEFAULT_CENTER = [10.03250, 105.78650]; 
+        const DEFAULT_BOUNDS = L.latLngBounds([10.0240, 105.7760], [10.0410, 105.7950]);
 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
@@ -429,14 +428,12 @@
 
         function khoiTaoMainMiniMap() {
             if (mainMiniMapInstance) return; 
-
-            // Sử dụng tile layer rõ nét, hiển thị rõ ràng đường phố hơn theo yêu cầu
             let osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap France' });
             let satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri Satellite' });
 
             mainMiniMapInstance = L.map('mainMiniMap', {
                 center: DEFAULT_CENTER,
-                zoom: 16, // Tăng độ zoom để tập trung vào Phường Tân An
+                zoom: 16, 
                 maxBounds: DEFAULT_BOUNDS,
                 maxBoundsViscosity: 1.0,
                 minZoom: 14,
@@ -449,11 +446,7 @@
             };
             L.control.layers(baseMaps).addTo(mainMiniMapInstance);
 
-            markersLayer = L.markerClusterGroup({
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                zoomToBoundsOnClick: true
-            });
+            markersLayer = L.markerClusterGroup({ spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true });
             mainMiniMapInstance.addLayer(markersLayer);
 
             drawnItems = new L.FeatureGroup();
@@ -519,24 +512,17 @@
 
             routePolyline = L.polyline(points, { color: '#3b82f6', weight: 4, opacity: 0.8, dashArray: '8, 8' }).addTo(mainMiniMapInstance);
             mainMiniMapInstance.fitBounds(routePolyline.getBounds(), { padding: [30, 30] });
-
             alert(`✅ Đã thiết lập lộ trình kiểm tra qua ${points.length} hộ dân tại Phường Tân An!`);
         }
 
         function xoaTuyenDuongTuanTra() {
-            if(routePolyline) {
-                mainMiniMapInstance.removeLayer(routePolyline);
-                routePolyline = null;
-            }
+            if(routePolyline) { mainMiniMapInstance.removeLayer(routePolyline); routePolyline = null; }
         }
 
         function chuanHoaDiaChiVaKhuVuc(diaChiGoc, phuongXaGoc) {
             let full = (diaChiGoc || "").trim();
             let pX = (phuongXaGoc || "phường Tân An, thành phố Cần Thơ").trim();
-            
-            if (!full.toLowerCase().includes("tân an")) {
-                full += `, ${pX}`;
-            }
+            if (!full.toLowerCase().includes("tân an")) full += `, ${pX}`;
             return full;
         }
 
@@ -550,7 +536,6 @@
                     const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                     
-                    // FIX LỖI NHẬP EXCEL: Khởi tạo đầy đủ các key ánh xạ để không bị undefined làm sai lệch
                     let mapCol = { hsct: -1, hoTen: -1, ngaySinh: -1, quanHe: -1, diaChi: -1, phuongXa: -1, chuHo: -1, cccd: -1, gioiTinh: -1, dienNV: -1, danToc: -1, tonGiao: -1, queQuan: -1, ngheNghiep: -1, sdt: -1, quocTich: -1 };
                     
                     for (let i = 0; i < Math.min(15, rows.length); i++) {
@@ -561,15 +546,15 @@
                             if (t.includes('họtên') || t === 'tên') mapCol.hoTen = j;
                             if (t.includes('ngàysinh') || t === 'ns') mapCol.ngaySinh = j;
                             if (t.includes('quanhệ')) mapCol.quanHe = j;
-                            if (t.includes('địachỉ') || t.includes('thườngtrú') || t.includes('tạmtrú')) mapCol.diaChi = j;
+                            if (t.includes('địachỉ') || t.includes('nơicưtrú') || t.includes('tạmtrú')) mapCol.diaChi = j;
                             if (t.includes('phường') || t.includes('xã')) mapCol.phuongXa = j;
                             if (t.includes('chủhộ')) mapCol.chuHo = j;
-                            if (t.includes('cccd') || t.includes('địnhdanh') || t.includes('cmnd')) mapCol.cccd = j;
-                            if (t.includes('giới')) mapCol.gioiTinh = j;
-                            if (t.includes('diện') || t.includes('loại') || t.includes('trạngthái')) mapCol.dienNV = j;
+                            if (t.includes('cccd') || t.includes('địnhdanh') || t.includes('cmnd') || t === 'đdcn') mapCol.cccd = j;
+                            if (t.includes('giới') || t.includes('nam/nữ') || t === 'gt') mapCol.gioiTinh = j;
+                            if (t.includes('diện') || t.includes('loạihình') || t.includes('trạngthái')) mapCol.dienNV = j;
                             if (t.includes('dântộc')) mapCol.danToc = j;
                             if (t.includes('tôngiáo')) mapCol.tonGiao = j;
-                            if (t.includes('quequan') || t.includes('que')) mapCol.queQuan = j;
+                            if (t.includes('quequan') || t.includes('quê')) mapCol.queQuan = j;
                             if (t.includes('nghenghiep') || t.includes('noilamviec')) mapCol.ngheNghiep = j;
                             if (t.includes('sdt') || t.includes('dienthoai') || t.includes('phone')) mapCol.sdt = j;
                             if (t.includes('quoctich')) mapCol.quocTich = j;
@@ -577,7 +562,6 @@
                         if (mapCol.hoTen !== -1) break; 
                     }
 
-                    // Bổ sung đầy đủ index mảng dự phòng (fallback) để đảm bảo không bị mất cột gây lệch mảng
                     if (mapCol.hoTen === -1) {
                         mapCol = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, cccd: 4, diaChi: 5, phuongXa: 6, chuHo: 7, dienNV: 8, gioiTinh: 9, danToc: 10, tonGiao: 11, queQuan: 12, ngheNghiep: 13, sdt: 14, quocTich: 15 };
                     }
@@ -590,7 +574,6 @@
                         let hoTenVal = String(r[mapCol.hoTen] || '').trim();
                         if (hoTenVal.toLowerCase() === 'họ và tên' || hoTenVal.toLowerCase() === 'tên' || hoTenVal === '') continue;
 
-                        // Kiểm tra an toàn trước khi map dữ liệu (tránh trường hợp index bị undefined)
                         let hsct = (mapCol.hsct !== -1 && mapCol.hsct !== undefined) ? String(r[mapCol.hsct] || '').trim() : '';
                         let quanHe = (mapCol.quanHe !== -1 && mapCol.quanHe !== undefined) ? String(r[mapCol.quanHe] || '').trim() : 'Thành viên';
                         let diaChiGoc = (mapCol.diaChi !== -1 && mapCol.diaChi !== undefined) ? String(r[mapCol.diaChi] || '').trim() : '';
@@ -599,6 +582,11 @@
                         
                         let rawDien = (mapCol.dienNV !== -1 && mapCol.dienNV !== undefined) ? String(r[mapCol.dienNV] || '').trim() : '';
                         let dienNV = rawDien !== '' ? rawDien : 'Thường trú';
+                        const validDiens = ['thường', 'tạm', 'lưu', 'nohn'];
+                        let isValidDien = validDiens.some(d => dienNV.toLowerCase().includes(d));
+                        if (!isValidDien) {
+                            dienNV = 'Thường trú';
+                        }
                         
                         let chuHoFinal = tenChuHoCol;
                         if (!chuHoFinal || quanHe.toLowerCase().includes('chủ hộ')) chuHoFinal = hoTenVal;
@@ -613,7 +601,8 @@
                                 ghiChu: '', 
                                 anhNha: '', 
                                 thanhVien: [], 
-                                gps: `${DEFAULT_CENTER[0] + (Math.random() - 0.5)*0.012}, ${DEFAULT_CENTER[1] + (Math.random() - 0.5)*0.012}`
+                                // Phân bổ tọa độ ngẫu nhiên nằm khít trong Phường Tân An
+                                gps: `${DEFAULT_CENTER[0] + (Math.random() - 0.5)*0.007}, ${DEFAULT_CENTER[1] + (Math.random() - 0.5)*0.007}`
                             };
                         }
                         
@@ -628,8 +617,11 @@
                             }
                         }
 
-                        // Lấy dữ liệu tuyệt đối chính xác cho từng cột
                         let cccdVal = (mapCol.cccd !== -1 && mapCol.cccd !== undefined) ? String(r[mapCol.cccd] || '').trim() : '';
+                        if (cccdVal.toLowerCase() === 'nam' || cccdVal.toLowerCase() === 'nữ') {
+                            cccdVal = ''; 
+                        }
+
                         let queQuanVal = (mapCol.queQuan !== -1 && mapCol.queQuan !== undefined) ? String(r[mapCol.queQuan] || '').trim() : '';
                         let ngheNghiepVal = (mapCol.ngheNghiep !== -1 && mapCol.ngheNghiep !== undefined) ? String(r[mapCol.ngheNghiep] || '').trim() : '';
                         let sdtVal = (mapCol.sdt !== -1 && mapCol.sdt !== undefined) ? String(r[mapCol.sdt] || '').trim() : '';
@@ -711,7 +703,6 @@
 
             document.getElementById('statNhanKhau').innerText = tongNhanKhau;
             document.getElementById('statHoGiaDinh').innerText = danhSachHoGiaDinh.length;
-
             document.getElementById('cntThuongTru').innerText = cntTT;
             document.getElementById('cntTamTru').innerText = cntTamT;
             document.getElementById('cntTrongDiem').innerText = cntKhac;
@@ -723,25 +714,14 @@
         function capNhatBieuDoStat(tt, tamt, khac) {
             const ctx = document.getElementById('statChartCanvas');
             if(!ctx) return;
-            
             if (statChartInstance) statChartInstance.destroy();
-
             statChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Thường trú', 'Tạm/Lưu trú', 'NOHN/Khác'],
-                    datasets: [{
-                        data: [tt, tamt, khac],
-                        backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'],
-                        borderWidth: 0
-                    }]
+                    datasets: [{ data: [tt, tamt, khac], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'], borderWidth: 0 }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } }
-                    }
-                }
+                options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } } } }
             });
         }
 
@@ -838,7 +818,8 @@
             }
             
             if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-            mapInstance = L.map('mapContainer', { center: coords, zoom: 17, maxBounds: DEFAULT_BOUNDS, maxBoundsViscosity: 1.0, minZoom: 14 });
+            // Khởi tạo bản đồ chi tiết hộ dân, zoom gần 18 để nhìn rõ nhà
+            mapInstance = L.map('mapContainer', { center: coords, zoom: 18, maxBounds: DEFAULT_BOUNDS, maxBoundsViscosity: 1.0, minZoom: 15 });
             L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png').addTo(mapInstance);
             
             markerInstance = L.marker(coords, { draggable: true }).addTo(mapInstance);
@@ -857,7 +838,7 @@
             if (gpsVal.includes(',') && mapInstance) {
                 let lat = parseFloat(gpsVal.split(',')[0]), lon = parseFloat(gpsVal.split(',')[1]);
                 if (!isNaN(lat) && !isNaN(lon)) {
-                    let ll = [lat, lon]; markerInstance.setLatLng(ll); mapInstance.setView(ll, 17);
+                    let ll = [lat, lon]; markerInstance.setLatLng(ll); mapInstance.setView(ll, 18);
                 }
             }
         }
@@ -940,10 +921,7 @@
             });
 
             const ws = XLSX.utils.aoa_to_sheet(rows);
-            ws['!cols'] = [
-                { wch: 18 }, { wch: 22 }, { wch: 25 }, { wch: 15 }, { wch: 22 }, { wch: 35 }, { wch: 18 }
-            ];
-
+            ws['!cols'] = [ { wch: 18 }, { wch: 22 }, { wch: 25 }, { wch: 15 }, { wch: 22 }, { wch: 35 }, { wch: 18 } ];
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Mau_KV1");
             XLSX.writeFile(wb, "Bao_Cao_Mau_KV1_Phuong_Tan_An.xlsx");
@@ -973,6 +951,16 @@
             let sttCounter = 1;
 
             filteredData.forEach(ho => {
+                rows.push([
+                    "", 
+                    `[HỘ GIA ĐÌNH]`, 
+                    `Chủ hộ: ${ho.chuHo}`, 
+                    `HSCT: ${ho.hsct}`, 
+                    "", 
+                    `Địa chỉ: ${ho.diaChi}`, 
+                    "", "", "", "", "", "", "", "", "", "", "", ""
+                ]);
+
                 let members = ho.thanhVien && ho.thanhVien.length > 0 ? ho.thanhVien : [{
                     hoTen: ho.chuHo, quanHe: "Chủ hộ", gioiTinh: "Nam", danToc: "Kinh", tonGiao: "Không", quocTich: "Việt Nam"
                 }];
@@ -994,15 +982,15 @@
                         tv.quocTich || "Việt Nam", 
                         tv.tonGiao || "Không", 
                         tv.ngheNghiep || "", 
-                        "", 
-                        "", 
-                        "", 
+                        "", "", "", 
                         ho.dienNghiepVu === "NOHN" ? "NOHN" : "", 
                         "", 
                         tv.sdt || "", 
                         ho.ghiChu || "" 
                     ]);
                 });
+
+                rows.push(Array(18).fill(""));
             });
 
             const ws = XLSX.utils.aoa_to_sheet(rows);
