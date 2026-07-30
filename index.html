@@ -46,12 +46,19 @@
 <body class="bg-gray-950 text-white min-h-screen p-2 md:p-4 select-none">
 
     <!-- BƯỚC 1: ĐĂNG NHẬP CSKV -->
-    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: linear-gradient(135deg, rgba(9, 13, 22, 0.9), rgba(17, 24, 39, 0.9), rgba(69, 10, 10, 0.95)), url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: linear-gradient(135deg, rgba(9, 13, 22, 0.92), rgba(17, 24, 39, 0.95), rgba(69, 10, 10, 0.98));">
         <div class="absolute inset-0 bg-gray-950/80 backdrop-blur-sm"></div>
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
-                <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/50 rounded-full p-2 border-2 border-amber-400/80 shadow-2xl overflow-hidden">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/480px-Vietnam_People%27s_Police_emblem.svg.png" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg p-1">
+                <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/60 rounded-full p-2 border-2 border-amber-400/90 shadow-2xl overflow-hidden">
+                    <!-- Logo CAND SVG chuẩn nhúng trực tiếp tránh lỗi mạng -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" class="w-full h-full object-contain filter drop-shadow-md">
+                        <circle cx="250" cy="250" r="235" fill="#d91414" stroke="#facc15" stroke-width="16"/>
+                        <!-- Bông lúa & Bánh xe tượng trưng -->
+                        <path d="M120 350 C120 220 220 120 250 120 C280 120 380 220 380 350" fill="none" stroke="#facc15" stroke-width="12" stroke-linecap="round"/>
+                        <!-- Ngôi sao vàng năm cánh -->
+                        <polygon points="250,115 288,202 384,208 308,268 333,362 250,310 167,362 192,268 116,208 212,202" fill="#facc15"/>
+                    </svg>
                 </div>
                 <div>
                     <h2 class="text-lg font-black text-red-400 uppercase tracking-wide">Hệ Thống Quản Lý Địa Bàn Cho CSKV</h2>
@@ -98,8 +105,11 @@
         <header class="flex flex-col md:flex-row justify-between items-center glass-card p-3 rounded-xl shadow-xl gap-3">
             <div>
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/80 bg-white flex items-center justify-center p-0.5 shadow-md">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/480px-Vietnam_People%27s_Police_emblem.svg.png" alt="Logo CAND" class="w-full h-full object-contain">
+                    <div class="w-8 h-8 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/80 bg-red-900 flex items-center justify-center p-0.5 shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" class="w-full h-full object-contain">
+                            <circle cx="250" cy="250" r="235" fill="#d91414" stroke="#facc15" stroke-width="16"/>
+                            <polygon points="250,115 288,202 384,208 308,268 333,362 250,310 167,362 192,268 116,208 212,202" fill="#facc15"/>
+                        </svg>
                     </div>
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">Hệ Thống Quản Lý Địa Bàn Cho CSKV - Phường Tân An, TP. Cần Thơ</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900 text-red-200"></span>
@@ -335,7 +345,7 @@
     <script>
         const ADMIN_EMAILS = ["admin@gmail.com", "vanthao3011@gmail.com"];
         
-        // CẤU TRÚC ĐỊA GIỚI HÀNH CHÍNH PHƯỜNG TÂN AN, TP. CẦN THƠ
+        // CẤU TRÚC ĐỊA GIỚI HÀNH CHÍNH PHƯỜNG TÂN AN, TP. CẦN THƠ (Linh hoạt tự do di chuyển)
         const DANH_MUC_HANH_CHINH = {
             "Phường Tân An": {
                 center: [10.0325, 105.7820], 
@@ -345,7 +355,6 @@
 
         let khuVucHienTai = "Phường Tân An";
         const DEFAULT_CENTER = DANH_MUC_HANH_CHINH[khuVucHienTai].center; 
-        const DEFAULT_BOUNDS = L.latLngBounds(DANH_MUC_HANH_CHINH[khuVucHienTai].bounds);
 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
@@ -439,12 +448,11 @@
             let osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap France' });
             let satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri Satellite' });
 
+            // Đã gỡ bỏ giới hạn maxBounds cứng nhắc để bản đồ linh hoạt tự do thao tác
             mainMiniMapInstance = L.map('mainMiniMap', {
                 center: DEFAULT_CENTER,
                 zoom: 15, 
-                maxBounds: DEFAULT_BOUNDS,
-                maxBoundsViscosity: 1.0,
-                minZoom: 13,
+                minZoom: 12,
                 layers: [osm]
             });
 
@@ -454,7 +462,7 @@
             };
             L.control.layers(baseMaps).addTo(mainMiniMapInstance);
 
-            let wardBoundary = L.rectangle(DEFAULT_BOUNDS, {
+            let wardBoundary = L.rectangle(DANH_MUC_HANH_CHINH[khuVucHienTai].bounds, {
                 color: "#f43f5e", 
                 weight: 3,
                 opacity: 0.8,
@@ -841,7 +849,7 @@
             }
             
             if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-            mapInstance = L.map('mapContainer', { center: coords, zoom: 18, maxBounds: DEFAULT_BOUNDS, maxBoundsViscosity: 1.0, minZoom: 15 });
+            mapInstance = L.map('mapContainer', { center: coords, zoom: 18, minZoom: 12 });
             L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png').addTo(mapInstance);
             
             markerInstance = L.marker(coords, { draggable: true }).addTo(mapInstance);
