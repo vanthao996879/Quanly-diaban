@@ -51,7 +51,7 @@
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
                 <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/50 rounded-full p-2 border-2 border-amber-400/80 shadow-2xl overflow-hidden">
-                    <img src="logo-cong-an-768x619.png_2.jpg" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg p-1">
+                    <img src="logo-cong-an-768x619.png_4.jpg" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg p-1">
                 </div>
                 <div>
                     <h2 class="text-lg font-black text-red-400 uppercase tracking-wide">Phần mềm Quản lý địa bàn CSKV</h2>
@@ -99,7 +99,7 @@
             <div>
                 <div class="flex items-center gap-2.5">
                     <div class="w-7 h-7 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/60 bg-white">
-                        <img src="logo-cong-an-768x619.png_2.jpg" alt="Logo CAND" class="w-full h-full object-contain p-0.5">
+                        <img src="logo-cong-an-768x619.png_4.jpg" alt="Logo CAND" class="w-full h-full object-contain p-0.5">
                     </div>
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">CSKV Phường Tân An - Bản Đồ GIS & Dân Cư</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900 text-red-200"></span>
@@ -335,9 +335,20 @@
     <script>
         const ADMIN_EMAIL = "admin@gmail.com";
         
-        // TỌA ĐỘ VÀ BOUNDS CHÍNH XÁC PHƯỜNG TÂN AN, TP. CẦN THƠ (CHUẨN TỪ TINHTHANHVN.COM)
-        const DEFAULT_CENTER = [10.0310, 105.7805]; 
-        const DEFAULT_BOUNDS = L.latLngBounds([10.0210, 105.7720], [10.0420, 105.7920]);
+        // CẤU TRÚC ĐỊA GIỚI HÀNH CHÍNH (Sẵn sàng mở rộng 103 Phường/Xã Cần Thơ)
+        const DANH_MUC_HANH_CHINH = {
+            "Phường Tân An": {
+                center: [10.0305, 105.7836], // Tọa độ trung tâm (Khu vực Bến Ninh Kiều)
+                bounds: [[10.0240, 105.7780], [10.0370, 105.7890]] // Giới hạn Bounds
+            }
+            // Mẫu mở rộng: 
+            // "Phường An Cư": { center: [10.0345, 105.7801], bounds: [[10.0300, 105.7750], [10.0400, 105.7850]] },
+        };
+
+        // Gán khu vực mặc định hiện tại
+        let khuVucHienTai = "Phường Tân An";
+        const DEFAULT_CENTER = DANH_MUC_HANH_CHINH[khuVucHienTai].center; 
+        const DEFAULT_BOUNDS = L.latLngBounds(DANH_MUC_HANH_CHINH[khuVucHienTai].bounds);
 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
