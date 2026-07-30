@@ -46,12 +46,14 @@
 <body class="bg-gray-950 text-white min-h-screen p-2 md:p-4 select-none">
 
     <!-- BƯỚC 1: ĐĂNG NHẬP CSKV -->
-    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background-image: url('689d77b0aa39bf3aed273721_4.jpg'); background-size: cover; background-position: center;">
+    <!-- Đã sửa link ảnh nền thành link online để hiển thị được ngay -->
+    <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background-image: url('https://images.unsplash.com/photo-1555626906-fcf10d6851b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center;">
         <div class="absolute inset-0 bg-gray-950/75 backdrop-blur-sm"></div>
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
                 <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/50 rounded-full p-2 border-2 border-amber-400/80 shadow-2xl overflow-hidden">
-                    <img src="logo-cong-an-768x619.png_4.jpg" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg p-1">
+                    <!-- Đã sửa link Logo CAND thành link online -->
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/480px-Vietnam_People%27s_Police_emblem.svg.png" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg p-1">
                 </div>
                 <div>
                     <h2 class="text-lg font-black text-red-400 uppercase tracking-wide">Phần mềm Quản lý địa bàn CSKV</h2>
@@ -99,7 +101,8 @@
             <div>
                 <div class="flex items-center gap-2.5">
                     <div class="w-7 h-7 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/60 bg-white">
-                        <img src="logo-cong-an-768x619.png_4.jpg" alt="Logo CAND" class="w-full h-full object-contain p-0.5">
+                        <!-- Đã sửa link Logo CAND thành link online -->
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/480px-Vietnam_People%27s_Police_emblem.svg.png" alt="Logo CAND" class="w-full h-full object-contain p-0.5">
                     </div>
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">CSKV Phường Tân An - Bản Đồ GIS & Dân Cư</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900 text-red-200"></span>
@@ -341,8 +344,6 @@
                 center: [10.0305, 105.7836], // Tọa độ trung tâm (Khu vực Bến Ninh Kiều)
                 bounds: [[10.0240, 105.7780], [10.0370, 105.7890]] // Giới hạn Bounds
             }
-            // Mẫu mở rộng: 
-            // "Phường An Cư": { center: [10.0345, 105.7801], bounds: [[10.0300, 105.7750], [10.0400, 105.7850]] },
         };
 
         // Gán khu vực mặc định hiện tại
@@ -456,6 +457,18 @@
                 "Vệ Tinh (Esri)": satellite
             };
             L.control.layers(baseMaps).addTo(mainMiniMapInstance);
+
+            // === ĐÃ THÊM: VẼ ĐƯỜNG BAO BỌC PHƯỜNG TÂN AN ===
+            let wardBoundary = L.rectangle(DEFAULT_BOUNDS, {
+                color: "#f43f5e", // Màu đỏ viền
+                weight: 3,
+                opacity: 0.8,
+                fillColor: "#ef4444",
+                fillOpacity: 0.05,
+                dashArray: "6, 6" // Nét đứt
+            }).bindPopup("<b style='color: #f43f5e;'>Ranh giới Phường Tân An</b>");
+            mainMiniMapInstance.addLayer(wardBoundary);
+            // ===============================================
 
             markersLayer = L.markerClusterGroup({ spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true });
             mainMiniMapInstance.addLayer(markersLayer);
