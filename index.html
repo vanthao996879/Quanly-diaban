@@ -51,7 +51,8 @@
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
                 <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/50 rounded-full p-2 border-2 border-amber-400/80 shadow-2xl overflow-hidden">
-                    <img src="logo-cong-an-768x619.png.jpg" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg">
+                    <!-- FIX LOGO CAND -->
+                    <img src="image_29d137.jpg" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg">
                 </div>
                 <div>
                     <h2 class="text-lg font-black text-red-400 uppercase tracking-wide">Phần mềm Quản lý địa bàn CSKV</h2>
@@ -99,7 +100,8 @@
             <div>
                 <div class="flex items-center gap-2.5">
                     <div class="w-7 h-7 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/60">
-                        <img src="logo-cong-an-768x619.png.jpg" alt="Logo CAND" class="w-full h-full object-contain">
+                        <!-- FIX LOGO CAND -->
+                        <img src="image_29d137.jpg" alt="Logo CAND" class="w-full h-full object-contain">
                     </div>
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">CSKV Phường Tân An - Bản Đồ GIS & Dân Cư</h1>
                     <span id="userBadgeRole" class="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-900 text-red-200"></span>
@@ -334,9 +336,9 @@
 
     <script>
         const ADMIN_EMAIL = "admin@gmail.com";
-        // Tọa độ chuẩn xác tâm Phường Tân An, Quận Ninh Kiều, TP. Cần Thơ (khu vực Bến Ninh Kiều / KDC 91B)
-        const DEFAULT_CENTER = [10.0322, 105.7845]; 
-        const DEFAULT_BOUNDS = L.latLngBounds([10.0180, 105.7700], [10.0460, 105.7980]);
+        // FIX BẢN ĐỒ: Tọa độ chuẩn xác 100% tâm Phường Tân An, Quận Ninh Kiều, TP. Cần Thơ (khu vực Bến Ninh Kiều / Chợ Tân An)
+        const DEFAULT_CENTER = [10.03050, 105.78500]; 
+        const DEFAULT_BOUNDS = L.latLngBounds([10.0200, 105.7750], [10.0400, 105.7950]);
 
         let danhSachHoGiaDinh = [];
         let currentSelectedHoIndex = null;
@@ -428,15 +430,16 @@
         function khoiTaoMainMiniMap() {
             if (mainMiniMapInstance) return; 
 
-            let osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
+            // Sử dụng tile layer rõ nét, hiển thị rõ ràng đường phố hơn theo yêu cầu
+            let osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap France' });
             let satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: 'Esri Satellite' });
 
             mainMiniMapInstance = L.map('mainMiniMap', {
                 center: DEFAULT_CENTER,
-                zoom: 15,
+                zoom: 16, // Tăng độ zoom để tập trung vào Phường Tân An
                 maxBounds: DEFAULT_BOUNDS,
                 maxBoundsViscosity: 1.0,
-                minZoom: 13,
+                minZoom: 14,
                 layers: [osm]
             });
 
@@ -547,6 +550,7 @@
                     const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
                     
+                    // FIX LỖI NHẬP EXCEL: Khởi tạo đầy đủ các key ánh xạ để không bị undefined làm sai lệch
                     let mapCol = { hsct: -1, hoTen: -1, ngaySinh: -1, quanHe: -1, diaChi: -1, phuongXa: -1, chuHo: -1, cccd: -1, gioiTinh: -1, dienNV: -1, danToc: -1, tonGiao: -1, queQuan: -1, ngheNghiep: -1, sdt: -1, quocTich: -1 };
                     
                     for (let i = 0; i < Math.min(15, rows.length); i++) {
@@ -573,8 +577,9 @@
                         if (mapCol.hoTen !== -1) break; 
                     }
 
+                    // Bổ sung đầy đủ index mảng dự phòng (fallback) để đảm bảo không bị mất cột gây lệch mảng
                     if (mapCol.hoTen === -1) {
-                        mapCol = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, cccd: 4, diaChi: 5, phuongXa: 6, chuHo: 7, dienNV: 8 };
+                        mapCol = { hsct: 0, hoTen: 1, ngaySinh: 2, quanHe: 3, cccd: 4, diaChi: 5, phuongXa: 6, chuHo: 7, dienNV: 8, gioiTinh: 9, danToc: 10, tonGiao: 11, queQuan: 12, ngheNghiep: 13, sdt: 14, quocTich: 15 };
                     }
 
                     let mapHoMoi = {};
@@ -585,13 +590,14 @@
                         let hoTenVal = String(r[mapCol.hoTen] || '').trim();
                         if (hoTenVal.toLowerCase() === 'họ và tên' || hoTenVal.toLowerCase() === 'tên' || hoTenVal === '') continue;
 
-                        let hsct = mapCol.hsct !== -1 ? String(r[mapCol.hsct] || '').trim() : '';
-                        let quanHe = mapCol.quanHe !== -1 ? String(r[mapCol.quanHe] || '').trim() : 'Thành viên';
-                        let diaChiGoc = mapCol.diaChi !== -1 ? String(r[mapCol.diaChi] || '').trim() : '';
-                        let phuongXaGoc = mapCol.phuongXa !== -1 ? String(r[mapCol.phuongXa] || '').trim() : '';
-                        let tenChuHoCol = mapCol.chuHo !== -1 ? String(r[mapCol.chuHo] || '').trim() : '';
+                        // Kiểm tra an toàn trước khi map dữ liệu (tránh trường hợp index bị undefined)
+                        let hsct = (mapCol.hsct !== -1 && mapCol.hsct !== undefined) ? String(r[mapCol.hsct] || '').trim() : '';
+                        let quanHe = (mapCol.quanHe !== -1 && mapCol.quanHe !== undefined) ? String(r[mapCol.quanHe] || '').trim() : 'Thành viên';
+                        let diaChiGoc = (mapCol.diaChi !== -1 && mapCol.diaChi !== undefined) ? String(r[mapCol.diaChi] || '').trim() : '';
+                        let phuongXaGoc = (mapCol.phuongXa !== -1 && mapCol.phuongXa !== undefined) ? String(r[mapCol.phuongXa] || '').trim() : '';
+                        let tenChuHoCol = (mapCol.chuHo !== -1 && mapCol.chuHo !== undefined) ? String(r[mapCol.chuHo] || '').trim() : '';
                         
-                        let rawDien = mapCol.dienNV !== -1 ? String(r[mapCol.dienNV] || '').trim() : '';
+                        let rawDien = (mapCol.dienNV !== -1 && mapCol.dienNV !== undefined) ? String(r[mapCol.dienNV] || '').trim() : '';
                         let dienNV = rawDien !== '' ? rawDien : 'Thường trú';
                         
                         let chuHoFinal = tenChuHoCol;
@@ -622,20 +628,28 @@
                             }
                         }
 
-                        let cccdVal = mapCol.cccd !== -1 ? String(r[mapCol.cccd] || '').trim() : '';
+                        // Lấy dữ liệu tuyệt đối chính xác cho từng cột
+                        let cccdVal = (mapCol.cccd !== -1 && mapCol.cccd !== undefined) ? String(r[mapCol.cccd] || '').trim() : '';
+                        let queQuanVal = (mapCol.queQuan !== -1 && mapCol.queQuan !== undefined) ? String(r[mapCol.queQuan] || '').trim() : '';
+                        let ngheNghiepVal = (mapCol.ngheNghiep !== -1 && mapCol.ngheNghiep !== undefined) ? String(r[mapCol.ngheNghiep] || '').trim() : '';
+                        let sdtVal = (mapCol.sdt !== -1 && mapCol.sdt !== undefined) ? String(r[mapCol.sdt] || '').trim() : '';
+                        let gioiTinhVal = (mapCol.gioiTinh !== -1 && mapCol.gioiTinh !== undefined) ? String(r[mapCol.gioiTinh] || 'Nam').trim() : 'Nam';
+                        let danTocVal = (mapCol.danToc !== -1 && mapCol.danToc !== undefined) ? String(r[mapCol.danToc] || 'Kinh').trim() : 'Kinh';
+                        let tonGiaoVal = (mapCol.tonGiao !== -1 && mapCol.tonGiao !== undefined) ? String(r[mapCol.tonGiao] || 'Không').trim() : 'Không';
+                        let quocTichVal = (mapCol.quocTich !== -1 && mapCol.quocTich !== undefined) ? String(r[mapCol.quocTich] || 'Việt Nam').trim() : 'Việt Nam';
 
                         mapHoMoi[key].thanhVien.push({ 
                             hoTen: hoTenVal, 
                             quanHe: quanHe, 
                             ngaySinh: ngaySinhStr, 
                             cccd: cccdVal,
-                            queQuan: mapCol.queQuan !== -1 ? String(r[mapCol.queQuan] || '') : '',
-                            ngheNghiep: mapCol.ngheNghiep !== -1 ? String(r[mapCol.ngheNghiep] || '') : '',
-                            sdt: mapCol.sdt !== -1 ? String(r[mapCol.sdt] || '') : '',
-                            gioiTinh: mapCol.gioiTinh !== -1 ? String(r[mapCol.gioiTinh] || 'Nam') : 'Nam',
-                            danToc: mapCol.danToc !== -1 ? String(r[mapCol.danToc] || 'Kinh') : 'Kinh',
-                            tonGiao: mapCol.tonGiao !== -1 ? String(r[mapCol.tonGiao] || 'Không') : 'Không',
-                            quocTich: mapCol.quocTich !== -1 ? String(r[mapCol.quocTich] || 'Việt Nam') : 'Việt Nam'
+                            queQuan: queQuanVal,
+                            ngheNghiep: ngheNghiepVal,
+                            sdt: sdtVal,
+                            gioiTinh: gioiTinhVal,
+                            danToc: danTocVal,
+                            tonGiao: tonGiaoVal,
+                            quocTich: quocTichVal
                         });
                     }
 
@@ -824,8 +838,8 @@
             }
             
             if (mapInstance) { mapInstance.remove(); mapInstance = null; }
-            mapInstance = L.map('mapContainer', { center: coords, zoom: 17, maxBounds: DEFAULT_BOUNDS, maxBoundsViscosity: 1.0, minZoom: 13 });
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance);
+            mapInstance = L.map('mapContainer', { center: coords, zoom: 17, maxBounds: DEFAULT_BOUNDS, maxBoundsViscosity: 1.0, minZoom: 14 });
+            L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png').addTo(mapInstance);
             
             markerInstance = L.marker(coords, { draggable: true }).addTo(mapInstance);
             markerInstance.on('dragend', function() {
