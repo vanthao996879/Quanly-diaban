@@ -171,7 +171,7 @@
                 </div>
             </div>
 
-            <!-- Mini-map tổng quan Phường Tân An, TP. Cần Thơ (GIS Chính Xác tuyệt đối tập trung Tân An) -->
+            <!-- Mini-map tổng quan Phường Tân An, TP. Cần Thơ -->
             <div class="glass-card p-3 rounded-xl shadow lg:col-span-3 flex flex-col space-y-2">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div>
@@ -335,7 +335,7 @@
     <script>
         const ADMIN_EMAILS = ["admin@gmail.com", "vanthao3011@gmail.com"];
         
-        // RANH GIỚI ĐỊA GIỚI HÀNH CHÍNH CHUẨN XÁC TUYỆT ĐỐI PHƯỜNG TÂN AN, TP. CẦN THƠ (KHU VỰC BẾN NINH KIỀU - TRUNG TÂM)
+        // RANH GIỚI ĐỊA GIỚI HÀNH CHÍNH CHUẨN XÁC TUYỆT ĐỐI PHƯỜNG TÂN AN, TP. CẦN THƠ
         const TAN_AN_POLYGON_COORDS = [
             [10.0385, 105.7802],
             [10.0350, 105.7875],
@@ -480,6 +480,11 @@
                 draw: { polygon: { allowIntersection: false, shapeOptions: { color: '#3b82f6' } }, marker: false, circle: false, rectangle: false, polyline: false, circlemarker: false }
             });
             mainMiniMapInstance.addControl(drawControl);
+
+            // BỔ SỨC SỰ KIỆN CREATED CHO LEAFLET.DRAW ĐỂ LƯU HÌNH VẼ LÊN BẢN ĐỒ CHÍNH XÁC
+            mainMiniMapInstance.on(L.Draw.Event.CREATED, function (e) {
+                drawnItems.addLayer(e.layer);
+            });
 
             capNhatCacDiemTrenMiniMap(danhSachHoGiaDinh);
         }
@@ -634,12 +639,18 @@
                             };
                         }
                         
+                        // SỬ DỤNG HÀM XỬ LÝ NGÀY THÁNG ĐỘC LẬP CHÍNH XÁC CHO EXCEL
                         let ngaySinhRaw = r[mapCol.ngaySinh];
                         let ngaySinhStr = '';
-                        if (ngaySinhRaw) {
+                        if (ngaySinhRaw !== undefined && ngaySinhRaw !== null && ngaySinhRaw !== '') {
                             if (typeof ngaySinhRaw === 'number') {
-                                let dateObj = new Date((ngaySinhRaw - (25567 + 2)) * 86400 * 1000);
-                                ngaySinhStr = dateObj.toLocaleDateString('vi-VN');
+                                let parsedDate = XLSX.SSF.parse_date_code(ngaySinhRaw);
+                                if (parsedDate) {
+                                    ngaySinhStr = `${String(parsedDate.d).padStart(2, '0')}/${String(parsedDate.m).padStart(2, '0')}/${parsedDate.y}`;
+                                } else {
+                                    let dateObj = new Date((ngaySinhRaw - (25567 + 2)) * 86400 * 1000);
+                                    ngaySinhStr = dateObj.toLocaleDateString('vi-VN');
+                                }
                             } else {
                                 ngaySinhStr = String(ngaySinhRaw);
                             }
@@ -829,7 +840,13 @@
             }
             
             document.getElementById('detailModal').classList.remove('hidden');
-            setTimeout(() => khoiTaoBanDoLeaflet(), 300);
+            // BỔ SUNG INVALIDATE SIZE ĐỂ BẢN ĐỒ TRONG MODAL RENDER ĐÚNG KÍCH THƯỚC KHI HIỂN THỊ
+            setTimeout(() => {
+                khoiTaoBanDoLeaflet();
+                if (mapInstance) {
+                    mapInstance.invalidateSize();
+                }
+            }, 300);
         }
 
         function capNhatTV(tvIndex, field, value) {
@@ -867,6 +884,7 @@
                 let lat = parseFloat(gpsVal.split(',')[0]), lon = parseFloat(gpsVal.split(',')[1]);
                 if (!isNaN(lat) && !isNaN(lon)) {
                     let ll = [lat, lon]; markerInstance.setLatLng(ll); mapInstance.setView(ll, 18);
+                    mapInstance.invalidateSize();
                 }
             }
         }
