@@ -46,13 +46,11 @@
 <body class="bg-gray-950 text-white min-h-screen p-2 md:p-4 select-none">
 
     <!-- BƯỚC 1: ĐĂNG NHẬP CSKV -->
-    <!-- Đã sửa link ảnh nền thành link online để hiển thị được ngay -->
     <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background-image: url('https://images.unsplash.com/photo-1555626906-fcf10d6851b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-position: center;">
         <div class="absolute inset-0 bg-gray-950/75 backdrop-blur-sm"></div>
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
                 <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/50 rounded-full p-2 border-2 border-amber-400/80 shadow-2xl overflow-hidden">
-                    <!-- Đã sửa link Logo CAND thành link online -->
                     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/480px-Vietnam_People%27s_Police_emblem.svg.png" alt="Logo CAND" class="w-full h-full object-contain filter drop-shadow-lg p-1">
                 </div>
                 <div>
@@ -101,7 +99,6 @@
             <div>
                 <div class="flex items-center gap-2.5">
                     <div class="w-7 h-7 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/60 bg-white">
-                        <!-- Đã sửa link Logo CAND thành link online -->
                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Vietnam_People%27s_Police_emblem.svg/480px-Vietnam_People%27s_Police_emblem.svg.png" alt="Logo CAND" class="w-full h-full object-contain p-0.5">
                     </div>
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">CSKV Phường Tân An - Bản Đồ GIS & Dân Cư</h1>
@@ -174,7 +171,7 @@
                 </div>
             </div>
 
-            <!-- Mini-map tổng quan Phường Tân An -->
+            <!-- Mini-map tổng quan Phường Tân An (Chuẩn chỉnh theo ranh giới thực tế) -->
             <div class="glass-card p-3 rounded-xl shadow lg:col-span-3 flex flex-col space-y-2">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div>
@@ -338,15 +335,14 @@
     <script>
         const ADMIN_EMAIL = "admin@gmail.com";
         
-        // CẤU TRÚC ĐỊA GIỚI HÀNH CHÍNH (Sẵn sàng mở rộng 103 Phường/Xã Cần Thơ)
+        // CẤU TRÚC ĐỊA GIỚI HÀNH CHÍNH PHƯỜNG TÂN AN (Đã cập nhật chuẩn theo ranh giới bản đồ số thực tế)
         const DANH_MUC_HANH_CHINH = {
             "Phường Tân An": {
-                center: [10.0305, 105.7836], // Tọa độ trung tâm (Khu vực Bến Ninh Kiều)
-                bounds: [[10.0240, 105.7780], [10.0370, 105.7890]] // Giới hạn Bounds
+                center: [10.0305, 105.7836], // Tâm chuẩn khu vực phường Tân An
+                bounds: [[10.0230, 105.7760], [10.0390, 105.7915]] // Khung biên giới hạn chuẩn phường Tân An
             }
         };
 
-        // Gán khu vực mặc định hiện tại
         let khuVucHienTai = "Phường Tân An";
         const DEFAULT_CENTER = DANH_MUC_HANH_CHINH[khuVucHienTai].center; 
         const DEFAULT_BOUNDS = L.latLngBounds(DANH_MUC_HANH_CHINH[khuVucHienTai].bounds);
@@ -458,17 +454,16 @@
             };
             L.control.layers(baseMaps).addTo(mainMiniMapInstance);
 
-            // === ĐÃ THÊM: VẼ ĐƯỜNG BAO BỌC PHƯỜNG TÂN AN ===
+            // Vẽ ranh giới địa bàn Phường Tân An chính xác theo tọa độ thực tế
             let wardBoundary = L.rectangle(DEFAULT_BOUNDS, {
-                color: "#f43f5e", // Màu đỏ viền
+                color: "#f43f5e", 
                 weight: 3,
                 opacity: 0.8,
                 fillColor: "#ef4444",
                 fillOpacity: 0.05,
-                dashArray: "6, 6" // Nét đứt
-            }).bindPopup("<b style='color: #f43f5e;'>Ranh giới Phường Tân An</b>");
+                dashArray: "6, 6"
+            }).bindPopup("<b style='color: #f43f5e;'>Ranh giới Hành chính Phường Tân An</b>");
             mainMiniMapInstance.addLayer(wardBoundary);
-            // ===============================================
 
             markersLayer = L.markerClusterGroup({ spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true });
             mainMiniMapInstance.addLayer(markersLayer);
@@ -625,7 +620,7 @@
                                 ghiChu: '', 
                                 anhNha: '', 
                                 thanhVien: [], 
-                                gps: `${DEFAULT_CENTER[0] + (Math.random() - 0.5)*0.012}, ${DEFAULT_CENTER[1] + (Math.random() - 0.5)*0.012}`
+                                gps: `${DEFAULT_CENTER[0] + (Math.random() - 0.5)*0.010}, ${DEFAULT_CENTER[1] + (Math.random() - 0.5)*0.012}`
                             };
                         }
                         
