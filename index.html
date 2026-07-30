@@ -45,21 +45,29 @@
 </head>
 <body class="bg-gray-950 text-white min-h-screen p-2 md:p-4 select-none">
 
-    <!-- BƯỚC 1: ĐĂNG NHẬP CSKV (Tích hợp ảnh nền lực lượng CAND) -->
+    <!-- BƯỚC 1: ĐĂNG NHẬP CSKV (Tích hợp chuẩn Logo và Ảnh nền CAND Việt Nam) -->
     <div id="loginScreen" class="fixed inset-0 flex items-center justify-center z-50 p-4" style="background: linear-gradient(135deg, rgba(9, 13, 22, 0.88), rgba(17, 24, 39, 0.94), rgba(69, 10, 10, 0.95)), url('https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;">
         <div class="absolute inset-0 bg-gray-950/85 backdrop-blur-sm"></div>
         <div class="glass-card w-full max-w-md p-6 rounded-2xl shadow-2xl space-y-6 border border-red-500/40 relative z-10">
             <div class="text-center space-y-3">
-                <div class="w-24 h-24 flex items-center justify-center mx-auto mb-2 relative bg-red-950/80 rounded-full p-2 border-2 border-amber-400/90 shadow-2xl overflow-hidden">
-                    <!-- Logo CAND Chuẩn chính xác -->
+                <div class="w-28 h-28 flex items-center justify-center mx-auto mb-2 relative bg-red-950/90 rounded-full p-2 border-2 border-amber-400/90 shadow-2xl overflow-hidden">
+                    <!-- Huy hiệu Công an nhân dân Việt Nam chuẩn chính xác -->
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" class="w-full h-full object-contain filter drop-shadow-md">
-                        <circle cx="250" cy="250" r="235" fill="#15803d" stroke="#facc15" stroke-width="14"/>
-                        <circle cx="250" cy="250" r="205" fill="#d91414" stroke="#facc15" stroke-width="10"/>
+                        <!-- Cành lúa vàng bao quanh -->
+                        <path d="M110 370 C60 280 60 170 120 90 C160 40 220 30 250 30 C280 30 340 40 380 90 C440 170 440 280 390 370" fill="none" stroke="#facc15" stroke-width="18" stroke-linecap="round"/>
+                        <path d="M125 120 Q170 160 150 210 M145 100 Q190 140 170 190 M165 80 Q210 120 190 170" fill="none" stroke="#facc15" stroke-width="9"/>
+                        <path d="M375 120 Q330 160 350 210 M355 100 Q310 140 330 190 M335 80 Q290 120 310 170" fill="none" stroke="#facc15" stroke-width="9"/>
+                        <!-- Vòng tròn nền xanh lá -->
+                        <circle cx="250" cy="270" r="145" fill="#15803d" stroke="#facc15" stroke-width="12"/>
+                        <!-- Vòng tròn đỏ bên trong -->
+                        <circle cx="250" cy="270" r="115" fill="#d91414" stroke="#facc15" stroke-width="8"/>
                         <!-- Ngôi sao vàng năm cánh -->
-                        <polygon points="250,135 282,205 358,215 302,268 318,342 250,305 182,342 198,268 142,215 218,205" fill="#facc15"/>
+                        <polygon points="250,165 272,212 322,218 284,252 296,300 250,275 204,300 216,252 178,218 228,212" fill="#facc15"/>
                         <!-- Bánh xe & Chữ CA -->
-                        <path d="M200 370 L300 370 L280 430 L220 430 Z" fill="#facc15"/>
-                        <text x="250" y="415" font-size="45" font-weight="900" fill="#15803d" text-anchor="middle">CA</text>
+                        <path d="M200 385 L300 385 L285 435 L215 435 Z" fill="#facc15"/>
+                        <text x="250" y="423" font-size="40" font-weight="900" fill="#15803d" text-anchor="middle">CA</text>
+                        <!-- Dải lụa chân huy hiệu -->
+                        <path d="M190 440 Q250 465 310 440 Q250 490 190 440" fill="#facc15"/>
                     </svg>
                 </div>
                 <div>
@@ -109,9 +117,10 @@
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 flex-shrink-0 overflow-hidden rounded-full border border-amber-400/80 bg-red-900 flex items-center justify-center p-0.5 shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" class="w-full h-full object-contain">
-                            <circle cx="250" cy="250" r="235" fill="#15803d" stroke="#facc15" stroke-width="14"/>
-                            <circle cx="250" cy="250" r="205" fill="#d91414" stroke="#facc15" stroke-width="10"/>
-                            <polygon points="250,135 282,205 358,215 302,268 318,342 250,305 182,342 198,268 142,215 218,205" fill="#facc15"/>
+                            <path d="M110 370 C60 280 60 170 120 90 C160 40 220 30 250 30 C280 30 340 40 380 90 C440 170 440 280 390 370" fill="none" stroke="#facc15" stroke-width="18" stroke-linecap="round"/>
+                            <circle cx="250" cy="270" r="145" fill="#15803d" stroke="#facc15" stroke-width="12"/>
+                            <circle cx="250" cy="270" r="115" fill="#d91414" stroke="#facc15" stroke-width="8"/>
+                            <polygon points="250,165 272,212 322,218 284,252 296,300 250,275 204,300 216,252 178,218 228,212" fill="#facc15"/>
                         </svg>
                     </div>
                     <h1 class="text-base md:text-lg font-bold bg-gradient-to-r from-red-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">Hệ Thống Quản Lý Địa Bàn Cho CSKV - Phường Tân An, TP. Cần Thơ</h1>
@@ -476,7 +485,6 @@
             };
             L.control.layers(baseMaps).addTo(mainMiniMapInstance);
 
-            // Hiển thị ranh giới bản đồ GIS chính xác theo ranh giới phường Tân An sau sáp nhập
             let wardBoundary = L.polygon(TAN_AN_POLYGON_COORDS, {
                 color: "#f43f5e", 
                 weight: 3,
